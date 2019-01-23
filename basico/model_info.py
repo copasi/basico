@@ -186,6 +186,58 @@ def get_parameters(name=None, **kwargs):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+def get_reactionParameters(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reactions = model.getReactions()
+    # assert what?
+
+    num_reactions = reactions.size()
+    data = []
+
+    print 'just before loop'
+
+    for i in range(num_reactions):
+        reaction = reactions.get(i)
+        #assert (isinstance(rparam, COPASI.CModelValue))
+
+        parameterGroup = reaction.getParameters()
+        num_params = parameterGroup.size()
+
+        for j in range(num_params):
+            parameter = parameterGroup.getParameter(j)
+            assert reaction.isLocalParameter(parameter.getObjectName())
+
+
+            param_data = {
+                'name': parameter.getObjectName(),
+                'value': parameter.getValue(),
+                'key': parameter.getKey(),
+                'type': parameter.getType(),
+                'reaction name' : reaction.getObjectName()
+            }
+
+            if 'name' in kwargs and kwargs['name'] not in param_data['name']:
+                continue
+
+            if name and name not in param_data['name']:
+                continue
+
+            if 'type' in kwargs and kwargs['type'] not in param_data['type']:
+                continue
+
+            data.append(param_data)
+
+    if not data:
+        return None
+    print 'Done'
+    return pandas.DataFrame(data=data).set_index('name')
+
+
 
 def set_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())

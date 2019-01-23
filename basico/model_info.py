@@ -194,30 +194,23 @@ def get_reactionParameters(name=None, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     reactions = model.getReactions()
-    # assert what?
 
     num_reactions = reactions.size()
     data = []
 
-    print 'just before loop'
-
     for i in range(num_reactions):
         reaction = reactions.get(i)
-        #assert (isinstance(rparam, COPASI.CModelValue))
 
         parameterGroup = reaction.getParameters()
         num_params = parameterGroup.size()
 
         for j in range(num_params):
             parameter = parameterGroup.getParameter(j)
-            assert reaction.isLocalParameter(parameter.getObjectName())
-
+            #assert reaction.isLocalParameter(parameter.getObjectName())
 
             param_data = {
                 'name': parameter.getObjectName(),
                 'value': parameter.getValue(),
-                'key': parameter.getKey(),
-                'type': parameter.getType(),
                 'reaction name' : reaction.getObjectName()
             }
 
@@ -234,9 +227,45 @@ def get_reactionParameters(name=None, **kwargs):
 
     if not data:
         return None
-    print 'Done'
-    return pandas.DataFrame(data=data).set_index('name')
 
+    return pandas.DataFrame(data=data).set_index('reaction name')
+
+
+def get_reactions(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reactions = model.getReactions()
+
+    num_reactions = reactions.size()
+    data = []
+
+    for i in range(num_reactions):
+        reaction = reactions.get(i)
+
+        reaction_data = {
+            'scheme': reaction.getReactionScheme(),
+            'name': reaction.getObjectName()
+        }
+
+        if 'name' in kwargs and kwargs['name'] not in param_data['name']:
+            continue
+
+        if name and name not in param_data['name']:
+            continue
+
+        if 'type' in kwargs and kwargs['type'] not in param_data['type']:
+            continue
+
+        data.append(reaction_data)
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
 
 
 def set_parameters(name=None, **kwargs):
@@ -282,3 +311,39 @@ def set_parameters(name=None, **kwargs):
 
         if 'type' in kwargs:
             param.setStatus(__status_to_int(kwargs['type']))
+
+def set_reactionParameters(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reactions = model.getReactions()
+    num_reactions = reactions.size()
+
+    for i in range(num_reactions):
+        reaction = reactions.get(i)
+
+        parameterGroup = reaction.getParameters()
+        num_params = parameterGroup.size()
+
+        for j in range(num_params):
+            param = parameterGroup.getParameter(j)
+
+            current_name = param.getObjectName()
+
+            if 'name' in kwargs and kwargs['name'] not in current_name:
+                continue
+
+            if name and type(name) is str and name not in current_name:
+                continue
+
+            if name and isinstance(name, collections.Iterable) and current_name not in name:
+                continue
+
+            if 'name' in kwargs:
+                param.setObjectName(kwargs['unit'])
+
+            if 'value' in kwargs:
+                param.setDblValue(kwargs['value'])

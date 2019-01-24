@@ -206,10 +206,9 @@ def get_reactionParameters(name=None, **kwargs):
 
         for j in range(num_params):
             parameter = parameterGroup.getParameter(j)
-            #assert reaction.isLocalParameter(parameter.getObjectName())
 
             param_data = {
-                'name': parameter.getObjectName(),
+                'name': parameter.getObjectDisplayName(),
                 'value': parameter.getValue(),
                 'reaction name' : reaction.getObjectName()
             }
@@ -251,13 +250,13 @@ def get_reactions(name=None, **kwargs):
             'name': reaction.getObjectName()
         }
 
-        if 'name' in kwargs and kwargs['name'] not in param_data['name']:
+        if 'name' in kwargs and kwargs['name'] not in reaction_data['name']:
             continue
 
-        if name and name not in param_data['name']:
+        if name and name not in reaction_data['name']:
             continue
 
-        if 'type' in kwargs and kwargs['type'] not in param_data['type']:
+        if 'type' in kwargs and kwargs['type'] not in reaction_data['type']:
             continue
 
         data.append(reaction_data)
@@ -312,6 +311,7 @@ def set_parameters(name=None, **kwargs):
         if 'type' in kwargs:
             param.setStatus(__status_to_int(kwargs['type']))
 
+
 def set_reactionParameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -331,7 +331,7 @@ def set_reactionParameters(name=None, **kwargs):
         for j in range(num_params):
             param = parameterGroup.getParameter(j)
 
-            current_name = param.getObjectName()
+            current_name = param.getObjectDisplayName()
 
             if 'name' in kwargs and kwargs['name'] not in current_name:
                 continue
@@ -342,8 +342,83 @@ def set_reactionParameters(name=None, **kwargs):
             if name and isinstance(name, collections.Iterable) and current_name not in name:
                 continue
 
-            if 'name' in kwargs:
-                param.setObjectName(kwargs['unit'])
+            if 'new_name' in kwargs:
+                param.setObjectName(kwargs['new_name'])
 
             if 'value' in kwargs:
                 param.setDblValue(kwargs['value'])
+
+def set_reaction(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reactions = model.getReactions()
+    num_reactions = reactions.size()
+
+    for i in range(num_reactions):
+        reaction = reactions.get(i)
+
+        current_name = reaction.getObjectName()
+
+        if 'name' in kwargs and kwargs['name'] not in current_name:
+            continue
+
+        if name and type(name) is str and name not in current_name:
+            continue
+
+        if name and isinstance(name, collections.Iterable) and current_name not in name:
+            continue
+
+        if 'new_name' in kwargs:
+            reaction.setObjectName(kwargs['new_name'])
+
+        if 'scheme' in kwargs:
+            reaction.setReactionScheme(kwargs['scheme'])
+
+
+def set_species(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    metabs = model.getMetabolitesX()
+    num_metabs = metabs.size()
+
+    for i in range(num_metabs):
+        metab = metabs.get(i)
+        assert (isinstance(metab, COPASI.CMetab))
+
+        current_name = metab.getObjectName()
+
+
+        if 'name' in kwargs and kwargs['name'] not in current_name:
+            continue
+
+        if name and type(name) is str and name not in current_name:
+            continue
+
+        if name and isinstance(name, collections.Iterable) and current_name not in name:
+            continue
+
+        if 'new_name' in kwargs:
+            metab.setObjectName(kwargs['new_name'])
+
+        if 'unit' in kwargs:
+            metab.setUnitExpression(kwargs['unit'])
+
+        if 'initial_concentration' in kwargs:
+            metab.setInitialConcentration(kwargs['initial_concentration']),
+
+        if 'initial_particle_number' in kwargs:
+            metab.setInitialValue(kwargs['initial_particle_number']),
+
+        if 'initial_expression' in kwargs:
+            metab.setInitialExpression(kwargs['initial_expression'])
+
+        if 'expression' in kwargs:
+            metab.setExpression(kwargs['expression'])

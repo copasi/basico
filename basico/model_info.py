@@ -266,6 +266,16 @@ def get_reactions(name=None, **kwargs):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+def get_timeUnit(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    time = model.getTimeUnit()
+
+    return time
 
 def set_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
@@ -422,3 +432,31 @@ def set_species(name=None, **kwargs):
 
         if 'expression' in kwargs:
             metab.setExpression(kwargs['expression'])
+
+
+def set_timeUnit(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    c_unit = COPASI.CUnit(kwargs['unit'])
+    if c_unit.isUnitType(COPASI.CUnit.time) is False:
+        print ('The unit \'{}\' is not supported.'.format(kwargs['unit']))
+        return
+
+    if 'unit' in kwargs:
+       assert (isinstance((kwargs['unit']), str))
+
+       c_unit = COPASI.CUnit(kwargs['unit'])
+
+       if c_unit.isUnitType(COPASI.CUnit.time):
+           model.setTimeUnit(kwargs['unit'])
+
+       else:
+        print ('The unit \'{}\' is not supported.'.format(kwargs['unit']))
+
+
+
+

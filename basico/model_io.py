@@ -1,12 +1,14 @@
 import COPASI
 import os
-import urllib2
+try: 
+    import urllib2
+except:
+    import urllib
 import traceback
 import logging
 import glob
 import atexit
 import subprocess
-import task_parameterestimation
 import tempfile
 import shutil
 
@@ -83,7 +85,11 @@ def load_model_from_string(content):
 
 def load_model_from_url(url):
     # type: (str) -> COPASI.CDataModel
-    content = urllib2.urlopen(url).read()
+    try:
+        content = urllib2.urlopen(url).read()
+    except:
+        content = urllib.request.urlopen(url).read().decode("utf8")
+
     return load_model_from_string(content)
 
 
@@ -121,9 +127,9 @@ def load_biomodel_from_caltech(model_id):
 def load_biomodel(model_id):
     # type: (Union[int, str, unicode]) -> COPASI.CDataModel
     if type(model_id) is int:
-        url = 'http://www.ebi.ac.uk/biomodels-main/download?mid=BIOMD{0:010d}'.format(model_id)
+        url = 'http://www.ebi.ac.uk/biomodels/model/download/BIOMD{0:010d}'.format(model_id)
     else:
-        url = 'http://www.ebi.ac.uk/biomodels-main/download?mid={0}'.format(model_id)
+        url = 'http://www.ebi.ac.uk/biomodels/model/download/{0}'.format(model_id)
     return load_model_from_url(url)
 
 
@@ -205,6 +211,11 @@ def save_model(filename, **kwargs):
 
 
 def save_model_and_data(filename, **kwargs):
+    try:
+        from . import task_parameterestimation
+    except:
+        import task_parameterestimation
+
     model = kwargs.get('model', get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 

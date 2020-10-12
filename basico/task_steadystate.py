@@ -1,5 +1,5 @@
 import COPASI
-import model_io
+from . import model_io
 
 
 def run_steadystate(**kwargs):

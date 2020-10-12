@@ -1,4 +1,4 @@
-import model_io
+from . import model_io
 import pandas
 import COPASI
 import collections
@@ -186,6 +186,7 @@ def get_parameters(name=None, **kwargs):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+
 def get_reactionParameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -357,6 +358,7 @@ def set_reactionParameters(name=None, **kwargs):
 
             if 'value' in kwargs:
                 param.setDblValue(kwargs['value'])
+
 
 def set_reaction(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())

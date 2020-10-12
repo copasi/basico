@@ -1,4 +1,4 @@
-import model_io
+from . import model_io
 import COPASI
 import logging
 import re

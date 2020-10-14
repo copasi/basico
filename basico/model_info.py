@@ -323,6 +323,7 @@ def set_parameters(name=None, **kwargs):
             param.setStatus(__status_to_int(kwargs['type']))
 
 
+
 def set_reactionParameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -401,12 +402,13 @@ def set_species(name=None, **kwargs):
     metabs = model.getMetabolitesX()
     num_metabs = metabs.size()
 
+    set = COPASI.ObjectStdVector()
+
     for i in range(num_metabs):
         metab = metabs.get(i)
         assert (isinstance(metab, COPASI.CMetab))
 
         current_name = metab.getObjectName()
-
 
         if 'name' in kwargs and kwargs['name'] not in current_name:
             continue
@@ -424,16 +426,20 @@ def set_species(name=None, **kwargs):
             metab.setUnitExpression(kwargs['unit'])
 
         if 'initial_concentration' in kwargs:
-            metab.setInitialConcentration(kwargs['initial_concentration']),
+            metab.setInitialConcentration(kwargs['initial_concentration'])
+            set.append(metab.getInitialConcentrationReference())
 
         if 'initial_particle_number' in kwargs:
             metab.setInitialValue(kwargs['initial_particle_number']),
+            set.append(metab.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
             metab.setInitialExpression(kwargs['initial_expression'])
 
         if 'expression' in kwargs:
             metab.setExpression(kwargs['expression'])
+
+    model.updateInitialValues(set)
 
 
 def set_timeUnit(name=None, **kwargs):
@@ -458,7 +464,4 @@ def set_timeUnit(name=None, **kwargs):
 
        else:
         print ('The unit \'{}\' is not supported.'.format(kwargs['unit']))
-
-
-
 

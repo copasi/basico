@@ -270,48 +270,48 @@ def animate_rectangular_time_course(data, dm, metab=None, prefix=None, shading='
     return anim
 
 
-def _get_selection(x_range, y_range):
-    import sys
-    from PyQt5.QtWidgets import QApplication, QGridLayout, QDialog, QPushButton
+# def _get_selection(x_range, y_range):
+#     import sys
+#     from PyQt5.QtWidgets import QApplication, QGridLayout, QDialog, QPushButton
 
-    app = QApplication(sys.argv)
+#     app = QApplication(sys.argv)
 
-    layout = QGridLayout()
+#     layout = QGridLayout()
 
-    w = QDialog()
-    w.resize(250, 150)
-    w.move(300, 300)
-    w.setWindowTitle("Toggle off elements you don't want")
+#     w = QDialog()
+#     w.resize(250, 150)
+#     w.move(300, 300)
+#     w.setWindowTitle("Toggle off elements you don't want")
 
-    buttons = {}
+#     buttons = {}
 
-    for i in x_range:
-        for j in y_range:
-            # keep a reference to the buttons
-            buttons[(i, j)] = QPushButton('.', w)
-            buttons[(i, j)].setCheckable(True)
-            buttons[(i, j)].setMaximumSize(10, 10)
-            # add to the layout
-            layout.addWidget(buttons[(i, j)], i, j)
+#     for i in x_range:
+#         for j in y_range:
+#             # keep a reference to the buttons
+#             buttons[(i, j)] = QPushButton('.', w)
+#             buttons[(i, j)].setCheckable(True)
+#             buttons[(i, j)].setMaximumSize(10, 10)
+#             # add to the layout
+#             layout.addWidget(buttons[(i, j)], i, j)
 
-    w.setLayout(layout)
-    w.exec()
+#     w.setLayout(layout)
+#     w.exec()
 
-    result = []
-    # get selection
-    for coord in buttons:
-        if buttons[coord].isChecked():
-            result.append(coord)
-    return result
+#     result = []
+#     # get selection
+#     for coord in buttons:
+#         if buttons[coord].isChecked():
+#             result.append(coord)
+#     return result
 
 
-def _delete_compartments(dm):
-    mod = dm.getModel()
-    assert (isinstance(mod, COPASI.CModel))
-    names = [c.getObjectName() for c in mod.getCompartments()]
-    x_range, y_range, prefixes = _split_ranges(names)
-    to_delete = _get_selection(x_range, y_range)
-    delete_compartments(dm, to_delete)
+# def _delete_compartments(dm):
+#     mod = dm.getModel()
+#     assert (isinstance(mod, COPASI.CModel))
+#     names = [c.getObjectName() for c in mod.getCompartments()]
+#     x_range, y_range, prefixes = _split_ranges(names)
+#     to_delete = _get_selection(x_range, y_range)
+#     delete_compartments(dm, to_delete)
 
 
 def delete_compartments(dm, selection):

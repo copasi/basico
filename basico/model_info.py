@@ -94,7 +94,6 @@ def get_events(name=None, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     events = model.getEvents()
-    assert(isinstance(events, COPASI.MetabVector))
 
     num_events = events.size()
     data = []
@@ -110,12 +109,13 @@ def get_events(name=None, **kwargs):
             target = ea.getTargetObject()
             if target is None:
                 continue
-            assignments.append({'target': target.getObjectDisplayName(), 'expression': ea.getExpression() })
+            assignments.append({'target': target.getObjectDisplayName(), 
+                    'expression': _replace_cns_with_names( ea.getExpression(), model=dm) })
 
         event_data = {
             'name': event.getObjectName(),
-            'trigger': event.getTriggerExpression(),
-            'delay': event.getDelayExpression(),
+            'trigger': _replace_cns_with_names(event.getTriggerExpression(), model=dm),
+            'delay': _replace_cns_with_names(event.getDelayExpression(), model=dm),
             'assignments': assignments,
             'key': event.getKey(),
         }
@@ -156,6 +156,42 @@ def _replace_names_with_cns(expression, **kwargs):
 
     return resulting_expression
 
+def _replace_cns_with_names(expression, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+    resulting_expression = ''
+    cn = None
+    words = expression.split()
+    skip = -1
+    for i in range(len(words)):
+        if i < skip: 
+            continue
+
+        word = words[i]
+        if word.startswith('<CN') and word.endswith('>'):
+            word = word[1:-1]
+            cn = word
+            word = ''
+        elif word.startswith('<CN'):
+            cn = word[1:] 
+            i = i + 1
+            while not words[i].endswith('>'):
+                cn +=' ' + words[i]
+                i = i + 1
+            cn += ' ' + words[i][:-1]
+            i = i + 1
+            skip = i
+            word = ''
+        else: 
+            cn = None
+        
+        if cn is not None: 
+            obj = dm.getObject(COPASI.CCommonName(cn))
+            if obj is not None:
+                word = obj.getObjectDisplayName()
+        resulting_expression += ' ' + word
+
+    return resulting_expression
 
 def add_event(name, trigger, assignments, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
@@ -164,7 +200,8 @@ def add_event(name, trigger, assignments, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    event = model.createEvent('name')
+    model.removeEvent(name) # remove existing event with that name
+    event = model.createEvent(name)
     assert (isinstance(event, COPASI.CEvent))
 
     event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))

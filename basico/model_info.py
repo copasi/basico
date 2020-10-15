@@ -85,6 +85,101 @@ def get_species(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
+def get_events(name=None, **kwargs):
+    # type: () -> pandas.DataFrame
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    events = model.getEvents()
+    assert(isinstance(events, COPASI.MetabVector))
+
+    num_events = events.size()
+    data = []
+
+    for i in range(num_events):
+        event = events.get(i)
+        assert (isinstance(event, COPASI.CEvent))
+
+        assignments = []
+        for i in range(event.getNumAssignments()):
+            ea = event.getAssignment(i)
+            assert (isinstance(ea, COPASI.CEventAssignment))
+            target = ea.getTargetObject()
+            if target is None:
+                continue
+            assignments.append({'target': target.getObjectDisplayName(), 'expression': ea.getExpression() })
+
+        event_data = {
+            'name': event.getObjectName(),
+            'trigger': event.getTriggerExpression(),
+            'delay': event.getDelayExpression(),
+            'assignments': assignments,
+            'key': event.getKey(),
+        }
+
+        if 'name' in kwargs and not kwargs['name'] in event_data['name']:
+            continue
+
+        if name and name not in event_data['name']:
+            continue
+
+        if 'compartment' in kwargs and not kwargs['compartment'] in event_data['compartment']:
+            continue
+
+        if 'type' in kwargs and kwargs['type'] not in event_data['type']:
+            continue
+
+        data.append(event_data)
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
+
+def _replace_names_with_cns(expression, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+    resulting_expression = ''
+    for word in expression.split():
+        if word.startswith('{') and word.endswith('}'):
+            word = word[1:-1]
+
+        obj = dm.findObjectByDisplayName(word)
+        if obj is not None:
+            resulting_expression += ' <{0}>'.format(obj.getCN())
+        else:
+            resulting_expression += ' ' + word
+
+    return resulting_expression
+
+
+def add_event(name, trigger, assignments, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    event = model.createEvent('name')
+    assert (isinstance(event, COPASI.CEvent))
+
+    event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
+    for assignment in assignments:
+        ea = event.createAssignment()
+        assert (isinstance(ea, COPASI.CEventAssignment))
+        target = dm.findObjectByDisplayName(assignment[0])
+        if target is None:
+            continue
+        ea.setTargetCN(target.getCN())
+        ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
+
+    model.compileIfNecessary()
+
+
 def get_compartments(name=None, **kwargs):
     # type: () -> pandas.DataFrame
     dm = kwargs.get('model', model_io.get_current_model())
@@ -187,7 +282,7 @@ def get_parameters(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_reactionParameters(name=None, **kwargs):
+def get_reaction_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -202,11 +297,11 @@ def get_reactionParameters(name=None, **kwargs):
     for i in range(num_reactions):
         reaction = reactions.get(i)
 
-        parameterGroup = reaction.getParameters()
-        num_params = parameterGroup.size()
+        parameter_group = reaction.getParameters()
+        num_params = parameter_group.size()
 
         for j in range(num_params):
-            parameter = parameterGroup.getParameter(j)
+            parameter = parameter_group.getParameter(j)
 
             param_data = {
                 'name': parameter.getObjectDisplayName(),
@@ -323,8 +418,7 @@ def set_parameters(name=None, **kwargs):
             param.setStatus(__status_to_int(kwargs['type']))
 
 
-
-def set_reactionParameters(name=None, **kwargs):
+def set_reaction_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -337,11 +431,11 @@ def set_reactionParameters(name=None, **kwargs):
     for i in range(num_reactions):
         reaction = reactions.get(i)
 
-        parameterGroup = reaction.getParameters()
-        num_params = parameterGroup.size()
+        parameter_group = reaction.getParameters()
+        num_params = parameter_group.size()
 
         for j in range(num_params):
-            param = parameterGroup.getParameter(j)
+            param = parameter_group.getParameter(j)
 
             current_name = param.getObjectDisplayName()
 

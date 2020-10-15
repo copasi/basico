@@ -126,13 +126,13 @@ get_reactionParameters()
 # In[14]:
 
 
-set_reactionParameters(name = '(R1).k1', new_name = 'Ilse')
+set_reaction_parameters(name='(R1).k1', new_name='Ilse')
 
 
 # In[15]:
 
 
-set_reactionParameters(name = '(R1).Ilse', value = 123)
+set_reaction_parameters(name='(R1).Ilse', value=123)
 
 
 # In[16]:
@@ -145,7 +145,7 @@ get_reactionParameters()
 
 
 # change back parameters
-set_reactionParameters(new_name = '(R1).k1', name = 'Ilse')
+set_reaction_parameters(name='Ilse', new_name='(R1).k1')
 
 
 # ## Getting/setting reactions

@@ -202,8 +202,9 @@ def add_event(name, trigger, assignments, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    model.removeEvent(name) # remove existing event with that name
     event = model.createEvent(name)
+    if event is None:
+        raise ValueError('An Event named ' + name + ' already exists')
     assert (isinstance(event, COPASI.CEvent))
 
     event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))

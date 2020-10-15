@@ -9,6 +9,10 @@ The package works with python 2.x and python 3.x, provided the following package
 
 `pandas` and `python-copasi` are freely available on pypi. Once done, just have the `basico` directory in the `PYTHONPATH` or `sys.path`.
 
+Or you could directly install everything you need right from this git repo:
+
+    pip install git+https://github.com/copasi/basico.git
+
 ### Usage
 
 The following modules are available: 

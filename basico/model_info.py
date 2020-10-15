@@ -150,11 +150,13 @@ def _replace_names_with_cns(expression, **kwargs):
 
         obj = dm.findObjectByDisplayName(word)
         if obj is not None:
+            if isinstance(obj, COPASI.CModel):
+                obj = obj.getValueReference()
             resulting_expression += ' <{0}>'.format(obj.getCN())
         else:
             resulting_expression += ' ' + word
 
-    return resulting_expression
+    return resulting_expression.strip()
 
 def _replace_cns_with_names(expression, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
@@ -191,7 +193,7 @@ def _replace_cns_with_names(expression, **kwargs):
                 word = obj.getObjectDisplayName()
         resulting_expression += ' ' + word
 
-    return resulting_expression
+    return resulting_expression.strip()
 
 def add_event(name, trigger, assignments, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())

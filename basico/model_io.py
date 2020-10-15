@@ -284,8 +284,12 @@ def save_model_and_data(filename, **kwargs):
 
             experiment.setFileName(old_name)
 
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(model_string)
+        try: 
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(model_string)   
+        except:
+            with open(filename, 'w') as f:
+                f.write(model_string)   
     else:
         model.saveModel(filename, True)
 

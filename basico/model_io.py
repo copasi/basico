@@ -27,7 +27,7 @@ def set_current_model(model):
         __model_list.append(model)
 
     if __current_model is not None:
-        logging.debug(model_info(__current_model))
+        logging.debug(overview(__current_model))
     return __current_model
 
 
@@ -154,7 +154,7 @@ def load_example(selector):
     return load_model(files[0])
 
 
-def model_info(model=None):
+def overview(model=None):
     # type: (COPASI.CDataModel) -> Str
     if model is None:
         model = get_current_model()
@@ -181,7 +181,7 @@ def print_model(model=None):
     # type: (COPASI.CDataModel) -> None
     if model is None:
         model = get_current_model()
-    print (model_info(model))
+    print (overview(model))
 
 
 def save_model(filename, **kwargs):

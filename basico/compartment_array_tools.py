@@ -266,7 +266,6 @@ def animate_rectangular_time_course(data, dm, metab=None, prefix=None, shading='
     if filename:
         anim.save(filename)
 
-    plt.show()
     return anim
 
 

@@ -120,3 +120,6 @@ $RECYCLE.BIN/
 # pycharms
 .idea
 .tmp*
+*.bak
+.vscode
+

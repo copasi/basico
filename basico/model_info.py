@@ -65,10 +65,15 @@ def get_species(name=None, **kwargs):
             'key': metab.getKey(),
         }
 
+        display_name = metab.getObjectDisplayName()
+
         if 'name' in kwargs and not kwargs['name'] in metab_data['name']:
             continue
 
-        if name and name not in metab_data['name']:
+        if name and type(name) is str and name not in name and name not in display_name:
+            continue
+
+        if name and isinstance(name, collections.Iterable) and name not in name and display_name not in name:
             continue
 
         if 'compartment' in kwargs and not kwargs['compartment'] in metab_data['compartment']:
@@ -401,6 +406,7 @@ def get_reactions(name=None, **kwargs):
         return None
 
     return pandas.DataFrame(data=data).set_index('name')
+
 
 def get_timeUnit(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())

@@ -543,14 +543,15 @@ def set_species(name=None, **kwargs):
         assert (isinstance(metab, COPASI.CMetab))
 
         current_name = metab.getObjectName()
+        display_name = metab.getObjectDisplayName()
 
-        if 'name' in kwargs and kwargs['name'] not in current_name:
+        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
             continue
 
-        if name and type(name) is str and name not in current_name:
+        if name and type(name) is str and name not in current_name and name not in display_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and current_name not in name:
+        if name and isinstance(name, collections.Iterable) and current_name not in name and display_name not in name:
             continue
 
         if 'new_name' in kwargs:

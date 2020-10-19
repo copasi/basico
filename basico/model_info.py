@@ -345,14 +345,28 @@ def get_reaction_parameters(name=None, **kwargs):
 
         parameter_group = reaction.getParameters()
         num_params = parameter_group.size()
+        param_objects = reaction.getParameterObjects()
 
         for j in range(num_params):
             parameter = parameter_group.getParameter(j)
+            current_param = param_objects[j][0] if param_objects[j] else None
+            cn = current_param.getCN() if current_param else None
+            mv = dm.getObject(current_param.getCN()) if cn else None
+            if mv and isinstance(mv, COPASI.CModelValue):
+                param_type = 'global'
+                mapped_to = mv.getObjectName()
+                value = mv.getInitialValue()
+            else:
+                param_type = 'local'
+                mapped_to = ''
+                value = reaction.getParameterValue(parameter.getObjectName())
 
             param_data = {
                 'name': parameter.getObjectDisplayName(),
-                'value': parameter.getDblValue(),
-                'reaction name': reaction.getObjectName()
+                'value': value,
+                'reaction name': reaction.getObjectName(),
+                'type': param_type,
+                'mapped_to': mapped_to
             }
 
             if 'name' in kwargs and kwargs['name'] not in param_data['name']:
@@ -484,11 +498,13 @@ def set_reaction_parameters(name=None, **kwargs):
 
         parameter_group = reaction.getParameters()
         num_params = parameter_group.size()
+        param_objects = reaction.getParameterObjects()
 
         changed = False
 
         for j in range(num_params):
             param = parameter_group.getParameter(j)
+            current_param = param_objects[j][0] if param_objects[j] else None
 
             current_name = param.getObjectDisplayName()
 
@@ -506,7 +522,12 @@ def set_reaction_parameters(name=None, **kwargs):
                 changed = True
 
             if 'value' in kwargs:
-                param.setDblValue(kwargs['value'])
+                cn = current_param.getCN() if current_param else None
+                mv = dm.getObject(current_param.getCN()) if cn else None
+                if mv and isinstance(mv, COPASI.CModelValue):
+                    mv.setInitialValue(kwargs['value'])
+                else:
+                    param.setDblValue(kwargs['value'])
                 changed = True
 
         if changed:

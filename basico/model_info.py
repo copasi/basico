@@ -61,7 +61,8 @@ def get_species(name=None, **kwargs):
             'expression': metab.getExpression(),
             'concentration': metab.getConcentration(),
             'particle_number': metab.getValue(),
-            'rate': metab.getRate(),
+            'particle_number_rate': metab.getRate(),
+            'rate': metab.getConcentrationRate(),
             'key': metab.getKey(),
         }
 
@@ -350,8 +351,8 @@ def get_reaction_parameters(name=None, **kwargs):
 
             param_data = {
                 'name': parameter.getObjectDisplayName(),
-                'value': parameter.getValue(),
-                'reaction name' : reaction.getObjectName()
+                'value': parameter.getDblValue(),
+                'reaction name': reaction.getObjectName()
             }
 
             if 'name' in kwargs and kwargs['name'] not in param_data['name']:
@@ -385,10 +386,13 @@ def get_reactions(name=None, **kwargs):
 
     for i in range(num_reactions):
         reaction = reactions.get(i)
+        assert (isinstance(reaction,COPASI.CReaction))
 
         reaction_data = {
             'scheme': reaction.getReactionScheme(),
-            'name': reaction.getObjectName()
+            'name': reaction.getObjectName(),
+            'flux': reaction.getFlux(),
+            'particle_flux': reaction.getParticleFlux(),
         }
 
         if 'name' in kwargs and kwargs['name'] not in reaction_data['name']:
@@ -408,7 +412,7 @@ def get_reactions(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_timeUnit(name=None, **kwargs):
+def get_time_unit(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -418,6 +422,7 @@ def get_timeUnit(name=None, **kwargs):
     time = model.getTimeUnit()
 
     return time
+
 
 def set_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
@@ -480,6 +485,8 @@ def set_reaction_parameters(name=None, **kwargs):
         parameter_group = reaction.getParameters()
         num_params = parameter_group.size()
 
+        changed = False
+
         for j in range(num_params):
             param = parameter_group.getParameter(j)
 
@@ -496,9 +503,16 @@ def set_reaction_parameters(name=None, **kwargs):
 
             if 'new_name' in kwargs:
                 param.setObjectName(kwargs['new_name'])
+                changed = True
 
             if 'value' in kwargs:
                 param.setDblValue(kwargs['value'])
+                changed = True
+
+        if changed:
+            reaction.compile()
+            model.setCompileFlag(True)
+            pass
 
 
 def set_reaction(name=None, **kwargs):

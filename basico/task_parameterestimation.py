@@ -7,7 +7,6 @@ except:
     import model_io
 
 
-
 def num_experiment_files(**kwargs):
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
@@ -97,7 +96,7 @@ def get_experiment_data_from_model(model=None):
     return result
 
 
-def get_parameters(model=None):
+def get_fit_parameters(model=None):
     # type: (COPASI.CDataModel) -> [pandas.DataFrame]
     if model is None:
         model = model_io.get_current_model()
@@ -191,8 +190,6 @@ def run_parameter_estimation(**kwargs):
 
     problem.setCreateParameterSets(True)
     
-    #num_parameter_sets = model.ge
-    
     if 'method' in kwargs:
         method = kwargs['method']
         if isinstance(method, int):
@@ -223,7 +220,7 @@ def run_parameter_estimation(**kwargs):
 if __name__ == "__main__":
     print(COPASI.CVersion.VERSION.getVersion())
     m = model_io.load_example("LM-test1")
-    print(get_parameters())
+    print(get_fit_parameters())
     print(get_parameters_solution())
     run_parameter_estimation(method='LevenbergMarquardt')
     print(get_parameters_solution())

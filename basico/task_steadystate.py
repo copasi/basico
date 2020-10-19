@@ -15,6 +15,11 @@ def run_steadystate(**kwargs):
     if 'update_model' in kwargs:
         task.setUpdateModel(kwargs['update_model'])
 
+    if 'criterion' in kwargs:
+        method = task.getMethod()
+        assert (isinstance(method, COPASI.CSteadyStateMethod))
+        method.getParameter('Target Criterion').setStringValue(kwargs['criterion'])
+
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.CSteadyStateProblem))
 
@@ -23,3 +28,5 @@ def run_steadystate(**kwargs):
     task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
 
     task.processRaw(use_initial_values)
+
+    return task.getResult()

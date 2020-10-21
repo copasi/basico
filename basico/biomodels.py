@@ -1,4 +1,7 @@
-import urllib2
+try:
+    import urllib2
+except:
+    import urllib
 import json
 
 
@@ -6,7 +9,10 @@ END_POINT = 'https://www.ebi.ac.uk/biomodels/'
 
 
 def download_from(url):
-    content = urllib2.urlopen(url).read()
+    try:
+        content = urllib2.urlopen(url).read()
+    except:
+        content = urllib.request.urlopen(url).read().decode('utf-8')
     return content
 
 
@@ -29,7 +35,7 @@ def get_files_for_model(model_id):
     return result
 
 
-def get_content_for_model(model_id, file_name = None):
+def get_content_for_model(model_id, file_name=None):
     if type(model_id) is int:
         model_id = 'BIOMD{0:010d}'.format(model_id)
     if file_name is None:

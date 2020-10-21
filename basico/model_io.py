@@ -88,7 +88,8 @@ def load_model_from_url(url):
     try:
         content = urllib2.urlopen(url).read()
     except:
-        content = urllib.request.urlopen(url).read().decode("utf8")
+        data = urllib.request.urlopen(url).read()
+        content = data.decode("utf8")
 
     return load_model_from_string(content)
 
@@ -115,22 +116,12 @@ def load_model(location):
     return None
 
 
-def load_biomodel_from_caltech(model_id):
-    # type: (Union[int, str, unicode]) -> COPASI.CDataModel
-    if type(model_id) is int:
-        url = 'http://biomodels.caltech.edu/download?mid=BIOMD{0:010d}'.format(model_id)
-    else:
-        url = 'http://biomodels.caltech.edu/download?mid={0}'.format(model_id)
-    return load_model_from_url(url)
-
-
 def load_biomodel(model_id):
     # type: (Union[int, str, unicode]) -> COPASI.CDataModel
-    if type(model_id) is int:
-        url = 'http://www.ebi.ac.uk/biomodels/model/download/BIOMD{0:010d}'.format(model_id)
-    else:
-        url = 'http://www.ebi.ac.uk/biomodels/model/download/{0}'.format(model_id)
-    return load_model_from_url(url)
+
+    from . import biomodels
+
+    return load_model_from_string(biomodels.get_content_for_model(model_id))
 
 
 def get_examples(selector = ''):

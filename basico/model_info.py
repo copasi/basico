@@ -343,12 +343,20 @@ def get_reaction_parameters(name=None, **kwargs):
     for i in range(num_reactions):
         reaction = reactions.get(i)
 
+        if 'reaction_name' in kwargs and kwargs['reaction_name'] != reaction.getObjectName():
+            continue
+
         parameter_group = reaction.getParameters()
-        num_params = parameter_group.size()
+        fun_params = reaction.getFunctionParameters()
+        num_params = fun_params.size()
         param_objects = reaction.getParameterObjects()
 
         for j in range(num_params):
-            parameter = parameter_group.getParameter(j)
+            fun_parameter = fun_params.getParameter(j)
+            if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
+                continue
+            parameter = parameter_group.getParameter(fun_parameter.getObjectName())
+            cn = parameter.getCN()
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
             mv = dm.getObject(current_param.getCN()) if cn else None
@@ -496,15 +504,24 @@ def set_reaction_parameters(name=None, **kwargs):
     for i in range(num_reactions):
         reaction = reactions.get(i)
 
-        parameter_group = reaction.getParameters()
-        num_params = parameter_group.size()
-        param_objects = reaction.getParameterObjects()
+        if 'reaction_name' in kwargs and kwargs['reaction_name'] != reaction.getObjectName():
+            continue
 
         changed = False
 
+        parameter_group = reaction.getParameters()
+        fun_params = reaction.getFunctionParameters()
+        num_params = fun_params.size()
+        param_objects = reaction.getParameterObjects()
+
         for j in range(num_params):
-            param = parameter_group.getParameter(j)
+            fun_parameter = fun_params.getParameter(j)
+            if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
+                continue
+            param = parameter_group.getParameter(fun_parameter.getObjectName())
             current_param = param_objects[j][0] if param_objects[j] else None
+            cn = current_param.getCN() if current_param else None
+            mv = dm.getObject(current_param.getCN()) if cn else None
 
             current_name = param.getObjectDisplayName()
 
@@ -522,8 +539,6 @@ def set_reaction_parameters(name=None, **kwargs):
                 changed = True
 
             if 'value' in kwargs:
-                cn = current_param.getCN() if current_param else None
-                mv = dm.getObject(current_param.getCN()) if cn else None
                 if mv and isinstance(mv, COPASI.CModelValue):
                     mv.setInitialValue(kwargs['value'])
                 else:

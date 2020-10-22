@@ -1,0 +1,9 @@
+ipykernel
+matplotlib
+nbsphinx
+numpy
+pandoc
+python-copasi
+-e git://github.com/copasi/basico.git
+sphinx>3
+sphinx_rtd_theme

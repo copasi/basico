@@ -1,0 +1,14 @@
+[flake8]
+exclude =
+    ./benchmarks,
+    ./doc,
+    ./idea,
+    ./.vs,
+    ./.vscode,
+    ./out,
+    ./test,
+    ./examples,
+    ./build,
+    .git
+max-line-length = 160
+ignore = E226,E302,E41,F821,F403,F405,W291

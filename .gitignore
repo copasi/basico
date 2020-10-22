@@ -123,3 +123,4 @@ $RECYCLE.BIN/
 *.bak
 .vscode
 
+/docs/src

@@ -4,6 +4,6 @@ nbsphinx
 numpy
 pandoc
 python-copasi
--e git://github.com/copasi/basico.git
+-e git://github.com/copasi/basico.git#egg=basico
 sphinx>3
 sphinx_rtd_theme

@@ -1,4 +1,9 @@
-import urllib2
+try:
+    import urllib2
+    _use_urllib2 = True
+except ModuleNotFoundError:
+    import urllib
+    _use_urllib2 = False
 import json
 
 
@@ -6,7 +11,10 @@ END_POINT = 'http://jjj.bio.vu.nl/rest/'
 
 
 def download_from(url):
-    content = urllib2.urlopen(url).read()
+    if _use_urllib2:
+        content = urllib2.urlopen(url).read()
+    else:
+        content = urllib.request.urlopen(url).read().decode('utf-8')
     return content
 
 
@@ -20,7 +28,7 @@ def get_model_info(model_id):
 
 
 def get_sbml_model(model_id):
-    return download_from(END_POINT + 'models/' + model_id + '/sbml')
+    return download_json(END_POINT + 'models/' + model_id + '/sbml')[model_id]
 
 
 def get_mathematica_model(model_id):

@@ -4,9 +4,7 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 try:
     from PIL import Image
-except NameError:
-    pass
-except ModuleNotFoundError:
+except ImportError:
     pass
 
 

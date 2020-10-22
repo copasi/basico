@@ -1,3 +1,5 @@
+![Python package](https://github.com/copasi/basico/workflows/Python%20package/badge.svg) [![Documentation Status](https://readthedocs.org/projects/basico/badge/?version=latest)](https://basico.readthedocs.io/en/latest/?badge=latest) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=copasi_basico&metric=alert_status)](https://sonarcloud.io/dashboard?id=copasi_basico)
+     
 ## BasiCo
 This project hosts a python interface to COPASI.  
 
@@ -22,6 +24,8 @@ The following modules are available:
 * `task_timecourse`: a wrapper for running time course simulations
 * `array_tools`: utility for plotting and the like
 
+Documentation is work in progress, but you can find the start under: 
+<https://basico.readthedocs.org/>
 
 ### License
 

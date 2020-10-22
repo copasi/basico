@@ -38,7 +38,7 @@ def remove_template(**kwargs):
     assert (isinstance(dm, COPASI.CDataModel))
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
-    exp = re.compile('([-a-zA-Z_0-9 ]+)\\[(\d+)\\]')
+    exp = re.compile(r'([-a-zA-Z_0-9 ]+)\\[(\d+)\\]')
 
     compartments = model.getCompartments()
     assert (isinstance(compartments, COPASI.CompartmentVectorNS))
@@ -61,7 +61,7 @@ def remove_arrays(**kwargs):
     assert (isinstance(dm, COPASI.CDataModel))
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
-    exp = re.compile('([-a-zA-Z_0-9 ]+)\\[(\d+)\\]')
+    exp = re.compile(r'([-a-zA-Z_0-9 ]+)\\[(\d+)\\]')
 
     for name in names:
         if exp.match(name):

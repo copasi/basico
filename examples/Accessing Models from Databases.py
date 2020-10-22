@@ -6,6 +6,10 @@
 # In[1]:
 
 
+import sys
+if '..' not in sys.path:
+    sys.path.append('..')
+    
 import basico.biomodels as biomodels
 
 
@@ -62,13 +66,15 @@ sbml = biomodels.get_content_for_model(206)
 # In[8]:
 
 
-sbml
+print(sbml[:1000])  # just printing the first couple of lines
 
+
+# of course you can simply call `load_biomodel(206)` to load a biomodel into basico. 
 
 # ## JWS Online
 # we also provide access to models from JWS online.
 
-# In[10]:
+# In[9]:
 
 
 import basico.jws_online as jws
@@ -76,54 +82,54 @@ import basico.jws_online as jws
 
 # with `get_all_models` you would get a list of all the models in JWS online. To search for models, you have 2 options. One is to search for models by species. For example to search for all models involving 'atp'
 
-# In[15]:
+# In[10]:
 
 
 atp_models = jws.get_models_for_species('atp')
 for model in atp_models: 
-    print model['slug']
+    print(model['slug'])
 
 
-# or you cuold get the models for a specific reaction for example, all models involving 'pfk' would be:
+# or you could get the models for a specific reaction for example, all models involving 'pfk' would be:
 
-# In[14]:
+# In[11]:
 
 
 pfk_models = jws.get_models_for_reaction('pfk')
 for model in pfk_models:
-    print model['slug']
+    print(model['slug'])
 
 
 # for each of these ids, you can get the manuscript, to find out what the model is all about, or the sbml model itself
 
-# In[16]:
+# In[12]:
 
 
 manuscript = jws.get_manuscript('wolf')
 
 
-# In[18]:
+# In[13]:
 
 
-print (manuscript['title'])
+print(manuscript['title'])
 
 
-# In[19]:
+# In[14]:
 
 
-print (manuscript['abstract'])
+print(manuscript['abstract'])
 
 
-# In[20]:
+# In[15]:
 
 
 sbml = jws.get_sbml_model('wolf')
 
 
-# In[21]:
+# In[16]:
 
 
-sbml
+print(sbml[:1000])
 
 
 # In[ ]:

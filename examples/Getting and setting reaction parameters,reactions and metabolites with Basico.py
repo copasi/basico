@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+##!/usr/bin/env python
 # coding: utf-8
 
 # # Getting and setting reaction parameters and reactions with Basico
@@ -22,7 +22,7 @@ from basico import *
 # In[3]:
 
 
-biomod = load_model(r"C:\Users\LA\Documents\basico\basico\data\LM-test1.cps")
+biomod = load_example("LM-test1")
 
 
 # ## Getting/setting global quantities
@@ -116,7 +116,7 @@ set_species(new_name = 'E', name = 'Lilija')
 # In[13]:
 
 
-get_reactionParameters()
+get_reaction_parameters()
 
 
 #         Setting only the following is possible:
@@ -138,7 +138,7 @@ set_reaction_parameters(name='(R1).Ilse', value=123)
 # In[16]:
 
 
-get_reactionParameters()
+get_reaction_parameters()
 
 
 # In[17]:

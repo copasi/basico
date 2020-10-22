@@ -75,13 +75,11 @@ def new_model():
 def load_model_from_string(content):
     # type: (str) -> COPASI.CDataModel
     model = create_datamodel()
-    if '<COPASI ' in content:
-        if model.loadModelFromString(content, os.getcwd()):
-            return set_current_model(model)
+    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
+        return set_current_model(model)
 
-    if '<sbml ' in content:
-        if model.importSBMLFromString(content):
-            return set_current_model(model)
+    if '<sbml ' in content and model.importSBMLFromString(content):
+        return set_current_model(model)
 
     return remove_datamodel(model)
 

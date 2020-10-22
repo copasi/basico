@@ -30,10 +30,10 @@ def plot_linear_time_course(data, dm, prefix=None, metab_names=None, shading='go
         # prefix was specified so filter down to the compartments needed
         names = [c for c in names if c.startswith(prefix + "[")]
     time = data.index.values
-    if metab_names is not None:
-        metab_names = metab_names
-    else:
+
+    if metab_names is None:
         metab_names = sorted([col[:col.find('{')] for col in data.columns if '{' + names[0] + '}' in col])
+
     result = []
     for metab in metab_names:
         arr = [data[metab + '{' + c + '}'] for c in names]

@@ -71,10 +71,10 @@ def get_species(name=None, **kwargs):
         if 'name' in kwargs and not kwargs['name'] in metab_data['name']:
             continue
 
-        if name and type(name) is str and name not in name and name not in display_name:
+        if name and type(name) is str and name not in metab_data['name'] and name not in display_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and name not in name and display_name not in name:
+        if name and isinstance(name, collections.Iterable) and name not in metab_data['name'] and display_name not in name:
             continue
 
         if 'compartment' in kwargs and not kwargs['compartment'] in metab_data['compartment']:
@@ -362,7 +362,7 @@ def get_reaction_parameters(name=None, **kwargs):
             parameter = parameter_group.getParameter(fun_parameter.getObjectName())
             if parameter is None: 
                 continue
-            cn = parameter.getCN()
+
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
             mv = dm.getObject(current_param.getCN()) if cn else None

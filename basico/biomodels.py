@@ -1,7 +1,10 @@
 try:
     import urllib2
-except:
+    _use_urllib2 = True
+except ModuleNotFoundError:
     import urllib
+    _use_urllib2 = False
+
 import json
 
 
@@ -9,9 +12,9 @@ END_POINT = 'https://www.ebi.ac.uk/biomodels/'
 
 
 def download_from(url):
-    try:
+    if _use_urllib2:
         content = urllib2.urlopen(url).read()
-    except:
+    else:
         content = urllib.request.urlopen(url).read().decode('utf-8')
     return content
 
@@ -57,11 +60,11 @@ if __name__ == "__main__":
 
     # get info for a specific model
     info = get_model_info(12)
-    print (info['name'], info['files']['main'][0]['name'])
+    print(info['name'], info['files']['main'][0]['name'])
 
     # get all files for one model
     files = get_files_for_model(12)
-    print (files['main'][0]['name'])
+    print(files['main'][0]['name'])
 
     # get content of specific model
     sbml = get_content_for_model(12)
@@ -70,4 +73,4 @@ if __name__ == "__main__":
     # search for model
     models = search_for_model('repressilator')
     for model in models:
-        print (model['id'], model['name'], model['format'])
+        print(model['id'], model['name'], model['format'])

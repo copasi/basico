@@ -1,9 +1,12 @@
 import COPASI
 import os
-try: 
+try:
     import urllib2
-except:
+    _use_urllib2 = True
+except ModuleNotFoundError:
     import urllib
+    _use_urllib2 = False
+
 import traceback
 import logging
 import glob
@@ -35,7 +38,7 @@ def get_current_model():
     # type: () -> COPASI.CDataModel
     global __current_model
     if __current_model is None:
-        logging.warn('There is no model, creating a new one')
+        logging.warning('There is no model, creating a new one')
         new_model()
     return __current_model
 
@@ -44,7 +47,7 @@ def create_datamodel():
     # type: () -> COPASI.CDataModel
     try:
         data_model = COPASI.CRootContainer.addDatamodel()
-    except:
+    except NameError:
         traceback.print_exc()
         data_model = COPASI.CCopasiRootContainer.addDatamodel()
     return data_model
@@ -85,9 +88,9 @@ def load_model_from_string(content):
 
 def load_model_from_url(url):
     # type: (str) -> COPASI.CDataModel
-    try:
+    if _use_urllib2:
         content = urllib2.urlopen(url).read()
-    except:
+    else:
         data = urllib.request.urlopen(url).read()
         content = data.decode("utf8")
 
@@ -124,7 +127,7 @@ def load_biomodel(model_id):
     return load_model_from_string(biomodels.get_content_for_model(model_id))
 
 
-def get_examples(selector = ''):
+def get_examples(selector=''):
     # type: (str) -> [str]
     dir_name = os.path.dirname(__file__)
     types = ('*.xml', '*.cps')
@@ -189,22 +192,23 @@ def save_model(filename, **kwargs):
     exporters = {
         'sbml': lambda filename: model.exportSBML(filename, overwrite, sbmlLevel=level, sbmlVersion=version,
                                                   exportIncomplete=export_incomplete,
-                                                  export_copasi_miriam=export_copasi_miriam),
+                                                  exportCOPASIMIRIAM=export_copasi_miriam),
         'copasi': lambda filename: model.saveModel(filename, overwrite),
     }
 
     if file_type in exporters:
         try:
             if not exporters[file_type](filename):
-                logging.warning("Saving the file as {0} failed with: \n{1}".format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
-        except:
+                logging.warning("Saving the file as {0} failed with: \n{1}".
+                                format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
+        except COPASI.CCopasiException:
             logging.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
 
 
 def save_model_and_data(filename, **kwargs):
     try:
         from . import task_parameterestimation
-    except:
+    except ImportError:
         import task_parameterestimation
 
     model = kwargs.get('model', get_current_model())
@@ -235,18 +239,19 @@ def save_model_and_data(filename, **kwargs):
         problem = task.getProblem()
         assert (isinstance(problem, COPASI.CFitProblem))
 
-        exp_set = problem.getExperimentSet();
+        exp_set = problem.getExperimentSet()
         assert (isinstance(exp_set, COPASI.CExperimentSet))
 
         # copy experiment files
         for old_name in exp_set.getFileNames():
             new_name = os.path.join(data_dir, os.path.basename(old_name))
             if not os.path.exists(old_name):
-                logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot be used for Parameter Estimation")
+                logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
+                                " be used for Parameter Estimation")
                 continue
             shutil.copyfile(old_name, new_name)
-            old_names [old_name] = new_name
-            new_names [new_name] = old_name
+            old_names[old_name] = new_name
+            new_names[new_name] = old_name
             if delete_data_on_exit:
                 __temp_files.append(new_name)
 
@@ -275,12 +280,12 @@ def save_model_and_data(filename, **kwargs):
 
             experiment.setFileName(old_name)
 
-        try: 
+        try:
             with open(filename, 'w', encoding='utf-8') as f:
-                f.write(model_string)   
-        except:
+                f.write(model_string)
+        except TypeError:
             with open(filename, 'w') as f:
-                f.write(model_string)   
+                f.write(model_string)
     else:
         model.saveModel(filename, True)
 
@@ -318,5 +323,5 @@ def __cleanup():
         if os.path.exists(name):
             try:
                 os.removedirs(name)
-            except:
+            except OSError:
                 logging.warning("Couldn't remove temp dir: {0}".format(name))

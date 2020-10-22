@@ -4,7 +4,7 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 try:
     from PIL import Image
-except:
+except ModuleNotFoundError:
     pass
 
 
@@ -96,8 +96,6 @@ def plot_rectangular_time_course(data, dm, times=None, prefix=None, shading='gou
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     x_range, y_range, prefixes = _split_ranges(names)
-    num_x = len(x_range)
-    num_y = len(y_range)
     time = data.index.values
     if times is None:
         times = time
@@ -339,7 +337,7 @@ def delete_compartments(dm, selection):
             if c is None:
                 continue
             key = c.getKey()
-            c = None
+            del c
             mod.removeCompartment(key, True)
             mod.forceCompile()
 
@@ -430,7 +428,7 @@ def create_rectangular_array(dm, num_steps_x, num_steps_y, species=None, diffusi
    :param delete_template: if True, the original template model in the specified compartment will be deleted.
     :return: None
     """
-    _create_array(dm, num_steps_x,  num_steps_y, linear=False, species=species,
+    _create_array(dm, num_steps_x, num_steps_y, linear=False, species=species,
                   diffusion_coefficients=diffusion_coefficients,
                   compartment_names=compartment_names,
                   delete_template=delete_template)
@@ -465,7 +463,7 @@ if __name__ == "__main__":
                                   ['X{compartment[2,2]}', '10']])
 
     data = run_time_course(start_time=0, duration=500)
-    #animate_rectangular_time_course(data, dm, "Y", min=0, max=9, filename='bruss_test_500.mp4')
+    # animate_rectangular_time_course(data, dm, "Y", min=0, max=9, filename='bruss_test_500.mp4')
     animate_rectangular_time_course_as_image(data, dm, metabs=["X", "Y"], min_value=0, max_value=10)
     plt.show()
     # # open_copasi()

@@ -2,8 +2,8 @@ import pandas
 import COPASI
 
 try:
-    from . import model_io, open_copasi
-except:
+    from . import model_io
+except ValueError:
     import model_io
 
 
@@ -52,7 +52,7 @@ def num_validations_files(**kwargs):
 
 def get_data_from_experiment(experiment):
     # type: (COPASI.CExperiment) -> pandas.DataFrame
-    num_lines = sum(1 for l in open(experiment.getFileNameOnly()))
+    num_lines = sum(1 for line in open(experiment.getFileNameOnly()))
     header_row = experiment.getHeaderRow()
     skip_idx = [x for x in range(1, num_lines) if
                 not (experiment.getFirstRow() <= x < experiment.getLastRow())]
@@ -185,11 +185,11 @@ def run_parameter_estimation(**kwargs):
     assert (isinstance(problem, COPASI.CFitProblem))
 
     old_create_parameter_sets = problem.getCreateParameterSets()
-    old_calculate_statistics = problem.getCalculateStatistics()
-    old_randomize_start_values = problem.getRandomizeStartValues()
+    # old_calculate_statistics = problem.getCalculateStatistics()
+    # old_randomize_start_values = problem.getRandomizeStartValues()
 
     problem.setCreateParameterSets(True)
-    
+
     if 'method' in kwargs:
         method = kwargs['method']
         if isinstance(method, int):

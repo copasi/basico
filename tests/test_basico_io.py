@@ -1,6 +1,4 @@
 import unittest
-import numpy
-import pandas
 import basico
 import COPASI
 

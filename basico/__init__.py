@@ -12,9 +12,10 @@ settings = {}
 
 
 def run_test():
-    # load_biomodel_from_caltech(10)
+    # load_biomodel(10)
     load_example('LM')
     data = get_experiment_data_from_model()
+    data.plot()
     df = run_time_course(4000, automatic=True)
     df.plot()
     return df

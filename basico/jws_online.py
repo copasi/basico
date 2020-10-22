@@ -57,11 +57,11 @@ if __name__ == "__main__":
 
     # get manuscript information
     manuscript = get_manuscript('teusink')
-    print (manuscript['title'], manuscript['abstract'], manuscript['url'])
+    print(manuscript['title'], manuscript['abstract'], manuscript['url'])
 
     # get info for a specific model
     info = get_model_info('teusink')
-    print (info['name'], info['status'])
+    print(info['name'], info['status'])
 
     # get content of specific model
     sbml = get_sbml_model('teusink')

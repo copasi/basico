@@ -115,8 +115,11 @@ def get_events(name=None, **kwargs):
             target = ea.getTargetObject()
             if target is None:
                 continue
-            assignments.append({'target': target.getObjectDisplayName(), 
-                    'expression': _replace_cns_with_names( ea.getExpression(), model=dm) })
+            assignments.append(
+                {
+                    'target': target.getObjectDisplayName(),
+                    'expression': _replace_cns_with_names(ea.getExpression(), model=dm)
+                })
 
         event_data = {
             'name': event.getObjectName(),
@@ -184,7 +187,7 @@ def _replace_cns_with_names(expression, **kwargs):
             cn = word[1:] 
             i = i + 1
             while not words[i].endswith('>'):
-                cn +=' ' + words[i]
+                cn += ' ' + words[i]
                 i = i + 1
             cn += ' ' + words[i][:-1]
             i = i + 1
@@ -192,7 +195,7 @@ def _replace_cns_with_names(expression, **kwargs):
             word = ''
         else: 
             cn = None
-        
+
         if cn is not None: 
             obj = dm.getObject(COPASI.CCommonName(cn))
             if obj is not None:
@@ -200,6 +203,7 @@ def _replace_cns_with_names(expression, **kwargs):
         resulting_expression += ' ' + word
 
     return resulting_expression.strip()
+
 
 def add_event(name, trigger, assignments, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
@@ -410,7 +414,7 @@ def get_reactions(name=None, **kwargs):
 
     for i in range(num_reactions):
         reaction = reactions.get(i)
-        assert (isinstance(reaction,COPASI.CReaction))
+        assert (isinstance(reaction, COPASI.CReaction))
 
         reaction_data = {
             'scheme': reaction.getReactionScheme(),

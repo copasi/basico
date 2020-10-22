@@ -34,5 +34,4 @@ setup(name='Basico',
       ],
       keywords='copasi sbml systems biology',
       test_suite='setup.basico_testsuite'
-)
-
+      )

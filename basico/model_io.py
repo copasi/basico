@@ -172,7 +172,7 @@ def print_model(model=None):
     # type: (COPASI.CDataModel) -> None
     if model is None:
         model = get_current_model()
-    print (overview(model))
+    print(overview(model))
 
 
 def save_model(filename, **kwargs):
@@ -190,7 +190,7 @@ def save_model(filename, **kwargs):
         'sbml': lambda filename: model.exportSBML(filename, overwrite, sbmlLevel=level, sbmlVersion=version,
                                                   exportIncomplete=export_incomplete,
                                                   export_copasi_miriam=export_copasi_miriam),
-        'copasi': lambda filename: model.saveModel(filename, overwrite ),
+        'copasi': lambda filename: model.saveModel(filename, overwrite),
     }
 
     if file_type in exporters:

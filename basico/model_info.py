@@ -356,6 +356,8 @@ def get_reaction_parameters(name=None, **kwargs):
             if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
                 continue
             parameter = parameter_group.getParameter(fun_parameter.getObjectName())
+            if parameter is None: 
+                continue
             cn = parameter.getCN()
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
@@ -519,6 +521,8 @@ def set_reaction_parameters(name=None, **kwargs):
             if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
                 continue
             param = parameter_group.getParameter(fun_parameter.getObjectName())
+            if param is None: 
+                continue
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
             mv = dm.getObject(current_param.getCN()) if cn else None

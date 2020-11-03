@@ -9,17 +9,3 @@ from .array_tools import *
 from .compartment_array_tools import *
 
 settings = {}
-
-
-def run_test():
-    # load_biomodel(10)
-    load_example('LM')
-    data = get_experiment_data_from_model()
-    data.plot()
-    df = run_time_course(4000, automatic=True)
-    df.plot()
-    return df
-
-
-if __name__ == "__main__":
-    run_test()

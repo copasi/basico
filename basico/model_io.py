@@ -67,7 +67,6 @@ def remove_datamodel(model):
 
 
 def new_model(**kwargs):
-    # type: () -> COPASI.CDataModel
     dm = create_datamodel()
     dm.newModel()
 
@@ -167,7 +166,7 @@ def load_example(selector):
 
 
 def overview(model=None):
-    # type: (COPASI.CDataModel) -> Str
+    # type: (COPASI.CDataModel) -> str
     if model is None:
         model = get_current_model()
 

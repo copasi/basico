@@ -33,7 +33,6 @@ def __status_to_string(status):
 
 
 def get_species(name=None, **kwargs):
-    # type: () -> pandas.DataFrame
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -98,7 +97,6 @@ def get_species(name=None, **kwargs):
 
 
 def get_events(name=None, **kwargs):
-    # type: () -> pandas.DataFrame
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -115,8 +113,8 @@ def get_events(name=None, **kwargs):
         assert (isinstance(event, COPASI.CEvent))
 
         assignments = []
-        for i in range(event.getNumAssignments()):
-            ea = event.getAssignment(i)
+        for j in range(event.getNumAssignments()):
+            ea = event.getAssignment(j)
             assert (isinstance(ea, COPASI.CEventAssignment))
             target = ea.getTargetObject()
             if target is None:
@@ -178,7 +176,6 @@ def _replace_cns_with_names(expression, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
     resulting_expression = ''
-    cn = None
     words = expression.split()
     skip = -1
     for i in range(len(words)):
@@ -284,7 +281,6 @@ def add_reaction(name, scheme, **kwargs):
 
 
 def get_compartments(name=None, **kwargs):
-    # type: () -> pandas.DataFrame
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -335,7 +331,6 @@ def get_compartments(name=None, **kwargs):
 
 
 def get_parameters(name=None, **kwargs):
-    # type: () -> pandas.DataFrame
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -493,7 +488,7 @@ def get_reactions(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_time_unit(name=None, **kwargs):
+def get_time_unit(**kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -653,7 +648,7 @@ def set_species(name=None, **kwargs):
     metabs = model.getMetabolitesX()
     num_metabs = metabs.size()
 
-    set = COPASI.ObjectStdVector()
+    change_set = COPASI.ObjectStdVector()
 
     for i in range(num_metabs):
         metab = metabs.get(i)
@@ -679,11 +674,11 @@ def set_species(name=None, **kwargs):
 
         if 'initial_concentration' in kwargs:
             metab.setInitialConcentration(kwargs['initial_concentration'])
-            set.append(metab.getInitialConcentrationReference())
+            change_set.append(metab.getInitialConcentrationReference())
 
         if 'initial_particle_number' in kwargs:
             metab.setInitialValue(kwargs['initial_particle_number']),
-            set.append(metab.getInitialValueReference())
+            change_set.append(metab.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
             metab.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
@@ -691,7 +686,7 @@ def set_species(name=None, **kwargs):
         if 'expression' in kwargs:
             metab.setExpression(_replace_names_with_cns(kwargs['expression']))
 
-    model.updateInitialValues(set)
+    model.updateInitialValues(change_set)
 
 
 def set_time_unit(**kwargs):

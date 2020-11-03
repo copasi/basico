@@ -65,11 +65,30 @@ def remove_datamodel(model):
     return None
 
 
-def new_model():
+def new_model(**kwargs):
     # type: () -> COPASI.CDataModel
-    model = create_datamodel()
-    model.newModel()
-    return set_current_model(model)
+    dm = create_datamodel()
+    dm.newModel()
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if 'name' in kwargs:
+        model.setObjectName(kwargs['name'])
+
+    if 'quantity_unit' in kwargs:
+        model.setQuantityUnit(kwargs['quantity_unit'])
+
+    if 'area_unit' in kwargs:
+        model.setAreaUnit(kwargs['area_unit'])
+
+    if 'length_unit' in kwargs:
+        model.setLengthUnit(kwargs['length_unit'])
+
+    if 'volume_unit' in kwargs:
+        model.setVolumeUnit(kwargs['volume_unit'])
+
+    return set_current_model(dm)
 
 
 def load_model_from_string(content):

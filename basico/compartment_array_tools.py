@@ -2,10 +2,15 @@ from basico import *
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+
 try:
     from PIL import Image
 except ImportError:
     pass
+
+DEFAULT_Y_LABEL = 'volume y'
+DEFAULT_X_LABEL = 'volume x'
+TITLE_FORMAT_STRING = 'concentrations of "{0}" for each volume at time {1}'
 
 
 def plot_linear_time_course(data, dm, prefix=None, metab_names=None, shading='gouraud',
@@ -40,8 +45,7 @@ def plot_linear_time_course(data, dm, prefix=None, metab_names=None, shading='go
         arr = [data[metab + '{' + c + '}'] for c in names]
         fig, ax = plt.subplots()
         mesh = ax.pcolormesh(time, np.arange(len(names)), arr, shading=shading)
-        vmin = np.min(arr) if np.isnan(min_range) else min_range
-        vmax = np.max(arr) if np.isnan(max_range) else max_range
+        vmin, vmax = _get_ranges(arr, min_range, max_range)
         mesh.set_clim(vmin=vmin, vmax=vmax)
         fig.colorbar(mesh, ax=ax)
         ax.set_xlabel('time')
@@ -119,13 +123,12 @@ def plot_rectangular_time_course(data, dm, times=None, prefix=None, shading='gou
             arr = _extract_metabolite_data(cur, metab, prefix, x_range, y_range)
             fig, ax = plt.subplots()
             mesh = ax.pcolormesh(x_range, y_range, arr, shading=shading)
-            vmin = np.min(arr) if np.isnan(min_range) else min_range
-            vmax = np.max(arr) if np.isnan(max_range) else max_range
+            vmin, vmax = _get_ranges(arr, min_range, max_range)
             mesh.set_clim(vmin=vmin, vmax=vmax)
             fig.colorbar(mesh, ax=ax)
-            ax.set_xlabel('volume x')
-            ax.set_ylabel('volume y')
-            ax.set_title('concentrations of "{0}" for each volume at time {1}'.format(metab, t))
+            ax.set_xlabel(DEFAULT_X_LABEL)
+            ax.set_ylabel(DEFAULT_Y_LABEL)
+            ax.set_title(TITLE_FORMAT_STRING.format(metab, t))
             result.append((fig, ax))
 
     return result
@@ -145,7 +148,7 @@ def _extract_metabolite_data(cur, metab, prefix, x_range, y_range):
 
 
 def animate_rectangular_time_course_as_image(data, dm, metabs=None, prefix=None,
-                                             min_value=np.nan, max_value=np.nan, filename=None):
+                                             min_range=np.nan, max_range=np.nan, filename=None):
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     x_range, y_range, prefixes = _split_ranges(names)
@@ -160,39 +163,37 @@ def animate_rectangular_time_course_as_image(data, dm, metabs=None, prefix=None,
 
     metab_data = []
 
-    vmax = -np.inf if np.isnan(max_value) else max_value
-    vmin = np.inf if np.isnan(min_value) else min_value
+    vmax = -np.inf if np.isnan(max_range) else max_range
+    vmin = np.inf if np.isnan(min_range) else min_range
 
     cur = data.iloc[0]
     for i in range(len(metabs)):
         metab = metabs[i]
         arr = _extract_metabolite_data(cur, metab, prefix, x_range, y_range)
-        vmax = max(vmax, np.max(arr)) if np.isnan(max_value) else max_value
-        vmin = min(vmin, np.min(arr)) if np.isnan(min_value) else min_value
+        vmin, vmax = _get_ranges(arr, min_range, max_range, vmin, vmax)
         metab_data.append(arr)
 
     img = _create_image(metab_data, vmax)
 
     fig, ax = plt.subplots()
     imgplot = ax.imshow(img)
-    ax.set_xlabel('volume x')
-    ax.set_ylabel('volume y')
-    ax.set_title('concentrations of "{0}" for each volume at time {1}'.format(metabs, time[0]))
+    ax.set_xlabel(DEFAULT_X_LABEL)
+    ax.set_ylabel(DEFAULT_Y_LABEL)
+    ax.set_title(TITLE_FORMAT_STRING.format(metabs, time[0]))
 
     def _plot_ith_set(time_index):
         cur = data.iloc[time_index]
-        vmax = -np.inf if np.isnan(max_value) else max_value
-        vmin = np.inf if np.isnan(min_value) else min_value
+        vmax = -np.inf if np.isnan(max_range) else max_range
+        vmin = np.inf if np.isnan(min_range) else min_range
         metab_data = []
         for i in range(len(metabs)):
             metab = metabs[i]
             arr = _extract_metabolite_data(cur, metab, prefix, x_range, y_range)
-            vmax = max(vmax, np.max(arr)) if np.isnan(max_value) else max_value
-            vmin = min(vmin, np.min(arr)) if np.isnan(min_value) else min_value
+            vmin, vmax = _get_ranges(arr, min_range, max_range, vmin, vmax)
             metab_data.append(arr)
 
         imgplot.set_data(_create_image(metab_data, vmax))
-        ax.set_title('concentrations of "{0}" for each volume at time {1}'.format(metabs, time[time_index]))
+        ax.set_title(TITLE_FORMAT_STRING.format(metabs, time[time_index]))
         return [imgplot]
 
     anim = FuncAnimation(
@@ -213,6 +214,12 @@ def _create_image(metab_data, vmax):
                 color[i] = int(((metab_data[i][x, y] / vmax) * 255))
             img.putpixel((x, y), tuple(color))
     return img
+
+
+def _get_ranges(arr, min_range=np.nan, max_range=np.nan, vmin=np.inf, vmax=-np.inf):
+    vmin = min(vmin, np.min(arr)) if np.isnan(min_range) else min_range
+    vmax = max(vmax, np.max(arr)) if np.isnan(max_range) else max_range
+    return vmin, vmax
 
 
 def animate_rectangular_time_course(data, dm, metab=None, prefix=None, shading='gouraud',
@@ -251,21 +258,19 @@ def animate_rectangular_time_course(data, dm, metab=None, prefix=None, shading='
     fig, ax = plt.subplots()
     arr = _extract_metabolite_data(data.iloc[0], metab, prefix, x_range, y_range)
     mesh = ax.pcolormesh(x_range, y_range, arr, shading=shading)
-    vmin = np.min(arr) if np.isnan(min_range) else min_range
-    vmax = np.max(arr) if np.isnan(max_range) else max_range
+    vmin, vmax = _get_ranges(arr, min_range, max_range)
     mesh.set_clim(vmin=vmin, vmax=vmax)
     fig.colorbar(mesh, ax=ax)
-    ax.set_xlabel('volume x')
-    ax.set_ylabel('volume y')
-    ax.set_title('concentrations of "{0}" for each volume at time {1}'.format(metab, 0))
+    ax.set_xlabel(DEFAULT_X_LABEL)
+    ax.set_ylabel(DEFAULT_Y_LABEL)
+    ax.set_title(TITLE_FORMAT_STRING.format(metab, 0))
 
     def _plot_ith_set(i):
         arr = _extract_metabolite_data(data.iloc[i], metab, prefix, x_range, y_range)
-        vmax = np.max(arr) if np.isnan(max_range) else max_range
-        vmin = np.min(arr) if np.isnan(min_range) else min_range
+        vmin, vmax = _get_ranges(arr, min_range, max_range)
         mesh.set_array(arr.ravel())
         mesh.set_clim(vmin=vmin, vmax=vmax)
-        ax.set_title('concentrations of "{0}" for each volume at time {1}'.format(metab, time[i]))
+        ax.set_title(TITLE_FORMAT_STRING.format(metab, time[i]))
 
     anim = FuncAnimation(
         fig, _plot_ith_set, interval=100, frames=len(time) - 1)
@@ -466,7 +471,7 @@ if __name__ == "__main__":
 
     data = run_time_course(start_time=0, duration=500)
     # animate_rectangular_time_course(data, dm, "Y", min=0, max=9, filename='bruss_test_500.mp4')
-    animate_rectangular_time_course_as_image(data, dm, metabs=["X", "Y"], min_value=0, max_value=10)
+    animate_rectangular_time_course_as_image(data, dm, metabs=["X", "Y"], min_range=0, max_range=10)
     plt.show()
     # # open_copasi()
     # #

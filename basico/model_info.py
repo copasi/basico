@@ -1,7 +1,11 @@
 from . import model_io
 import pandas
 import COPASI
-import collections
+
+try:
+    from collections.abc import Iterable  # noqa
+except ImportError:
+    from collections import Iterable  # noqa
 
 
 def __status_to_int(status):
@@ -36,6 +40,8 @@ def get_species(name=None, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
+    model.compileIfNecessary()
+
     metabs = model.getMetabolitesX()
     assert(isinstance(metabs, COPASI.MetabVector))
 
@@ -57,8 +63,8 @@ def get_species(name=None, **kwargs):
             'unit': unit,
             'initial_concentration': metab.getInitialConcentration(),
             'initial_particle_number': metab.getInitialValue(),
-            'initial_expression': metab.getInitialExpression(),
-            'expression': metab.getExpression(),
+            'initial_expression': _replace_cns_with_names(metab.getInitialExpression()),
+            'expression': _replace_cns_with_names(metab.getExpression()),
             'concentration': metab.getConcentration(),
             'particle_number': metab.getValue(),
             'particle_number_rate': metab.getRate(),
@@ -74,7 +80,7 @@ def get_species(name=None, **kwargs):
         if name and type(name) is str and name not in metab_data['name'] and name not in display_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and name not in metab_data['name'] and display_name not in name:
+        if name and isinstance(name, Iterable) and name not in metab_data['name'] and display_name not in name:
             continue
 
         if 'compartment' in kwargs and not kwargs['compartment'] in metab_data['compartment']:
@@ -167,6 +173,7 @@ def _replace_names_with_cns(expression, **kwargs):
 
     return resulting_expression.strip()
 
+
 def _replace_cns_with_names(expression, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -205,6 +212,36 @@ def _replace_cns_with_names(expression, **kwargs):
     return resulting_expression.strip()
 
 
+def add_compartment(name, initial_size=1.0, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    compartment = model.createCompartment(name, initial_size)
+
+    return compartment
+
+
+def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    # create compartment if it does not yet exist
+    if not compartment_name:
+        if model.getNumCompartments() == 0:
+            model.createCompartment('compartment', 1)
+        compartment_name = model.getCompartment(0).getObjectName()
+
+    species = model.createMetabolite(name, compartment_name, initial_concentration)
+
+    return species
+
+
 def add_event(name, trigger, assignments, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -228,6 +265,22 @@ def add_event(name, trigger, assignments, **kwargs):
         ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
 
     model.compileIfNecessary()
+    return event
+
+
+def add_reaction(name, scheme, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reaction = model.createReaction(name)
+    assert (isinstance(reaction, COPASI.CReaction))
+
+    reaction.setReactionScheme(scheme)
+    
+    return reaction
 
 
 def get_compartments(name=None, **kwargs):
@@ -257,8 +310,8 @@ def get_compartments(name=None, **kwargs):
             'type': __status_to_string(compartment.getStatus()),
             'unit': unit,
             'initial_size': compartment.getInitialValue(),
-            'initial_expression': compartment.getInitialExpression(),
-            'expression': compartment.getExpression(),
+            'initial_expression': _replace_cns_with_names(compartment.getInitialExpression()),
+            'expression': _replace_cns_with_names(compartment.getExpression()),
             'size': compartment.getValue(),
             'rate': compartment.getRate(),
             'key': compartment.getKey(),
@@ -308,8 +361,8 @@ def get_parameters(name=None, **kwargs):
             'type': __status_to_string(param.getStatus()),
             'unit': unit,
             'initial_value': param.getInitialValue(),
-            'initial_expression': param.getInitialExpression(),
-            'expression': param.getExpression(),
+            'initial_expression': _replace_cns_with_names(param.getInitialExpression()),
+            'expression': _replace_cns_with_names(param.getExpression()),
             'value': param.getValue(),
             'rate': param.getRate(),
             'key': param.getKey(),
@@ -475,7 +528,7 @@ def set_parameters(name=None, **kwargs):
         if name and type(name) is str and name not in current_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and current_name not in name:
+        if name and isinstance(name, Iterable) and current_name not in name:
             continue
 
         if 'unit' in kwargs:
@@ -485,10 +538,10 @@ def set_parameters(name=None, **kwargs):
             param.setInitialValue(kwargs['initial_value'])
 
         if 'initial_expression' in kwargs:
-            param.setInitialExpression(kwargs['initial_expression'])
+            param.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
 
         if 'expression' in kwargs:
-            param.setExpression(kwargs['expression'])
+            param.setExpression(_replace_names_with_cns(kwargs['expression']))
 
         if 'status' in kwargs:
             param.setStatus(__status_to_int(kwargs['status']))
@@ -539,7 +592,7 @@ def set_reaction_parameters(name=None, **kwargs):
             if name and type(name) is str and name not in current_name:
                 continue
 
-            if name and isinstance(name, collections.Iterable) and current_name not in name:
+            if name and isinstance(name, Iterable) and current_name not in name:
                 continue
 
             if 'new_name' in kwargs:
@@ -580,7 +633,7 @@ def set_reaction(name=None, **kwargs):
         if name and type(name) is str and name not in current_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and current_name not in name:
+        if name and isinstance(name, Iterable) and current_name not in name:
             continue
 
         if 'new_name' in kwargs:
@@ -615,7 +668,7 @@ def set_species(name=None, **kwargs):
         if name and type(name) is str and name not in current_name and name not in display_name:
             continue
 
-        if name and isinstance(name, collections.Iterable) and current_name not in name and display_name not in name:
+        if name and isinstance(name, Iterable) and current_name not in name and display_name not in name:
             continue
 
         if 'new_name' in kwargs:
@@ -633,10 +686,10 @@ def set_species(name=None, **kwargs):
             set.append(metab.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
-            metab.setInitialExpression(kwargs['initial_expression'])
+            metab.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
 
         if 'expression' in kwargs:
-            metab.setExpression(kwargs['expression'])
+            metab.setExpression(_replace_names_with_cns(kwargs['expression']))
 
     model.updateInitialValues(set)
 

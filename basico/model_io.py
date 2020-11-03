@@ -5,6 +5,7 @@ try:
     _use_urllib2 = True
 except ModuleNotFoundError:
     import urllib
+    import urllib.request
     _use_urllib2 = False
 
 import traceback

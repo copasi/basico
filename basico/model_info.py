@@ -604,7 +604,6 @@ def set_reaction_parameters(name=None, **kwargs):
         if changed:
             reaction.compile()
             model.setCompileFlag(True)
-            pass
 
 
 def set_reaction(name=None, **kwargs):

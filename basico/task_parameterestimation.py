@@ -1,5 +1,3 @@
-from builtins import ValueError
-
 import pandas
 import COPASI
 import matplotlib.pyplot as plt
@@ -13,6 +11,11 @@ try:
     from . import model_io
 except ValueError:
     import model_io
+
+try:
+    from builtins import ValueError
+except ImportError:
+    pass
 
 
 def num_experiment_files(**kwargs):

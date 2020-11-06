@@ -180,29 +180,33 @@ def _split_by_cn(expression):
     while pos < num_chars:
         has_more = pos + 4 < num_chars
         cur_char = expression[pos]
-        if cur_char == '<':
-            if has_more:
-                next_3 = expression[pos:pos+4]
-                if next_3.startswith('<CN='):
-                    end = expression.find('>', pos)
-                    cn = expression[pos+1: end]
-                    result.append(cn)
-                    pos = end + 1
-                    current = ''
-                    continue
+
+        if cur_char == '<' and has_more:
+
+            next_3 = expression[pos:pos+4]
+
+            if next_3.startswith('<CN='):
+                end = expression.find('>', pos)
+                cn = expression[pos+1: end]
+                result.append(cn)
+                pos = end + 1
+                current = ''
+                continue
 
         if cur_char in '/*+-()^%<>!=&|':
+
             if current:
                 result.append(current)
                 current = ''
+
             if pos + 1 < num_chars and expression[pos + 1] == '=':
                 cur_char += '='
                 pos += 1
             result.append(cur_char)
-        elif cur_char == ' ':
-            pass
-        else:
+
+        elif cur_char != ' ':
             current += cur_char
+
         pos += 1
 
     if current:
@@ -381,8 +385,6 @@ def get_parameters(name=None, **kwargs):
 
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
-
-    model_name = model.getObjectName()
 
     parameters = model.getModelValues()
     assert(isinstance(parameters, COPASI.ModelValueVectorN))

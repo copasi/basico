@@ -19,8 +19,9 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertEqual(set_2.shape, (100, 3))
 
     def test_get_plotting_data(self):
-        gif = basico.plot_per_dependent_variable()
-        self.assertTrue(gif is not None)
+        exp, sim = basico.get_simulation_results()
+        self.assertTrue(any(exp))
+        self.assertTrue(any(sim))
 
 
 if __name__ == '__main__':

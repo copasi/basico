@@ -348,12 +348,7 @@ def run_parameter_estimation(**kwargs):
     return get_parameters_solution(model)
 
 
-def plot_per_dependent_variable(**kwargs):
-    """
-    This function creates a figure that plots all experimental data for a given dependent variable
-
-    :return: figure
-    """
+def get_simulation_results(**kwargs):
     import basico
     dm = kwargs.get('model', model_io.get_current_model())
 
@@ -374,9 +369,6 @@ def plot_per_dependent_variable(**kwargs):
     solution = run_parameter_estimation(method='Statistics')
 
     model = dm.getModel()
-
-    fig, ax = plt.subplots()
-    cycler = plt.cycler("color", plt.cm.tab20c.colors)()
 
     exp_data = []
     sim_data = []
@@ -420,16 +412,58 @@ def plot_per_dependent_variable(**kwargs):
 
         duration = df.iloc[-1].Time
         data = basico.run_time_course(duration=duration)
-        num_dependent = dependent.shape[0]
-        for j in range(num_dependent):
-            nextval = next(cycler)['color']
-            data.reset_index().plot(x='Time', y=dependent.iloc[j].mapping, label="Fitted", ax=ax, color=nextval)
-            df.plot.scatter(x='Time', y=dependent.iloc[j].mapping, ax=ax, color=nextval, label='Measured')
 
         exp_data.append(df)
         sim_data.append(data)
 
     return exp_data, sim_data
+
+
+def plot_per_dependent_variable(**kwargs):
+    """
+    This function creates a figure that plots all experimental data for a given dependent variable
+
+    :return: figure
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getExperimentSet()
+    assert (isinstance(experiments, COPASI.CExperimentSet))
+
+    result = []
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    exp_data, sim_data = get_simulation_results(**kwargs)
+
+    fig, ax = plt.subplots()
+    cycler = plt.cycler("color", plt.cm.tab20c.colors)()
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        exp_name = experiment.getObjectName()
+        df = get_data_from_experiment(experiment, rename_headers=True)
+        mapping = get_experiment_mapping(experiment)
+
+        # set independent values for that experiment
+        dependent = mapping[mapping.type == 'dependent']
+
+        num_dependent = dependent.shape[0]
+        for j in range(num_dependent):
+            nextval = next(cycler)['color']
+            sim_data[i].reset_index().plot(x='Time', y=dependent.iloc[j].mapping,
+                                           label="{0} Fit".format(exp_name), ax=ax, color=nextval)
+            exp_data[i].plot.scatter(x='Time', y=dependent.iloc[j].mapping, ax=ax, color=nextval,
+                                     label='{0} Measured'.format(exp_name))
+
+    return fig, ax
 
 
 if __name__ == "__main__":

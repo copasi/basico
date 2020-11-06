@@ -9,6 +9,16 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'Kinetics of a  Michaelian enzyme measured spectrophotometrically')
 
+    def test_get_parameters(self):
+        params = basico.get_parameters()
+        signal = params.loc['signal']
+        expression = signal.expression
+        self.assertTrue(expression != '')
+        conversion = basico.model_info._replace_names_with_cns(expression)
+        self.assertTrue(conversion != '')
+        expression = basico.model_info._replace_cns_with_names(conversion)
+        self.assertTrue(expression != '')
+
     def test_get_data(self):
         data = basico.get_experiment_data_from_model()
         self.assertEqual(len(data), 5)

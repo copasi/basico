@@ -25,12 +25,18 @@ class TestBasicoIO(unittest.TestCase):
         self.assertTrue(result == 1)
 
     def test_expressions(self):
-        result = basico.model_info._split_by_cn('<CN=Root,Model=model0,Vector=Compartments[compartment],Vector=Metabolites[P],Reference=Concentration>*<CN=Root,Model=model0,Vector=Values[epsilon],Reference=Value>+<CN=Root,Model=model0,Vector=Values[offset],Reference=Value>')
+        result = basico.model_info._split_by_cn('<CN=Root,Model=model0,Vector=Compartments[compartment],'
+                                                'Vector=Metabolites[P],Reference=Concentration>*<CN=Root,Model='
+                                                'model0,Vector=Values[epsilon],Reference=Value>+<CN=Root,Model='
+                                                'model0,Vector=Values[offset],Reference=Value>')
         self.assertTrue(len(result) == 5)
-        self.assertTrue(result[0] == 'CN=Root,Model=model0,Vector=Compartments[compartment],Vector=Metabolites[P],Reference=Concentration')
+        self.assertTrue(result[0] == 'CN=Root,Model=model0,Vector=Compartments[compartment],Vector='
+                                     'Metabolites[P],Reference=Concentration')
         self.assertTrue(result[1] == '*')
 
         result = basico.model_info._split_by_cn('sin(A + B + C)')
+        self.assertTrue(len(result) == 8)
+
 
 if __name__ == "__main__":
     unittest.main()

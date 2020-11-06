@@ -134,7 +134,6 @@ def get_experiment_mapping(experiment, **kwargs):
 
 
 def get_data_from_experiment(experiment, **kwargs):
-    # type: (COPASI.CExperiment) -> pandas.DataFrame
     experiment = get_experiment(experiment, **kwargs)
     num_lines = sum(1 for line in open(experiment.getFileNameOnly()))
     header_row = experiment.getHeaderRow()
@@ -146,9 +145,9 @@ def get_data_from_experiment(experiment, **kwargs):
     else:
         rename_headers = True
 
+    drop_cols = []
+    headers = {}
     if rename_headers:
-        headers = {}
-        drop_cols = []
         obj_map = experiment.getObjectMap()
         count = 0
         for i in range(obj_map.getLastColumn()+1):
@@ -157,10 +156,10 @@ def get_data_from_experiment(experiment, **kwargs):
             if role == COPASI.CExperiment.time:
                 headers[count] = 'Time'
                 count += 1
-                continue
+
             elif role == COPASI.CExperiment.ignore:
                 drop_cols.append(i)
-                continue
+
             else:
                 cn = obj_map.getObjectCN(i)
                 obj = experiment.getObjectDataModel().getObject(COPASI.CCommonName(cn))
@@ -169,7 +168,6 @@ def get_data_from_experiment(experiment, **kwargs):
                     count += 1
                 else:
                     drop_cols.append(i)
-                continue
 
     if header_row > num_lines:
         df = pandas.read_csv(experiment.getFileNameOnly(),
@@ -382,7 +380,6 @@ def get_simulation_results(**kwargs):
 
         # set independent values for that experiment
         independent = mapping[mapping.type == 'independent']
-        dependent = mapping[mapping.type == 'dependent']
         num_independent = independent.shape[0]
         for j in range(num_independent):
             name = independent.iloc[j].mapping
@@ -449,7 +446,6 @@ def plot_per_dependent_variable(**kwargs):
     for i in range(num_experiments):
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
-        df = get_data_from_experiment(experiment, rename_headers=True)
         mapping = get_experiment_mapping(experiment)
 
         # set independent values for that experiment

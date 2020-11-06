@@ -187,9 +187,11 @@ def _split_by_cn(expression):
                     end = expression.find('>', pos)
                     cn = expression[pos+1: end]
                     result.append(cn)
-                    pos = end
+                    pos = end + 1
                     current = ''
-        elif cur_char in '/*+-()^%':
+                    continue
+
+        if cur_char in '/*+-()^%<>':
             if current:
                 result.append(current)
                 current = ''
@@ -199,6 +201,10 @@ def _split_by_cn(expression):
         else:
             current += cur_char
         pos += 1
+
+    if current:
+        result.append(current)
+        
     return result
 
 

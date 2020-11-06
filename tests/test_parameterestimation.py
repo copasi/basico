@@ -20,8 +20,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
 
     def test_get_plotting_data(self):
         exp, sim = basico.get_simulation_results()
-        self.assertTrue(any(exp))
-        self.assertTrue(any(sim))
+        self.assertTrue(len(exp) == len(sim))
 
 
 if __name__ == '__main__':

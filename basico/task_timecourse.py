@@ -26,6 +26,21 @@ def __build_result_from_ts(time_series):
     return df
 
 
+def __method_name_to_type(method_name):
+    methods = {
+        'deterministic': COPASI.CTaskEnum.Method_deterministic,
+        'hybridode45': COPASI.CTaskEnum.Method_hybridODE45,
+        'hybridlsoda': COPASI.CTaskEnum.Method_hybridLSODA,
+        'adaptivesa': COPASI.CTaskEnum.Method_adaptiveSA,
+        'tauleap': COPASI.CTaskEnum.Method_tauLeap,
+        'stochastic': COPASI.CTaskEnum.Method_stochastic,
+        'directMethod': COPASI.CTaskEnum.Method_directMethod,
+        'radau5': COPASI.CTaskEnum.Method_RADAU5,
+        'sde': COPASI.CTaskEnum.Method_stochasticRunkeKuttaRI5,
+    }
+    return methods.get(method_name.lower(), COPASI.CTaskEnum.Method_deterministic)
+
+
 def run_time_course(*args, **kwargs):
     num_args = len(args)
     model = kwargs.get('model', model_io.get_current_model())
@@ -42,6 +57,9 @@ def run_time_course(*args, **kwargs):
 
     if 'update_model' in kwargs:
         task.setUpdateModel(kwargs['update_model'])
+
+    if 'method' in kwargs:
+        task.setMethodType(__method_name_to_type(kwargs['method']))
 
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.CTrajectoryProblem))

@@ -27,11 +27,12 @@ class TestBasicoIO(unittest.TestCase):
         basico.remove_datamodel(dm)
 
     def test_simulate(self):
-        basico.load_example('LM')
+        dm = basico.load_example('LM')
         data = basico.get_experiment_data_from_model()
         self.assertTrue(len(data) == 5)
         df = basico.run_time_course(100, automatic=False)
         self.assertTrue(df.shape == (101, 5))
+        basico.remove_datamodel(dm)
 
 
 if __name__ == "__main__":

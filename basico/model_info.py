@@ -17,7 +17,7 @@ def __status_to_int(status):
         "reactions": COPASI.CModelEntity.Status_REACTIONS,
         "time": COPASI.CModelEntity.Status_TIME,
     }
-    return codes.get(status, COPASI.CModelEntity.Status_FIXED)
+    return codes.get(status.lower(), COPASI.CModelEntity.Status_FIXED)
 
 
 def __status_to_string(status):
@@ -66,8 +66,8 @@ def get_species(name=None, **kwargs):
             'expression': _replace_cns_with_names(metab.getExpression()),
             'concentration': metab.getConcentration(),
             'particle_number': metab.getValue(),
-            'particle_number_rate': metab.getRate(),
             'rate': metab.getConcentrationRate(),
+            'particle_number_rate': metab.getRate(),
             'key': metab.getKey(),
         }
 
@@ -266,6 +266,10 @@ def add_compartment(name, initial_size=1.0, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     compartment = model.createCompartment(name, initial_size)
+    if compartment is None:
+        raise ValueError('A compartment named ' + name + ' already exists')
+
+    set_compartment(name, **kwargs)
 
     return compartment
 
@@ -284,8 +288,28 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
         compartment_name = model.getCompartment(0).getObjectName()
 
     species = model.createMetabolite(name, compartment_name, initial_concentration)
+    if species is None:
+        raise ValueError('A species named ' + name + ' already exists in compartment ' + compartment_name)
+
+    set_species(name, **kwargs)
 
     return species
+
+
+def add_parameter(name, initial_value=1.0, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    parameter = model.createModelValue(name, initial_value)
+    if parameter is None:
+        raise ValueError('A global parameter named ' + name + ' already exists')
+
+    set_parameters(name, **kwargs)
+
+    return parameter
 
 
 def add_event(name, trigger, assignments, **kwargs):
@@ -322,6 +346,9 @@ def add_reaction(name, scheme, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     reaction = model.createReaction(name)
+    if reaction is None:
+        raise ValueError('A reaction named ' + name + ' already exists')
+
     assert (isinstance(reaction, COPASI.CReaction))
 
     reaction.setReactionScheme(scheme)
@@ -356,6 +383,7 @@ def get_compartments(name=None, **kwargs):
             'unit': unit,
             'initial_size': compartment.getInitialValue(),
             'initial_expression': _replace_cns_with_names(compartment.getInitialExpression()),
+            'dimensionality': compartment.getDimensionality(),
             'expression': _replace_cns_with_names(compartment.getExpression()),
             'size': compartment.getValue(),
             'rate': compartment.getRate(),
@@ -549,6 +577,53 @@ def get_time_unit(**kwargs):
     return time
 
 
+def set_compartment(name=None, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    compartments = model.getCompartments()
+
+    num_compartments = compartments.size()
+
+    for i in range(num_compartments):
+        compartment = compartments.get(i)
+        assert (isinstance(compartment, COPASI.CCompartment))
+        current_name = compartment.getObjectName()
+
+        if 'name' in kwargs and kwargs['name'] not in current_name:
+            continue
+
+        if name and type(name) is str and name not in current_name:
+            continue
+
+        if name and isinstance(name, Iterable) and current_name not in name:
+            continue
+
+        if 'initial_value' in kwargs:
+            compartment.setInitialValue(kwargs['initial_value'])
+
+        if 'initial_size' in kwargs:
+            compartment.setInitialValue(kwargs['initial_size'])
+
+        if 'initial_expression' in kwargs:
+            compartment.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+
+        if 'status' in kwargs:
+            compartment.setStatus(__status_to_int(kwargs['status']))
+
+        if 'type' in kwargs:
+            compartment.setStatus(__status_to_int(kwargs['type']))
+
+        if 'expression' in kwargs:
+            compartment.setExpression(_replace_names_with_cns(kwargs['expression']))
+
+        if 'dimensionality' in kwargs:
+            compartment.setDimensionality(kwargs['dimensionality'])
+
+
 def set_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -584,14 +659,14 @@ def set_parameters(name=None, **kwargs):
         if 'initial_expression' in kwargs:
             param.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
 
-        if 'expression' in kwargs:
-            param.setExpression(_replace_names_with_cns(kwargs['expression']))
-
         if 'status' in kwargs:
             param.setStatus(__status_to_int(kwargs['status']))
 
         if 'type' in kwargs:
             param.setStatus(__status_to_int(kwargs['type']))
+
+        if 'expression' in kwargs:
+            param.setExpression(_replace_names_with_cns(kwargs['expression']))
 
 
 def set_reaction_parameters(name=None, **kwargs):
@@ -667,6 +742,7 @@ def set_reaction(name=None, **kwargs):
 
     for i in range(num_reactions):
         reaction = reactions.get(i)
+        assert(isinstance(reaction, COPASI.CReaction))
 
         current_name = reaction.getObjectName()
 
@@ -684,6 +760,9 @@ def set_reaction(name=None, **kwargs):
 
         if 'scheme' in kwargs:
             reaction.setReactionScheme(kwargs['scheme'])
+
+        if 'function' in kwargs:
+            reaction.setFunction(kwargs['function'])
 
 
 def set_species(name=None, **kwargs):
@@ -731,6 +810,12 @@ def set_species(name=None, **kwargs):
         if 'initial_expression' in kwargs:
             metab.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
 
+        if 'status' in kwargs:
+            metab.setStatus(__status_to_int(kwargs['status']))
+
+        if 'type' in kwargs:
+            metab.setStatus(__status_to_int(kwargs['type']))
+
         if 'expression' in kwargs:
             metab.setExpression(_replace_names_with_cns(kwargs['expression']))
 
@@ -746,3 +831,31 @@ def set_time_unit(**kwargs):
 
     if 'unit' in kwargs:
         model.setTimeUnit(kwargs['unit'])
+
+
+def set_model_unit(**kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if 'time_unit' in kwargs:
+        model.setTimeUnit(kwargs['time_unit'])
+
+    if 'substance_unit' in kwargs:
+        model.setQuantityUnit(kwargs['substance_unit'])
+
+    if 'quantity_unit' in kwargs:
+        model.setQuantityUnit(kwargs['quantity_unit'])
+
+    if 'length_unit' in kwargs:
+        model.setLengthUnit(kwargs['length_unit'])
+
+    if 'area_unit' in kwargs:
+        model.setAreaUnit(kwargs['area_unit'])
+
+    if 'volume_unit' in kwargs:
+        model.setVolumeUnit(kwargs['volume_unit'])
+
+    model.updateInitialValues(COPASI.CCore.Framework_Concentration)

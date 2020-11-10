@@ -19,6 +19,9 @@ class TestBasicoIO(unittest.TestCase):
     def test_timecourse(self):
         data = basico.run_time_course()
         self.assertTrue(data.shape[1] == 2)
+        basico.set_model_unit(substance_unit=1)
+        data_stoch = basico.run_time_course(method='stochastic')
+        self.assertTrue(data_stoch.shape[1] == 2)
 
     def test_steadystate(self):
         result = basico.run_steadystate()

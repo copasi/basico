@@ -33,5 +33,33 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertTrue(len(exp) == len(sim))
 
 
+class TestBasicoParamterEstimationPK(unittest.TestCase):
+
+    def setUp(self):
+        self.model = basico.load_example('PK')
+        self.assertTrue(self.model.getModel().getObjectName() ==
+                        'Pritchard2002_glycolysis')
+
+    def test_get_data(self):
+
+        # without renaming data should remain as is
+        experiment = basico.get_data_from_experiment(0, rename_headers=False)
+        self.assertEqual(['# Time', 'Values[F16BP_obs]', 'Values[Glu_obs]', 'Values[Pyr_obs]',
+                         '[Glc(ext)]_0', 'Unnamed: 5'], list(experiment.columns))
+        self.assertEqual((101, 6), experiment.shape)
+
+        # data should be renamed as expected, and unassigned columns dropped
+        experiment = basico.get_data_from_experiment(0, rename_headers=True)
+        self.assertEqual(['Time', '[Fru1,6-P2]', '[Glc(int)]', '[pyruvate]', '[Glc(ext)]_0'],
+                         list(experiment.columns))
+        self.assertEqual((101, 5), experiment.shape)
+        self.assertEqual(0, experiment.iloc[0][0])
+        self.assertEqual(2, experiment.iloc[100][0])
+
+        # now simulate
+        exp, sim = basico.get_simulation_results()
+        self.assertTrue(len(exp) == len(sim) == 2)
+
+
 if __name__ == '__main__':
     unittest.main()

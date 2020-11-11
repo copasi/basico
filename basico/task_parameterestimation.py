@@ -2,6 +2,7 @@ import pandas
 import COPASI
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import logging
 
 AFFECTED_EXPERIMENTS = 'Affected Experiments'
@@ -99,6 +100,7 @@ def get_experiment(experiment, **kwargs):
         problem = task.getProblem()
         assert (isinstance(problem, COPASI.CFitProblem))
         exp_set = problem.getExperimentSet()
+
         if type(experiment) is int and experiment >= exp_set.size():
             raise ValueError('Experiment index out of bounds')
         exp = exp_set.getExperiment(experiment)
@@ -133,11 +135,31 @@ def get_experiment_mapping(experiment, **kwargs):
     return pandas.DataFrame(data=rows).set_index('column')
 
 
+def _get_experiment_file(experiment):
+    file_name_only = experiment.getFileNameOnly()
+    model = experiment.getObjectDataModel()
+    directory = os.path.dirname(model.getFileName())
+
+    if os.path.exists(os.path.join(directory, file_name_only)):
+        return os.path.join(directory, file_name_only)
+
+    if os.path.exists(file_name_only):
+        return file_name_only
+
+    file_name = experiment.getFileName()
+    if os.path.exists(file_name):
+        return file_name
+
+    raise ValueError('Experiment file {0} does not exist'.format(file_name_only))
+
+
 def get_data_from_experiment(experiment, **kwargs):
     experiment = get_experiment(experiment, **kwargs)
-    num_lines = sum(1 for line in open(experiment.getFileNameOnly()))
+    experiment_file = _get_experiment_file(experiment)
+    num_lines = sum(1 for line in open(experiment_file))
     header_row = experiment.getHeaderRow()
-    skip_idx = [x-1 for x in range(0, num_lines+1) if
+    have_headers = header_row < num_lines
+    skip_idx = [x-1 for x in range(1, num_lines+1) if
                 not (experiment.getFirstRow() <= x <= experiment.getLastRow())]
 
     if 'rename_headers' in kwargs:
@@ -145,12 +167,15 @@ def get_data_from_experiment(experiment, **kwargs):
     else:
         rename_headers = True
 
+    if have_headers and rename_headers:
+        skip_idx.insert(0, header_row-1)
+
     drop_cols = []
     headers = {}
+    obj_map = experiment.getObjectMap()
     if rename_headers:
-        obj_map = experiment.getObjectMap()
         count = 0
-        for i in range(obj_map.getLastColumn()+1):
+        for i in range(obj_map.size()):
             role = obj_map.getRole(i)
 
             if role == COPASI.CExperiment.time:
@@ -169,21 +194,26 @@ def get_data_from_experiment(experiment, **kwargs):
                 else:
                     drop_cols.append(i)
 
-    if header_row > num_lines:
-        df = pandas.read_csv(experiment.getFileNameOnly(),
+    if rename_headers or not have_headers:
+        df = pandas.read_csv(experiment_file,
                              sep=experiment.getSeparator(),
                              header=None,
                              skiprows=skip_idx)
     else:
-        df = pandas.read_csv(experiment.getFileNameOnly(),
+        df = pandas.read_csv(experiment_file,
                              sep=experiment.getSeparator(),
                              skiprows=skip_idx)
 
     if not rename_headers:
         return df
 
+    all_columns = list(df.columns)
+    for i in range(obj_map.size(), len(all_columns)):
+        # drop additional columns not mapped
+        drop_cols.append(all_columns[i])
+
     if any(drop_cols):
-        df.drop(drop_cols, axis=1)
+        df.drop(drop_cols, axis=1, inplace=True)
 
     df.rename(columns=headers, inplace=True)
 
@@ -416,11 +446,12 @@ def get_simulation_results(**kwargs):
     return exp_data, sim_data
 
 
-def plot_per_dependent_variable(**kwargs):
+def plot_per_experiment(**kwargs):
     """
-    This function creates a figure that plots all experimental data for a given dependent variable
+    This function creates one figure per experiment defined, with plots of all dependent variables and their fit
 
-    :return: figure
+    :param kwargs:
+    :return: array of tuples (fig, ax) for the figures created
     """
     dm = kwargs.get('model', model_io.get_current_model())
 
@@ -440,13 +471,13 @@ def plot_per_dependent_variable(**kwargs):
 
     exp_data, sim_data = get_simulation_results(**kwargs)
 
-    fig, ax = plt.subplots()
-    cycler = plt.cycler("color", plt.cm.tab20c.colors)()
-
     for i in range(num_experiments):
+        fig, ax = plt.subplots()
+        cycler = plt.cycler("color", plt.cm.tab20c.colors)()
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
         mapping = get_experiment_mapping(experiment)
+        ax.set_title(exp_name)
 
         # set independent values for that experiment
         dependent = mapping[mapping.type == 'dependent']
@@ -454,12 +485,79 @@ def plot_per_dependent_variable(**kwargs):
         num_dependent = dependent.shape[0]
         for j in range(num_dependent):
             nextval = next(cycler)['color']
-            sim_data[i].reset_index().plot(x='Time', y=dependent.iloc[j].mapping,
-                                           label="{0} Fit".format(exp_name), ax=ax, color=nextval)
-            exp_data[i].plot.scatter(x='Time', y=dependent.iloc[j].mapping, ax=ax, color=nextval,
-                                     label='{0} Measured'.format(exp_name))
+            name = dependent.iloc[j].mapping
+            if name not in sim_data[i].columns:
+                name = name[1:-1]
+            sim_data[i].reset_index().plot(x='Time', y=name,
+                                           label="{0} Fit".format(name), ax=ax, color=nextval)
+            name = dependent.iloc[j].mapping
+            exp_data[i].plot.scatter(x='Time', y=name, ax=ax, color=nextval,
+                                 label='{0} Measured'.format(name))
+        result.append((fig, ax))
 
-    return fig, ax
+    return result
+
+
+def plot_per_dependent_variable(**kwargs):
+    """
+    This function creates a figure that plots all experimental data for a given dependent variable
+
+    :return: array of tuples (fig, ax) for each figure created
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getExperimentSet()
+    assert (isinstance(experiments, COPASI.CExperimentSet))
+
+    result = []
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    exp_data, sim_data = get_simulation_results(**kwargs)
+
+    dependent_variables = {}
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        mapping = get_experiment_mapping(experiment)
+
+        # set independent values for that experiment
+        dependent = mapping[mapping.type == 'dependent']
+        num_dependent = dependent.shape[0]
+        for j in range(num_dependent):
+            name = dependent.iloc[j].mapping
+            if name not in dependent_variables:
+                dependent_variables[name] = []
+            dependent_variables[name].append(i)
+
+    for dependent in dependent_variables:
+        fig, ax = plt.subplots()
+        cycler = plt.cycler("color", plt.cm.tab20c.colors)()
+        ax.set_title(dependent)
+        experiment_indices = dependent_variables[dependent]
+
+        for i in experiment_indices:
+            experiment = experiments.getExperiment(i)
+            exp_name = experiment.getObjectName()
+            nextval = next(cycler)['color']
+            name = dependent
+            if name not in sim_data[i].columns:
+                name = name[1:-1]
+
+            sim_data[i].reset_index().plot(x='Time', y=name,
+                                           label="{0} Fit".format(exp_name), ax=ax, color=nextval)
+            exp_data[i].plot.scatter(x='Time', y=dependent, ax=ax, color=nextval,
+                                     label='{0} Measured'.format(exp_name))
+        result.append((fig, ax))
+
+    return result
 
 
 if __name__ == "__main__":

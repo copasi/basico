@@ -88,6 +88,9 @@ def new_model(**kwargs):
     if 'volume_unit' in kwargs:
         model.setVolumeUnit(kwargs['volume_unit'])
 
+    if 'time_unit' in kwargs:
+        model.setTimeUnit(kwargs['time_unit'])
+
     return set_current_model(dm)
 
 

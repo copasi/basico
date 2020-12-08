@@ -457,6 +457,39 @@ def get_parameters(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
+def get_functions(name=None, **kwargs):
+    root = COPASI.CRootContainer.getRoot()
+    assert (isinstance(root, COPASI.CRootContainer))
+    functions = root.getFunctionList().loadedFunctions()
+    data = []
+    for index in range(functions.size()):
+        function = functions.get(index)
+        assert (isinstance(function, COPASI.CFunction))
+
+        fun_data = {
+            'name': function.getObjectName(),
+            'reversible': function.isReversible() == 1,
+            'formula': function.getInfix(),
+            'general': function.isReversible() == -1,
+        }
+
+        if 'name' in kwargs and kwargs['name'] not in fun_data['name']:
+            continue
+
+        if 'reversible' in kwargs and kwargs['reversible'] != fun_data['reversible']:
+            continue
+
+
+        if name and name not in fun_data['name']:
+            continue
+
+        data.append(fun_data)
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
 def get_reaction_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -503,7 +536,7 @@ def get_reaction_parameters(name=None, **kwargs):
             param_data = {
                 'name': parameter.getObjectDisplayName(),
                 'value': value,
-                'reaction name': reaction.getObjectName(),
+                'reaction': reaction.getObjectName(),
                 'type': param_type,
                 'mapped_to': mapped_to
             }
@@ -522,7 +555,7 @@ def get_reaction_parameters(name=None, **kwargs):
     if not data:
         return None
 
-    return pandas.DataFrame(data=data).set_index('reaction name')
+    return pandas.DataFrame(data=data).set_index('name')
 
 
 def get_reactions(name=None, **kwargs):
@@ -721,8 +754,10 @@ def set_reaction_parameters(name=None, **kwargs):
             if 'value' in kwargs:
                 if mv and isinstance(mv, COPASI.CModelValue):
                     mv.setInitialValue(kwargs['value'])
+                    model.updateInitialValues(mv)
                 else:
                     param.setDblValue(kwargs['value'])
+                    model.updateInitialValues(param)
                 changed = True
 
         if changed:

@@ -15,6 +15,7 @@ import atexit
 import subprocess
 import tempfile
 import shutil
+import platform
 
 __current_model = None
 __model_list = []
@@ -327,7 +328,12 @@ def open_copasi(**kwargs):
         logging.warning("Created a temporary file to open. This file will be deleted later, so safe your changes.")
         save_model_and_data(name, delete_data_on_exit=True, **kwargs)
 
-    subprocess.call(name, shell=True)
+    if platform.system() == 'Darwin':
+        subprocess.call(('open', name))
+    elif platform.system() == 'Windows': # Windows
+        os.startfile(name)
+    else:  # linux
+        subprocess.call(('xdg-open', name))
 
 
 @atexit.register

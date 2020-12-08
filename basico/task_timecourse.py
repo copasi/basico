@@ -2,9 +2,10 @@ import COPASI
 from . import model_io
 import pandas
 import numpy
+import logging
 
 
-def __build_result_from_ts(time_series):
+def __build_result_from_ts(time_series, use_concentrations=True):
     # type: (COPASI.CTimeSeries) -> pandas.DataFrame
     col_count = time_series.getNumVariables()
     row_count = time_series.getRecordedSteps()
@@ -18,7 +19,10 @@ def __build_result_from_ts(time_series):
     concentrations = numpy.empty([row_count, col_count])
     for i in range(row_count):
         for j in range(col_count):
-            concentrations[i, j] = time_series.getConcentrationData(i, j)
+            if use_concentrations: 
+                concentrations[i, j] = time_series.getConcentrationData(i, j)
+            else:
+                concentrations[i, j] = time_series.getData(i, j)
 
     df = pandas.DataFrame(data=concentrations, columns=column_names)
     df = df.set_index('Time')
@@ -29,6 +33,7 @@ def __build_result_from_ts(time_series):
 def __method_name_to_type(method_name):
     methods = {
         'deterministic': COPASI.CTaskEnum.Method_deterministic,
+        'lsoda': COPASI.CTaskEnum.Method_deterministic,
         'hybridode45': COPASI.CTaskEnum.Method_hybridODE45,
         'hybridlsoda': COPASI.CTaskEnum.Method_hybridLSODA,
         'adaptivesa': COPASI.CTaskEnum.Method_adaptiveSA,
@@ -97,7 +102,18 @@ def run_time_course(*args, **kwargs):
 
     problem.setTimeSeriesRequested(True)
 
-    task.initializeRaw(COPASI.CCopasiTask.ONLY_TIME_SERIES)
-    task.processRaw(use_initial_values)
+    result = task.initializeRaw(COPASI.CCopasiTask.ONLY_TIME_SERIES)
+    if not result: 
+        logging.error("Error while initizlizing the simulation: " +  
+        COPASI.CCopasiMessage.getLastMessage().getText())
+    else: 
+        result = task.processRaw(use_initial_values)
+        if not result: 
+            logging.error("Error while running the simulation: " + 
+            COPASI.CCopasiMessage.getLastMessage().getText())
 
-    return __build_result_from_ts(task.getTimeSeries())
+    use_concentrations = kwargs.get('use_concentrations', True)
+    if 'use_numbers' in kwargs and kwargs['use_numbers']:
+        use_concentrations = False
+    
+    return __build_result_from_ts(task.getTimeSeries(), use_concentrations)

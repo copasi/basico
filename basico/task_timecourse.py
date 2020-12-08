@@ -102,6 +102,18 @@ def run_time_course(*args, **kwargs):
 
     problem.setTimeSeriesRequested(True)
 
+    method = task.getMethod()
+    if 'seed' in kwargs and method.getParameter('Random Seed'):
+        method.getParameter('Random Seed').setIntValue(int(kwargs['seed'])) 
+    if 'use_seed' in kwargs and method.getParameter('Random Seed'):
+        method.getParameter('Use Random Seed').setBoolValue(bool(kwargs['use_seed'])) 
+    if 'a_tol' in kwargs and method.getParameter('Absolute Tolerance'):
+        method.getParameter('Absolute Tolerance').setDblValue(float(kwargs['a_tol'])) 
+    if 'r_tol' in kwargs and method.getParameter('Relative Tolerance'):
+        method.getParameter('Relative Tolerance').setDblValue(float(kwargs['r_tol'])) 
+    if 'max_steps' in kwargs and method.getParameter('Max Internal Steps'):
+        method.getParameter('Max Internal Steps').setIntValue(int(kwargs['max_steps']))
+
     result = task.initializeRaw(COPASI.CCopasiTask.ONLY_TIME_SERIES)
     if not result: 
         logging.error("Error while initializing the simulation: " +  

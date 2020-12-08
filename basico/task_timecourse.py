@@ -104,7 +104,7 @@ def run_time_course(*args, **kwargs):
 
     result = task.initializeRaw(COPASI.CCopasiTask.ONLY_TIME_SERIES)
     if not result: 
-        logging.error("Error while initizlizing the simulation: " +  
+        logging.error("Error while initializing the simulation: " +  
         COPASI.CCopasiMessage.getLastMessage().getText())
     else: 
         result = task.processRaw(use_initial_values)

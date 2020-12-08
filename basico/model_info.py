@@ -350,9 +350,8 @@ def add_reaction(name, scheme, **kwargs):
         raise ValueError('A reaction named ' + name + ' already exists')
 
     assert (isinstance(reaction, COPASI.CReaction))
+    set_reaction(name, scheme=scheme, **kwargs)
 
-    reaction.setReactionScheme(scheme)
-    
     return reaction
 
 
@@ -579,6 +578,7 @@ def get_reactions(name=None, **kwargs):
             'name': reaction.getObjectName(),
             'flux': reaction.getFlux(),
             'particle_flux': reaction.getParticleFlux(),
+            'function': reaction.getFunction().getObjectName()
         }
 
         if 'name' in kwargs and kwargs['name'] not in reaction_data['name']:
@@ -775,6 +775,8 @@ def set_reaction(name=None, **kwargs):
     reactions = model.getReactions()
     num_reactions = reactions.size()
 
+    changed = False
+
     for i in range(num_reactions):
         reaction = reactions.get(i)
         assert(isinstance(reaction, COPASI.CReaction))
@@ -795,9 +797,18 @@ def set_reaction(name=None, **kwargs):
 
         if 'scheme' in kwargs:
             reaction.setReactionScheme(kwargs['scheme'])
+            reaction.compile()
+            changed = True
 
         if 'function' in kwargs:
-            reaction.setFunction(kwargs['function'])
+            info = COPASI.CReactionInterface()
+            info.init(reaction)
+            info.setFunctionAndDoMapping(kwargs['function'])
+            info.writeBackToReaction(reaction)
+            changed = True
+
+    if changed:
+        model.forceCompile()
 
 
 def set_species(name=None, **kwargs):

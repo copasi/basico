@@ -278,6 +278,51 @@ def get_fit_parameters(model=None):
     return pandas.DataFrame(data=data).set_index('name')
 
 
+def set_fit_parameters(fit_parameters, model=None):
+    # type: (pandas.DataFrame, COPASI.CDataModel)
+    if model is None:
+        model = model_io.get_current_model()
+
+    if type(fit_parameters) is list:
+        fit_parameters = pandas.DataFrame(data=fit_parameters)
+
+    pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    problem = pe_task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    while problem.getOptItemSize() > 0:
+        problem.removeOptItem(0)
+
+    for i in range(len(fit_parameters)):
+        item = fit_parameters.iloc[i]
+        cn = None
+        name = None
+
+        if 'cn' in item:
+            cn = COPASI.CCommonName(item.cn)
+
+        if 'name' in item:
+            name = item['name']
+            if not cn:
+                obj = model.findObjectByDisplayName(name)
+                if obj:
+                    cn = obj.getCN()
+                    if _get_role_for_reference(obj.getObjectName()) == COPASI.CExperiment.ignore:
+                        cn = obj.getValueReference().getCN()
+
+        if not cn:
+            logging.warning('object {0} not found'.format(name))
+            continue
+
+        fit_item = problem.addFitItem(cn)
+        assert (isinstance(fit_item, COPASI.CFitItem))
+        if 'lower' in item:
+            fit_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+        if 'upper' in item:
+            fit_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+        if 'start' in item:
+            fit_item.setStartValue(float(item['start']))
+
+
 def _get_name_for_key(key):
     factory = COPASI.CRootContainer.getKeyFactory()
     obj = factory.get(key)
@@ -475,7 +520,7 @@ def get_simulation_results(**kwargs):
     if num_experiments == 0:
         return result
 
-    solution = run_parameter_estimation(method='Statistics')
+    solution = run_parameter_estimation(method='Current Solution Statistics')
 
     model = dm.getModel()
 

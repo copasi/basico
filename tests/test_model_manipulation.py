@@ -46,6 +46,7 @@ class TestBasicoModelManipulation(unittest.TestCase):
         p = basico.get_parameters('sin_time')
         self.assertEqual('assignment', str(p.iloc[0]['type']))
         self.assertEqual('sin ( Time )', str(p.iloc[0]['expression']))
+        basico.remove_parameter('sin_time')
 
 
 if __name__ == '__main__':

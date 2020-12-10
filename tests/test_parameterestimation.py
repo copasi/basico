@@ -60,6 +60,16 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         exp, sim = basico.get_simulation_results()
         self.assertTrue(len(exp) == len(sim) == 2)
 
+    def test_set_fit_items(self):
+        old_fit_items = basico.get_fit_parameters().reset_index()
+        basico.set_fit_parameters(old_fit_items)
+        fit_items = basico.get_fit_parameters().reset_index()
+        old_first = old_fit_items.iloc[0].to_dict()
+        new_first = fit_items.iloc[0].to_dict()
+        self.assertEqual(old_first['name'], new_first['name'])
+        self.assertEqual(old_first['lower'], new_first['lower'])
+        self.assertEqual(old_first['upper'], new_first['upper'])
+
 
 if __name__ == '__main__':
     unittest.main()

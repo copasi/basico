@@ -837,6 +837,7 @@ def remove_species(name, **kwargs):
     model.compileIfNecessary()
     model.removeMetabolite(key)
     model.setCompileFlag(True)
+    model.compileIfNecessary()
 
 
 def remove_parameter(name, **kwargs):
@@ -854,6 +855,7 @@ def remove_parameter(name, **kwargs):
     model.compileIfNecessary()
     model.removeModelValue(key)
     model.setCompileFlag(True)
+    model.compileIfNecessary()
 
 
 def remove_compartment(name, **kwargs):
@@ -871,6 +873,7 @@ def remove_compartment(name, **kwargs):
     model.compileIfNecessary()
     model.removeCompartment(key)
     model.setCompileFlag(True)
+    model.compileIfNecessary()
 
 
 def remove_event(name, **kwargs):
@@ -888,6 +891,7 @@ def remove_event(name, **kwargs):
     model.compileIfNecessary()
     model.removeEvent(key)
     model.setCompileFlag(True)
+    model.compileIfNecessary()
 
 
 def set_species(name=None, **kwargs):

@@ -1,6 +1,7 @@
 from . import model_io
 import pandas
 import COPASI
+import logging
 
 try:
     from collections.abc import Iterable  # noqa
@@ -157,6 +158,8 @@ def _replace_names_with_cns(expression, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
     resulting_expression = ''
+    expression = expression.replace('{', ' {')
+    expression = expression.replace('}', '} ')
     for word in expression.split():
         if word.startswith('{') and word.endswith('}'):
             word = word[1:-1]
@@ -643,6 +646,7 @@ def set_compartment(name=None, **kwargs):
 
         if 'initial_expression' in kwargs:
             compartment.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            model.setCompileFlag(True)
 
         if 'status' in kwargs:
             compartment.setStatus(__status_to_int(kwargs['status']))
@@ -652,9 +656,12 @@ def set_compartment(name=None, **kwargs):
 
         if 'expression' in kwargs:
             compartment.setExpression(_replace_names_with_cns(kwargs['expression']))
+            model.setCompileFlag(True)
 
         if 'dimensionality' in kwargs:
             compartment.setDimensionality(kwargs['dimensionality'])
+
+    model.compileIfNecessary()
 
 
 def set_parameters(name=None, **kwargs):
@@ -691,6 +698,7 @@ def set_parameters(name=None, **kwargs):
 
         if 'initial_expression' in kwargs:
             param.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            model.setCompileFlag(True)
 
         if 'status' in kwargs:
             param.setStatus(__status_to_int(kwargs['status']))
@@ -700,6 +708,9 @@ def set_parameters(name=None, **kwargs):
 
         if 'expression' in kwargs:
             param.setExpression(_replace_names_with_cns(kwargs['expression']))
+            model.setCompileFlag(True)
+
+    model.compileIfNecessary()
 
 
 def set_reaction_parameters(name=None, **kwargs):
@@ -811,6 +822,74 @@ def set_reaction(name=None, **kwargs):
         model.forceCompile()
 
 
+def remove_species(name, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    metab = model.getMetabolite(name)
+    if metab is None:
+        logging.warning('no such metabolite {0}'.format(name))
+    key = metab.getKey()
+    metab = None
+    model.compileIfNecessary()
+    model.removeMetabolite(key)
+    model.setCompileFlag(True)
+
+
+def remove_parameter(name, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    mv = model.getModelValue(name)
+    if mv is None:
+        logging.warning('no such metabolite {0}'.format(name))
+    key = mv.getKey()
+    mv = None
+    model.compileIfNecessary()
+    model.removeModelValue(key)
+    model.setCompileFlag(True)
+
+
+def remove_compartment(name, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    comp = model.getCompartment(name)
+    if comp is None:
+        logging.warning('no such metabolite {0}'.format(name))
+    key = comp.getKey()
+    comp = None
+    model.compileIfNecessary()
+    model.removeCompartment(key)
+    model.setCompileFlag(True)
+
+
+def remove_event(name, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    ev = model.getEvent(name)
+    if ev is None:
+        logging.warning('no such metabolite {0}'.format(name))
+    key = ev.getKey()
+    ev = None
+    model.compileIfNecessary()
+    model.removeEvent(key)
+    model.setCompileFlag(True)
+
+
 def set_species(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
@@ -855,6 +934,7 @@ def set_species(name=None, **kwargs):
 
         if 'initial_expression' in kwargs:
             metab.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            model.setCompileFlag(True)
 
         if 'status' in kwargs:
             metab.setStatus(__status_to_int(kwargs['status']))
@@ -864,8 +944,10 @@ def set_species(name=None, **kwargs):
 
         if 'expression' in kwargs:
             metab.setExpression(_replace_names_with_cns(kwargs['expression']))
+            model.setCompileFlag(True)
 
     model.updateInitialValues(change_set)
+    model.compileIfNecessary()
 
 
 def set_time_unit(**kwargs):

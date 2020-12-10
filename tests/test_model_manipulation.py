@@ -40,13 +40,12 @@ class TestBasicoModelManipulation(unittest.TestCase):
         basico.set_reaction_parameters('(r0).k1', value=1)
         params = basico.get_reaction_parameters(reaction_name='r0')
         self.assertEqual(params.loc['(r0).k1'].value, 1)
-        basico.open_copasi()
 
     def test_add_parameter(self):
         basico.add_parameter('sin_time', type='assignment', expression='sin({Time})')
         p = basico.get_parameters('sin_time')
         self.assertEqual('assignment', str(p.iloc[0]['type']))
-        self.assertEqual('sin ( {Time} )', str(p.iloc[0]['expression']))
+        self.assertEqual('sin ( Time )', str(p.iloc[0]['expression']))
 
 
 if __name__ == '__main__':

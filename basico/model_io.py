@@ -288,7 +288,7 @@ def save_model_and_data(filename, **kwargs):
             experiment.setFileName(new_name)
 
         # export model to string
-        model_string = model.saveModelToString()
+        model.saveModel(filename, True)
 
         # rename experiments
         for i in range(problem.getExperimentSet().size()):
@@ -301,12 +301,6 @@ def save_model_and_data(filename, **kwargs):
 
             experiment.setFileName(old_name)
 
-        try:
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(model_string)
-        except TypeError:
-            with open(filename, 'w') as f:
-                f.write(model_string)
     else:
         model.saveModel(filename, True)
 

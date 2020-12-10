@@ -2,6 +2,7 @@ import pandas
 import COPASI
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
 import logging
 
@@ -325,6 +326,86 @@ def get_parameters_solution(model=None):
         return None
 
     return pandas.DataFrame(data=data).set_index('name')
+
+
+def _get_role_for_reference(reference_name):
+    role_map = {
+        'Concentration': COPASI.CExperiment.dependent,
+        'ParticleNumber': COPASI.CExperiment.dependent,
+        'ParticleNumberRate': COPASI.CExperiment.dependent,
+        'InitialConcentration': COPASI.CExperiment.independent,
+        'InitialParticleNumber': COPASI.CExperiment.independent,
+        'InitialValue': COPASI.CExperiment.independent,
+        'InitialVolume': COPASI.CExperiment.independent,
+        'Rate': COPASI.CExperiment.dependent,
+        'Value': COPASI.CExperiment.dependent,
+        'Volume': COPASI.CExperiment.dependent,
+    }
+    return role_map.get(reference_name, COPASI.CExperiment.ignore)
+
+
+def add_experiment(name, data, **kwargs):
+    model = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(model, COPASI.CDataModel))
+    task = model.getTask('Parameter Estimation')
+    assert (isinstance(task, COPASI.CFitTask))
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    exp_set = problem.getExperimentSet()
+    assert (isinstance(exp_set, COPASI.CExperimentSet))
+    exp = exp_set.getExperiment(name)
+    if exp is not None:
+        logging.error('An experiment with the name {0} already exists'.format(name))
+        return None
+
+    # save data as tsv
+
+    file_name = os.path.abspath(os.path.join(os.path.curdir, name + '.txt'))
+    if 'file_name' in kwargs:
+        file_name = kwargs['file_name']
+
+    assert (isinstance(data, pd.DataFrame))
+    data.to_csv(file_name, sep='\t', header=True, index=False)
+    # create experiment
+
+    exp = COPASI.CExperiment(model)
+    exp = exp_set.addExperiment(exp)
+    info = COPASI.CExperimentFileInfo(exp_set)
+    info.setFileName(file_name)
+    info.sync()
+    exp.setObjectName(name)
+    exp.setFileName(file_name)
+    exp.setHeaderRow(1)
+    exp.setFirstRow(1)
+    exp.setLastRow(len(data)+1)
+
+    columns = data.columns.to_list()
+    if 'time' in [col.lower() for col in columns]:
+        exp.setExperimentType(COPASI.CTaskEnum.Task_timeCourse)
+    else:
+        exp.setExperimentType(COPASI.CTaskEnum.Task_steadyState)
+
+    obj_map = exp.getObjectMap()
+    num_cols = len(columns)
+    obj_map.setNumCols(num_cols)
+    for i in range(num_cols):
+        role = COPASI.CExperiment.ignore
+        current = columns[i]
+        if current.lower() == 'time':
+            role = COPASI.CExperiment.time
+        else:
+            obj = model.findObjectByDisplayName(current)
+            if obj is None:
+                logging.warning("Can't find model element for {0}".format(current))
+            else:
+                role = _get_role_for_reference(obj.getObjectName())
+                obj_map.setObjectCN(i, obj.getCN())
+        obj_map.setRole(i, role)
+
+    exp.calculateWeights()
+    exp_set.compile(model.getModel().getMathContainer())
+
+    return file_name
 
 
 def run_parameter_estimation(**kwargs):

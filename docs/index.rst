@@ -15,14 +15,14 @@ complexity of the underlying SWIG generated language bindings.
    :maxdepth: 2
    :caption: Examples
 
-   src/basico/examples/Accessing_Models_from_Databases
-   src/basico/examples/Creating_a_simple_model
-   src/basico/examples/Model_manipulation
-   src/basico/examples/Parameter_Estimation_Example
-   src/basico/examples/Setting_up_Parameter_Estimation
-   src/basico/examples/Simple_simulations_and_plotting_with_basico
-   src/basico/examples/Simple_simulations_with_basico
-   src/basico/examples/Arrays_of_Compartments
+   examples/Accessing_Models_from_Databases
+   examples/Creating_a_simple_model
+   examples/Model_manipulation
+   examples/Parameter_Estimation_Example
+   examples/Setting_up_Parameter_Estimation
+   examples/Simple_simulations_and_plotting_with_basico
+   examples/Simple_simulations_with_basico
+   examples/Arrays_of_Compartments
 
 .. toctree::
    :maxdepth: 2

@@ -1,3 +1,32 @@
+"""Convenience module to access JWS models
+
+This module provides convenience functions for accessing models from JWS Online
+using the netherlands endpoint.
+
+Example:
+
+    >>> # get all models with ATP
+    >>> atp_models = get_models_for_species('atp')
+
+    >>> # get all models with PFK
+    >>> pfk_models = get_models_for_reaction('pfk')
+
+    >>> # get all_models (this will take a while)
+    >>> all = get_all_models()
+
+    >>> # get manuscript information
+    >>> manuscript = get_manuscript('teusink')
+    >>> print(manuscript['title'], manuscript['abstract'], manuscript['url'])
+
+    >>> # get info for a specific model
+    >>> info = get_model_info('teusink')
+    >>> print(info['name'], info['status'])
+
+    >>> # get content of specific model
+    >>> sbml = get_sbml_model('teusink')
+    >>> print(sbml)
+
+"""
 try:
     import urllib2
     _use_urllib2 = True

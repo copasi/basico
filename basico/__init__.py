@@ -4,9 +4,9 @@ This module provides convenience functions to quickly get a model loaded and sim
 
 Example:
 
-    from basico import *
-    load_biomodel(10)
-    run_time_course().plot()
+    >>> from basico import *
+    >>> load_biomodel(10)
+    >>> run_time_course().plot()
 
 """
 

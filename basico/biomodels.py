@@ -1,3 +1,12 @@
+"""A submodule for accessing the BioModels API.
+
+This submodule accesses the BioModels REST api as described on:
+
+    <https://www.ebi.ac.uk/biomodels/docs/>
+
+
+"""
+
 try:
     import urllib2
     _use_urllib2 = True
@@ -13,6 +22,15 @@ END_POINT = 'https://www.ebi.ac.uk/biomodels/'
 
 
 def download_from(url):
+    """Convenience method reading content from a URL.
+
+    This convenience method uses urlopen on either python 2.7 or 3.x
+
+    :param url: the url to read from
+    :type url: str
+    :return: the contents of the URL as str
+    :rtype: str
+    """
     if _use_urllib2:
         content = urllib2.urlopen(url).read()
     else:
@@ -21,11 +39,23 @@ def download_from(url):
 
 
 def download_json(url):
+    """Convenience method reading the content of the url as JSON.
+
+    :param url: the url to read from
+    :type url: str
+    :return: a python object representing the json content loaded
+    :rtype: dict
+    """
     content = download_from(url)
     return json.loads(content)
 
 
 def get_model_info(model_id):
+    """Return the model info for the provided `model_id`.
+
+    :param model_id: either an integer, or a valid model id
+    :return: a python object describing the model
+    """
     if type(model_id) is int:
         model_id = 'BIOMD{0:010d}'.format(model_id)
     result = download_json(END_POINT + model_id + '?format=json')

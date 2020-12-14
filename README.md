@@ -1,7 +1,9 @@
 ![Python package](https://github.com/copasi/basico/workflows/Python%20package/badge.svg) [![Documentation Status](https://readthedocs.org/projects/basico/badge/?version=latest)](https://basico.readthedocs.io/en/latest/?badge=latest) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=copasi_basico&metric=alert_status)](https://sonarcloud.io/dashboard?id=copasi_basico)
-     
-## BasiCo
-This project hosts a python interface to COPASI.  
+
+## BasiCO
+This project hosts a simplified python interface to COPASI. While all functionality from COPASI is exposed via automatically generated SWIG wrappers, this package aims to add a layer on top of that, to hide most of the complexity away when calling COPASI functions.   
+
+![COPASI Logo](./docs/_static/COPASI_Conly_176x176.png)  
 
 ### Installation
 The package works with python 2.x and python 3.x, provided the following packages are installed: 
@@ -26,6 +28,11 @@ The following modules are available:
 
 Documentation is work in progress, but you can find the start under: 
 <https://basico.readthedocs.org/>
+
+### Acknowledgements
+This project has been possible thanks to the BMBF funded de.NBI initiative (031L0104A):
+
+![de.NBI logo](./docs/_static/deNBI_logo.jpg)
 
 ### License
 

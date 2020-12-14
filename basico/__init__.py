@@ -1,3 +1,15 @@
+"""BasiCO is a simplified interface to COPASI.
+
+This module provides convenience functions to quickly get a model loaded and simulated:
+
+Example:
+
+    from basico import *
+    load_biomodel(10)
+    run_time_course().plot()
+
+"""
+
 from .model_io import *
 from .model_info import *
 

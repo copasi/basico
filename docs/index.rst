@@ -5,6 +5,9 @@ BasiCO is a simplified interface to using COPASI from python.
 It is a collection of utility python scripts, that hide the 
 complexity of the underlying SWIG generated language bindings. 
 
+.. image:: ./_static/COPASI_Conly_176x176.png
+   :alt: COPASI logo
+
 .. toctree::
    :maxdepth: 2
    :caption: Getting started

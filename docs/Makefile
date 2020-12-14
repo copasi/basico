@@ -5,7 +5,7 @@
 all: html
 
 html:
-	sphinx-apidoc -o API ../basico
+	sphinx-apidoc -t _templates/autosummary -o API ../basico
 	sphinx-build -M html . build
 
 clean:

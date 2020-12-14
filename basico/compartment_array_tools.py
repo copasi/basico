@@ -1,3 +1,12 @@
+"""This module provides convenience functions for array of compartments.
+
+COPASI can duplicate the current model in either a rectangular or linear manner,
+with diffusion reactions added in between the created model. This allows for a
+simplified spatial simulation.
+
+This submodule adds functions, to create such an array, to delete the template model.
+Additionally some basic plotting functionality is available as well.
+"""
 from basico import *
 
 import matplotlib.pyplot as plt
@@ -31,6 +40,7 @@ def plot_linear_time_course(data, dm, prefix=None, metab_names=None, shading='go
 
     :return: array with tuple of figures and their axis
     """
+
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     if prefix is not None:
@@ -433,7 +443,7 @@ def create_rectangular_array(dm, num_steps_x, num_steps_y, species=None, diffusi
     :param compartment_names: optional compartment names (will default to the compartment the species is in)
     :param diffusion_coefficients: optional array of diffusion coefficients in the same order as the species
            (otherwise they will be set to 1)
-   :param delete_template: if True, the original template model in the specified compartment will be deleted.
+    :param delete_template: if True, the original template model in the specified compartment will be deleted.
     :return: None
     """
     _create_array(dm, num_steps_x, num_steps_y, linear=False, species=species,

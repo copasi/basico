@@ -1,3 +1,17 @@
+"""The model_info module contains basic functionality for interrogating the model.
+
+Here all functionality for interrogating and manipulating the model is hosted. For each of the elements:
+
+ * compartments
+ * species
+ * parameters
+ * events
+ * reactions
+
+you will find functions to add, get, set, and remove them.
+
+"""
+
 from . import model_io
 import pandas
 import COPASI
@@ -34,6 +48,20 @@ def __status_to_string(status):
 
 
 def get_species(name=None, **kwargs):
+    """Returns all information about the species as pandas dataframe.
+
+    :param name: optional filter expression for the species, if it is not included in the species name,
+                 the species will not be added to the data set.
+    :param kwargs: optional arguments to further filter down the species. recognized are:
+
+     * `model`: to specify the data model to be used (if not specified the one from
+                :func:`model_info.get_current_model` will be taken)
+     * `compartment`: to filter down only species in specific compartments
+     * `type`: to filter for species of specific simulation type
+
+    :return: a pandas dataframe with the information about the species
+    :rtype: pandas.DataFrame
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -98,6 +126,18 @@ def get_species(name=None, **kwargs):
 
 
 def get_events(name=None, **kwargs):
+    """Returns all information about the events as pandas dataframe.
+
+    :param name: optional filter expression for the event, if it is not included in the event name,
+                 the event will not be added to the data set.
+    :param kwargs: optional arguments:
+
+     * `model`: to specify the data model to be used (if not specified the one from
+                :func:`model_info.get_current_model` will be taken)
+
+    :return: a pandas dataframe with the information about the species
+    :rtype: pandas.DataFrame
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -138,12 +178,6 @@ def get_events(name=None, **kwargs):
             continue
 
         if name and name not in event_data['name']:
-            continue
-
-        if 'compartment' in kwargs and not kwargs['compartment'] in event_data['compartment']:
-            continue
-
-        if 'type' in kwargs and kwargs['type'] not in event_data['type']:
             continue
 
         data.append(event_data)
@@ -262,6 +296,19 @@ def _replace_cns_with_names(expression, **kwargs):
 
 
 def add_compartment(name, initial_size=1.0, **kwargs):
+    """Adds a new compartment to the model.
+
+    :param name: the name for the new compartment
+    :type name: str
+    :param initial_size: the initial size for the compartment
+    :type initial_size: float
+    :param kwargs: optional parameters, recognized are:
+
+        * `model`: the model to be used (otherwise :func:`model_info.get_current_model` will be taken)
+        * all other parameters from :func:`set_compartment`.
+
+    :return: the compartment added
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -481,7 +528,6 @@ def get_functions(name=None, **kwargs):
         if 'reversible' in kwargs and kwargs['reversible'] != fun_data['reversible']:
             continue
 
-
         if name and name not in fun_data['name']:
             continue
 
@@ -491,6 +537,7 @@ def get_functions(name=None, **kwargs):
         return None
 
     return pandas.DataFrame(data=data).set_index('name')
+
 
 def get_reaction_parameters(name=None, **kwargs):
     dm = kwargs.get('model', model_io.get_current_model())

@@ -31,7 +31,7 @@ complexity of the underlying SWIG generated language bindings.
    :maxdepth: 2
    :caption: API
 
-   API/basico
+   API/modules
 
 .. toctree::
    :maxdepth: 2

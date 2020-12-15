@@ -50,12 +50,26 @@ def __status_to_string(status):
 def get_species(name=None, **kwargs):
     """Returns all information about the species as pandas dataframe.
 
+    Example:
+
+    Assume you have the brusselator example loaded `load_example('brusselator')`
+
+        >>> get_species()
+
+    returns you a dataframe of all species with the species name as index.
+
+        >>> get_species('X')
+
+    returns you only those species, that include `X` in the name.
+
+
     :param name: optional filter expression for the species, if it is not included in the species name,
                  the species will not be added to the data set.
+    :type name: str
     :param kwargs: optional arguments to further filter down the species. recognized are:
 
-     * `model`: to specify the data model to be used (if not specified the one from
-                :func:`model_info.get_current_model` will be taken)
+     * | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
      * `compartment`: to filter down only species in specific compartments
      * `type`: to filter for species of specific simulation type
 
@@ -130,12 +144,13 @@ def get_events(name=None, **kwargs):
 
     :param name: optional filter expression for the event, if it is not included in the event name,
                  the event will not be added to the data set.
+    :type name: str
     :param kwargs: optional arguments:
 
-     * `model`: to specify the data model to be used (if not specified the one from
-                :func:`model_info.get_current_model` will be taken)
+     * | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
 
-    :return: a pandas dataframe with the information about the species
+    :return: a pandas dataframe with the information about the event
     :rtype: pandas.DataFrame
     """
     dm = kwargs.get('model', model_io.get_current_model())
@@ -304,7 +319,8 @@ def add_compartment(name, initial_size=1.0, **kwargs):
     :type initial_size: float
     :param kwargs: optional parameters, recognized are:
 
-        * `model`: the model to be used (otherwise :func:`model_info.get_current_model` will be taken)
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
         * all other parameters from :func:`set_compartment`.
 
     :return: the compartment added
@@ -325,6 +341,24 @@ def add_compartment(name, initial_size=1.0, **kwargs):
 
 
 def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
+    """Adds a new species to the model.
+
+        :param name: the name for the new species
+        :type name: str
+        :param compartment_name: optional the name of the compartment in which the species should be
+               created, it will default to the first compartment. If no compartment is present,
+               a unit compartment named `compartment` will be created.
+        :type compartment_name: str
+        :param initial_concentration: optional the initial concentration of the species
+        :type initial_concentration: float
+        :param kwargs: optional parameters, recognized are:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+            * all other parameters from :func:`set_species`.
+
+        :return: the newly created species
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -347,6 +381,20 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
 
 
 def add_parameter(name, initial_value=1.0, **kwargs):
+    """Adds a new global parameter to the model.
+
+        :param name: the name for the new global parameter
+        :type name: str
+        :param initial_value: optional the initial value of the parameter (defaults to 1)
+        :type initial_value: float
+        :param kwargs: optional parameters, recognized are:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+            * all other parameters from :func:`set_parameters`.
+
+        :return: the newly created parameter
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -363,6 +411,24 @@ def add_parameter(name, initial_value=1.0, **kwargs):
 
 
 def add_event(name, trigger, assignments, **kwargs):
+    """Adds a new event to the model.
+
+        :param name: the name for the new event
+        :type name: str
+        :param trigger: the trigger expression to be used. The expression can consist of all display names.
+               for example `Time > 10` would make the event trigger at time 10.
+        :type trigger: str
+        :param assignments: All the assignments that should be made, when the event fires. This should be a
+                list of tuples where the first element is the name of the element to change, and the second element
+                the assignment expression.
+        :type assignments: [(str,str)]
+        :param kwargs: optional parameters, recognized are:
+
+             * | `model`: to specify the data model to be used (if not specified
+               | the one from :func:`.get_current_model` will be taken)
+
+        :return: the newly created event
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -389,6 +455,22 @@ def add_event(name, trigger, assignments, **kwargs):
 
 
 def add_reaction(name, scheme, **kwargs):
+    """Adds a new reaction to the model
+
+        :param name: the name for the new reaction
+        :type name: str
+        :param scheme: the reaction scheme for the new reaction, if it includes Species that do not exist yet
+               in the model they will be created. So for example a scheme of `A -> B` would create species `A`
+               and `B` if they would not exist in the model, before creating the irreversible reaction.
+        :type scheme: str
+        :param kwargs: optional parameters, recognized are:
+
+           * | `model`: to specify the data model to be used (if not specified
+             | the one from :func:`.get_current_model` will be taken)
+           * all other parameters from :func:`set_reaction`.
+
+        :return: the newly created reaction
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -406,6 +488,19 @@ def add_reaction(name, scheme, **kwargs):
 
 
 def get_compartments(name=None, **kwargs):
+    """Returns all information about the compartments as pandas dataframe.
+
+        :param name: optional filter expression for the compartment, if it is not included in the name,
+                     the compartment will not be added to the data set.
+        :type name: str
+        :param kwargs: optional arguments:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: a pandas dataframe with the information about the compartment
+        :rtype: pandas.DataFrame
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -457,6 +552,19 @@ def get_compartments(name=None, **kwargs):
 
 
 def get_parameters(name=None, **kwargs):
+    """Returns all information about the global parameters as pandas dataframe.
+
+        :param name: optional filter expression for the parameters, if it is not included in the name,
+                     the parameter will not be added to the data set.
+        :type name: str
+        :param kwargs: optional arguments:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: a pandas dataframe with the information about the parameter
+        :rtype: pandas.DataFrame
+        """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -507,6 +615,18 @@ def get_parameters(name=None, **kwargs):
 
 
 def get_functions(name=None, **kwargs):
+    """Returns all available functions as pandas dataframe.
+
+           :param name: optional filter expression for the functions, if it is not included in the name,
+                        the function will not be added to the data set.
+           :type name: str
+           :param kwargs: optional arguments:
+
+            * `reversible`: to further filter for functions that are only reversible
+
+           :return: a pandas dataframe with the information about the functions
+           :rtype: pandas.DataFrame
+           """
     root = COPASI.CRootContainer.getRoot()
     assert (isinstance(root, COPASI.CRootContainer))
     functions = root.getFunctionList().loadedFunctions()
@@ -540,6 +660,24 @@ def get_functions(name=None, **kwargs):
 
 
 def get_reaction_parameters(name=None, **kwargs):
+    """Returns all local parameters as pandas dataframe.
+
+       This also includes global parameters that are mapped to local ones.
+
+       :param name: optional filter expression, if it is not included in the name,
+                    the function will not be added to the data set.
+       :type name: str
+       :param kwargs: optional arguments:
+
+        * | `reaction_name`: to further filter for local parameters of only certain reactions
+          | (that contain the substring)
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+       :return: a pandas dataframe with the information about local parameters
+       :rtype: pandas.DataFrame
+       """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -608,6 +746,22 @@ def get_reaction_parameters(name=None, **kwargs):
 
 
 def get_reactions(name=None, **kwargs):
+    """Returns all reactions as pandas dataframe.
+
+       :param name: optional filter expression, if it is not included in the name,
+                    the reaction will not be added to the data set.
+       :type name: str
+       :param kwargs: optional arguments:
+
+        * | `reaction_name`: to further filter for local parameters of only certain reactions
+          | (that contain the substring)
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+       :return: a pandas dataframe with the information about local parameters
+       :rtype: pandas.DataFrame
+       """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -624,8 +778,8 @@ def get_reactions(name=None, **kwargs):
         assert (isinstance(reaction, COPASI.CReaction))
 
         reaction_data = {
-            'scheme': reaction.getReactionScheme(),
             'name': reaction.getObjectName(),
+            'scheme': reaction.getReactionScheme(),
             'flux': reaction.getFlux(),
             'particle_flux': reaction.getParticleFlux(),
             'function': reaction.getFunction().getObjectName()
@@ -637,9 +791,6 @@ def get_reactions(name=None, **kwargs):
         if name and name not in reaction_data['name']:
             continue
 
-        if 'type' in kwargs and kwargs['type'] not in reaction_data['type']:
-            continue
-
         data.append(reaction_data)
 
     if not data:
@@ -649,6 +800,7 @@ def get_reactions(name=None, **kwargs):
 
 
 def get_time_unit(**kwargs):
+    """Returns the time unit of the model"""
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -661,6 +813,22 @@ def get_time_unit(**kwargs):
 
 
 def set_compartment(name=None, **kwargs):
+    """Sets properties of the named compartment
+
+    :param name: the name of the compartment (or a substring of the name)
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `initial_value` or `initial_size`: to set the initial size of the compartment
+        - | `initial_expression`: the initial expression for the compartment
+        - | `status` or `type`: the type of the compartment one of `fixed`, `assignment` or `ode`
+        - | `expression`: the expression for the compartment (only valid when type is `ode` or `assignment`)
+        - | `dimensionality`: sets the dimensionality of the compartment (int value 1..3)
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -712,6 +880,22 @@ def set_compartment(name=None, **kwargs):
 
 
 def set_parameters(name=None, **kwargs):
+    """Sets properties of the named parameter(s).
+
+    :param name: the name of the parameter (or a substring of the name)
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `unit`: the unit expression to be set
+        - | `initial_value`: to set the initial value for the parameter
+        - | `initial_expression`: the initial expression
+        - | `status` or `type`: the type of the parameter one of `fixed`, `assignment` or `ode`
+        - | `expression`: the expression for the parameter (only valid when type is `ode` or `assignment`)
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -761,6 +945,19 @@ def set_parameters(name=None, **kwargs):
 
 
 def set_reaction_parameters(name=None, **kwargs):
+    """Sets local parameter values.
+
+    :param name: the name of the parameter (or a substring of the name)
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `reaction_name`: if specified only parameters of the named reaction will be changed
+        - | `value`: the new value of the parameter to set.
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -805,10 +1002,6 @@ def set_reaction_parameters(name=None, **kwargs):
             if name and isinstance(name, Iterable) and current_name not in name:
                 continue
 
-            if 'new_name' in kwargs:
-                param.setObjectName(kwargs['new_name'])
-                changed = True
-
             if 'value' in kwargs:
                 if mv and isinstance(mv, COPASI.CModelValue):
                     mv.setInitialValue(kwargs['value'])
@@ -824,6 +1017,21 @@ def set_reaction_parameters(name=None, **kwargs):
 
 
 def set_reaction(name=None, **kwargs):
+    """Sets attributes of the named reaction.
+
+    :param name: the name of the reaction (or a substring of the name)
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `new_name`: new name of the reaction
+        - | `scheme`: the reaction scheme, new species will be created automatically
+        - | `function`: the function from the function database to set
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -870,6 +1078,17 @@ def set_reaction(name=None, **kwargs):
 
 
 def remove_species(name, **kwargs):
+    """Deletes the named species
+
+    :param name: the name of a species in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -888,6 +1107,17 @@ def remove_species(name, **kwargs):
 
 
 def remove_parameter(name, **kwargs):
+    """Deletes the named global parameter
+
+    :param name: the name of a parameter in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -896,7 +1126,7 @@ def remove_parameter(name, **kwargs):
 
     mv = model.getModelValue(name)
     if mv is None:
-        logging.warning('no such metabolite {0}'.format(name))
+        logging.warning('no such global parameter {0}'.format(name))
     key = mv.getKey()
     mv = None
     model.compileIfNecessary()
@@ -906,6 +1136,17 @@ def remove_parameter(name, **kwargs):
 
 
 def remove_compartment(name, **kwargs):
+    """Deletes the named compartment (and everything included)
+
+    :param name: the name of a compartment in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -914,7 +1155,7 @@ def remove_compartment(name, **kwargs):
 
     comp = model.getCompartment(name)
     if comp is None:
-        logging.warning('no such metabolite {0}'.format(name))
+        logging.warning('no such compartment {0}'.format(name))
     key = comp.getKey()
     comp = None
     model.compileIfNecessary()
@@ -924,6 +1165,17 @@ def remove_compartment(name, **kwargs):
 
 
 def remove_event(name, **kwargs):
+    """Deletes the named event
+
+    :param name: the name of an event in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -932,7 +1184,7 @@ def remove_event(name, **kwargs):
 
     ev = model.getEvent(name)
     if ev is None:
-        logging.warning('no such metabolite {0}'.format(name))
+        logging.warning('no such event {0}'.format(name))
     key = ev.getKey()
     ev = None
     model.compileIfNecessary()
@@ -942,6 +1194,23 @@ def remove_event(name, **kwargs):
 
 
 def set_species(name=None, **kwargs):
+    """Sets properties of the named species
+
+    :param name: the name of the species (or a substring of the name)
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `new_name`: the new name for the species
+        - | `initial_concentration`: to set the initial concentration for the species
+        - | `initial_particle_number`: to set the initial particle number for the species
+        - | `initial_expression`: the initial expression for the species
+        - | `status` or `type`: the type of the species one of `fixed`, `assignment` or `ode`
+        - | `expression`: the expression for the species (only valid when type is `ode` or `assignment`)
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -1001,7 +1270,17 @@ def set_species(name=None, **kwargs):
     model.compileIfNecessary()
 
 
-def set_time_unit(**kwargs):
+def set_time_unit(unit, **kwargs):
+    """Sets the time unit of the model.
+
+    :param unit: the time unit expression
+    :type unit: str
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -1013,6 +1292,20 @@ def set_time_unit(**kwargs):
 
 
 def set_model_unit(**kwargs):
+    """Sets the model units.
+
+    :param kwargs: optional parameters
+
+        - | `time_unit`: time unit expression
+        - | `substance_unit` or `quantity_unit`: substance unit expression
+        - | `length_unit`: length unit expression
+        - | `area_unit`: area unit expression
+        - | `volume_unit`: volume unit expression
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    """
+
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 

@@ -3,7 +3,7 @@
 All methods for loading / saving a new model are within this module. As well as
 the functionality to get/set the currently loaded model. Whenever a function needs
 the currently loaded model, and no model was provided in the `kwargs`, the
-`get_current_model()` function retrieves the model loaded last. There are also convenience
+:func:`.get_current_model()` function retrieves the model loaded last. There are also convenience
 methods to load models directly from BioModels or from url.
 
 """

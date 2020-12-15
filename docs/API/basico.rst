@@ -1,6 +1,11 @@
 basico package
 ==============
 
+.. automodule:: basico
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -72,14 +77,6 @@ basico.task\_timecourse module
 ------------------------------
 
 .. automodule:: basico.task_timecourse
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: basico
    :members:
    :undoc-members:
    :show-inheritance:

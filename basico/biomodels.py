@@ -4,6 +4,25 @@ This submodule accesses the BioModels REST api as described on:
 
     <https://www.ebi.ac.uk/biomodels/docs/>
 
+Examples:
+
+    >>>  # get info for a specific model
+    >>>  info = get_model_info(12)
+    >>>  print(info['name'], info['files']['main'][0]['name'])
+
+    >>>  # get all files for one model
+    >>>  files = get_files_for_model(12)
+    >>>  print(files['main'][0]['name'])
+
+    >>>  # get content of specific model
+    >>>  sbml = get_content_for_model(12)
+    >>>  print(sbml)
+
+    >>>  # search for model
+    >>>  models = search_for_model('repressilator')
+    >>>  for model in models:
+    >>>     print(model['id'], model['name'], model['format'])
+
 
 """
 
@@ -63,6 +82,28 @@ def get_model_info(model_id):
 
 
 def get_files_for_model(model_id):
+    """Retrieves the json structure for all files for the given biomodel.
+
+    The structure is of form:
+
+    >>> get_files_for_model(10)
+    {
+        'additional': [
+            {'description': 'Auto-generated Scilab file',
+             'fileSize': '3873',
+             'name': 'BIOMD0000000010.sci'},
+             ...
+        ],
+        'main': [
+            {'fileSize': '31568',
+             'name': 'BIOMD0000000010_url.xml'
+            }
+        ]
+    }
+
+    :param model_id: the model id (as int or string)
+    :return: json structure
+    """
     if type(model_id) is int:
         model_id = 'BIOMD{0:010d}'.format(model_id)
     result = download_json(END_POINT + 'model/files/' + model_id + '?format=json')
@@ -70,6 +111,12 @@ def get_files_for_model(model_id):
 
 
 def get_content_for_model(model_id, file_name=None):
+    """Downloads the specified file from biomodels
+
+    :param model_id: the model id as int, or string
+    :param file_name: the filename to download (or None, to download the main file)
+    :return: the content of the specified file
+    """
     if type(model_id) is int:
         model_id = 'BIOMD{0:010d}'.format(model_id)
     if file_name is None:
@@ -78,30 +125,35 @@ def get_content_for_model(model_id, file_name=None):
 
 
 def search_for_model(query, offset=0, num_results=10, sort='id-asc'):
+    """Queries the biomodel database
+
+    Queries the database, for information about the query system see:
+    <https://www.ebi.ac.uk/biomodels-static/jummp-biomodels-help/model_search.html>
+
+    Example:
+
+        >>> search_for_model('glycolysis')
+        [...,
+            {
+            'format': 'SBML',
+            'id': 'BIOMD0000000206',
+            'lastModified': '2012-07-04T23:00:00Z',
+            'name': 'Wolf2000_Glycolytic_Oscillations',
+            'submissionDate': '2008-11-27T00:00:00Z',
+            'submitter': 'Harish Dharuri',
+            'url': 'https://www.ebi.ac.uk/biomodels/BIOMD0000000206'
+            }
+        ]
+
+    :param query: the query to use
+    :param offset: offset (defaults to 0)
+    :param num_results: number of results to obtain (defaults to 10)
+    :param sort: sort criteria to be used (defaults to id-asc)
+    :return: the search result as [{}]
+    """
     url = END_POINT + 'search?query=' + query
     url += '&offset=' + str(offset)
     url += "&numResults=" + str(num_results)
     url += '&sort=' + sort
     result = download_json(url + '&format=json')
     return result['models']
-
-
-if __name__ == "__main__":
-    print('BioModels')
-
-    # get info for a specific model
-    info = get_model_info(12)
-    print(info['name'], info['files']['main'][0]['name'])
-
-    # get all files for one model
-    files = get_files_for_model(12)
-    print(files['main'][0]['name'])
-
-    # get content of specific model
-    sbml = get_content_for_model(12)
-    print(sbml)
-
-    # search for model
-    models = search_for_model('repressilator')
-    for model in models:
-        print(model['id'], model['name'], model['format'])

@@ -64,7 +64,17 @@ def num_experiment_files(**kwargs):
     return problem.getExperimentSet().size()
 
 
-def _get_experiment_names(**kwargs):
+def get_experiment_names(**kwargs):
+    """Returns the list of experiment names
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: list of experiment names defined
+    :rtype: [str]
+    """
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 

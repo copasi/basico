@@ -110,10 +110,15 @@ def new_model(**kwargs):
     :param kwargs: optional arguments
 
     - `name` (str): the name for the new model
+
     - `quantity_unit` (str): the unit to use for species
+
     - `time_unit` (str): the time unit to use
+
     - `volume_unit` (str): the unit to use for 3D compartments
+
     - `area_unit` (str): the unit to use for 2D compartments
+
     - `length_unit` (str): the unit to use for 1D compartments
 
     :return: the new model
@@ -151,6 +156,7 @@ def load_model_from_string(content):
 
     :param content: the copasi / sbml model serialized as string
     :type content: str
+
     :return: the loaded model
     :rtype: COPASI.CDataModel
     """
@@ -169,6 +175,7 @@ def load_model_from_url(url):
 
     :param url: url to a copasi / sbml model
     :type url: str
+
     :return: the loaded model
     :rtype: COPASI.CDataModel
     """
@@ -314,10 +321,15 @@ def save_model(filename, **kwargs):
       | the one from :func:`.get_current_model` will be taken)
 
     - `type` (str): `copasi` to write COPASI files, `sbml` to write SBML files (defaults to `copasi`)
+
     - `overwrite` (bool): whether the file should be overwritten if present (defaults to True)
+
     - `level` (int): SBML level to export
+
     - `version` (int): SBML version to export
+
     - `export_copasi_miriam` (bool): whether to export copasi miriam annotations
+
     - `export_incomplete` (bool): whether to export incomplete SBML model
 
     :return: None

@@ -1,3 +1,24 @@
+"""Submodule with utility methods for carrying out and plotting of parameter estimations.
+
+The main function provided by this submodule is :func:`run_parameter_estimation`. Without any parameters, the
+previously set up parameter estimation as stored in the file will be carried out. And the parameters found will
+be returned.
+
+It is also possible to set up parameter estimation problems from scratch. To make it as simple as possible, pandas
+data frames are used, the mapping from the columns to the model element will be done implicitly by naming the
+columns like the corresponding model elements.
+
+Example:
+
+    >>> from basico import *
+    >>> m = model_io.load_example("LM-test1")
+    >>> print(get_fit_parameters())
+    >>> print(get_parameters_solution())
+    >>> run_parameter_estimation(method='Levenberg - Marquardt')
+    >>> print(get_parameters_solution())
+
+"""
+
 import pandas
 import COPASI
 import matplotlib.pyplot as plt
@@ -21,6 +42,16 @@ except ImportError:
 
 
 def num_experiment_files(**kwargs):
+    """Return the number of experiment files defined.
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: number of experiment files
+    :rtype: int
+    """
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 
@@ -33,7 +64,7 @@ def num_experiment_files(**kwargs):
     return problem.getExperimentSet().size()
 
 
-def pe_get_experiment_names(**kwargs):
+def _get_experiment_names(**kwargs):
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 
@@ -50,7 +81,7 @@ def pe_get_experiment_names(**kwargs):
     return result
 
 
-def pe_get_experiment_keys(**kwargs):
+def _get_experiment_keys(**kwargs):
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 
@@ -68,6 +99,16 @@ def pe_get_experiment_keys(**kwargs):
 
 
 def num_validations_files(**kwargs):
+    """Returns the number of cross validation experiment files
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: number of cross validation experiment files
+    :rtype: int
+    """
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 
@@ -91,6 +132,18 @@ def _role_to_string(role):
 
 
 def get_experiment(experiment, **kwargs):
+    """Returns the specified experiment.
+
+    :param experiment: experiment name or index
+    :type experiment: int or str or COPASI.CExperiment
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: the experiment or an error if none existent
+    """
     if not isinstance(experiment, COPASI.CExperiment):
         model = kwargs.get('model', model_io.get_current_model())
         assert (isinstance(model, COPASI.CDataModel))
@@ -113,6 +166,23 @@ def get_experiment(experiment, **kwargs):
 
 
 def get_experiment_mapping(experiment, **kwargs):
+    """Retrieves a data frame of the experiment mapping.
+
+    The resulting data frame will have the columns:
+    * `column` (int): index of the column in the file
+    * `type` (str): 'time', 'dependent', 'indepenent' or 'ignored'
+    * 'mapping' (str): the name of the element it is mapped to
+    * 'cn' (str): internal identifier
+
+    :param experiment: the experiment to get the mapping from
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: data frame with the mapping as described
+    :rtype: pandas.DataFrame
+    """
     experiment = get_experiment(experiment, **kwargs)
 
     obj_map = experiment.getObjectMap()
@@ -155,6 +225,21 @@ def _get_experiment_file(experiment):
 
 
 def get_data_from_experiment(experiment, **kwargs):
+    """Returns the data of the given experiment as dataframe
+
+    :param experiment: the experiment
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `rename_headers` (bool): if true (default) the columns of the headers will be renamed
+      | with the names of the element it is mapped to. Also all ignored columns will be removed from the
+      | dataset
+
+    :return: dataframe with experimental data
+    :rtype: pandas.DataFrame
+    """
     experiment = get_experiment(experiment, **kwargs)
     experiment_file = _get_experiment_file(experiment)
     num_lines = sum(1 for line in open(experiment_file))
@@ -222,7 +307,13 @@ def get_data_from_experiment(experiment, **kwargs):
 
 
 def get_experiment_data_from_model(model=None):
-    # type: (COPASI.CDataModel) -> [pandas.DataFrame]
+    """Returns all experimental data from the model
+
+    :param model: the model to get the data from
+    :type model: COPASI.CDataModel or None
+    :return: list of dataframes with experimental data (with columns renamed and unmapped columns dropped)
+    :rtype: [pandas.DataFrame]
+    """
     if model is None:
         model = model_io.get_current_model()
     result = []
@@ -249,7 +340,24 @@ def get_experiment_data_from_model(model=None):
 
 
 def get_fit_parameters(model=None):
-    # type: (COPASI.CDataModel) -> [pandas.DataFrame]
+    """Returns a data frame with all fit parameters
+
+    The resulting dataframe will have the following columns:
+
+    * `name`: the name of the fit parameter
+    * `lower`: the lower bound of the parameter
+    * `upper`: the upper bound of the parameter
+    * `start`: the start value
+    * | `affected`: a list of all experiments (names) the fit parameter should apply to. If empty the parameter should
+      | be varied for all experiments.
+    * `cn`: internal identifier
+
+    :param model: the model to get the fit parameters from
+    :type model: COPASI.CDataModel or None
+
+    :return: data frame with the fit parameters
+    :rtype: pandas.DataFrame
+    """
     if model is None:
         model = model_io.get_current_model()
 
@@ -279,6 +387,21 @@ def get_fit_parameters(model=None):
 
 
 def set_fit_parameters(fit_parameters, model=None):
+    """Replaces all existing fit items with the ones provided
+
+    :param fit_parameters: the fit parameters as pandas data frame of list of dictionaries with keys:
+
+           * 'name' str: the display name of the model element to map the column to.
+           * 'lower': the lower bound of the parameter
+           * 'upper': the upper bound of the parameter
+           * 'start' (float, optional): the start value
+           * 'cn' (str, optional): internal identifier
+
+    :type fit_parameters: pandas.DataFrame or [{}]
+    :param model: the model or None
+    :type model: COPASI.CDataModel or None
+    :return: None
+    """
     # type: (pandas.DataFrame, COPASI.CDataModel)
     if model is None:
         model = model_io.get_current_model()
@@ -343,7 +466,21 @@ def _get_affected_experiments(optitem):
 
 
 def get_parameters_solution(model=None):
-    # type: (COPASI.CDataModel) -> pandas.DataFrame
+    """Returns the solution found for the fit parameters as data frame
+
+    The resulting data frame will have the columns:
+
+    * `name`: the name of the parameter
+    * `lower`: the parameters lower bound
+    * `upper`: the parameters upper bound
+    * `sol`: the solution found in the last run (or NaN, if not run yet, or no solution found)
+    * `affected`: the experiments this parameter applies to (or an empty list if it applies to all)
+
+    :param model: the model to use, or None
+    :type model: COPASI.CDataModel or None
+    :return: data frame as described
+    :rtype: pandas.DataFrame
+    """
     if model is None:
         model = model_io.get_current_model()
     pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -390,9 +527,34 @@ def _get_role_for_reference(reference_name):
 
 
 def add_experiment(name, data, **kwargs):
+    """Adds a new experiment to the model.
+
+    This method adds a new experiment file to the parameter estimation task. The provided
+    data frame will be written into the current directory as `experiment_name.txt` unless a filename
+    has been provided.
+
+    The mapping between the columns and the model elements should be done by having the columns of the data
+    frame be model element names in question. So for example `[A]` to note that the transient concentrations
+    of a species `A` is to be mapped as dependent variable. or `[A]_0` to note that the initial concentration of
+    a species `A` is to be mapped as independent variable.
+
+    :param name: the name of the experiment
+    :type name: str
+    :param data: the data frame with the experimental data
+    :type data: pandas.DataFrame
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `file_name` (str): the file name to save the experimental data to (otherwise it will be name.txt)
+
+    :return: the filename of the generated data file
+    :rtype: str
+    """
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
-    task = model.getTask('Parameter Estimation')
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.CFitProblem))
@@ -454,10 +616,63 @@ def add_experiment(name, data, **kwargs):
 
 
 def run_parameter_estimation(**kwargs):
+    """Runs the parameter estimation task as specified:
+
+    The following are valid methods to be used for the parameter estimation task.
+
+        Current Solution:
+
+            * `Current Solution Statistics`,
+
+        Global Methods:
+
+            * `Random Search`,
+            * `Simulated Annealing`,
+            * `Differential Evolution`,
+            * `Scatter Search`,
+            * `Genetic Algorithm`,
+            * `Evolutionary Programming`,
+            * `Genetic Algorithm SR`,
+            * `Evolution Strategy (SRES)`,
+            * `Particle Swarm`,
+
+        Local Methods:
+
+            * `Levenberg - Marquardt`,
+            * `Hooke & Jeeves`,
+            * `Nelder - Mead`,
+            * `Steepest Descent`,
+            * `NL2SOL`,
+            * `Praxis`,
+            * `Truncated Newton`,
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `method` (str): one of the strings from above
+
+    - | `randomize_start_values` (bool): if true, parameters will be randomized before starting otherwise the
+      | parameters starting value will be taken.
+
+    - | `calculate_statistics` (bool): if true, the statistics will be calculated at the end of the task
+
+    - | `create_parametersets` (bool): if true, parameter sets will be created for all experiments
+
+    - `use_initial_values` (bool): whether to use initial values
+
+    - `scheduled` (bool): sets whether the task is scheduled or not
+
+    - `update_model` (bool): sets whether the model should be updated, or reset to initial conditions.
+
+    :return: the solution for the fit parameters see :func:`get_get_parameters_solution`.
+    :rtype: pandas.DataFrame
+    """
     model = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
 
-    task = model.getTask('Parameter Estimation')
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
 
     if 'scheduled' in kwargs:
@@ -493,9 +708,15 @@ def run_parameter_estimation(**kwargs):
 
     use_initial_values = kwargs.get('use_initial_values', True)
 
-    task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
-
-    task.processRaw(use_initial_values)
+    result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+    if not result:
+        logging.error("Error while initializing the simulation: " +
+                      COPASI.CCopasiMessage.getLastMessage().getText())
+    else:
+        result = task.processRaw(use_initial_values)
+        if not result:
+            logging.error("Error while running the simulation: " +
+                          COPASI.CCopasiMessage.getLastMessage().getText())
 
     problem.setCreateParameterSets(old_create_parameter_sets)
 
@@ -503,6 +724,16 @@ def run_parameter_estimation(**kwargs):
 
 
 def get_simulation_results(**kwargs):
+    """Runs the current solution statistics and returns result of simulation and experimental data
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: tuple of lists of experiment data, and a list of simulation data
+    :rtype: ([pandas.DataFrame],[pandas.DataFrame])
+    """
     import basico
     dm = kwargs.get('model', model_io.get_current_model())
 
@@ -574,9 +805,14 @@ def get_simulation_results(**kwargs):
 
 def plot_per_experiment(**kwargs):
     """
-    This function creates one figure per experiment defined, with plots of all dependent variables and their fit
+    This function creates one figure per experiment defined, with plots of all dependent variables
+    and their fit in it.
 
     :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
     :return: array of tuples (fig, ax) for the figures created
     """
     dm = kwargs.get('model', model_io.get_current_model())
@@ -626,7 +862,12 @@ def plot_per_experiment(**kwargs):
 
 def plot_per_dependent_variable(**kwargs):
     """
-    This function creates a figure that plots all experimental data for a given dependent variable
+    This function creates a figure for each dependent variable, with traces for all experiments.
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
 
     :return: array of tuples (fig, ax) for each figure created
     """
@@ -684,13 +925,3 @@ def plot_per_dependent_variable(**kwargs):
         result.append((fig, ax))
 
     return result
-
-
-if __name__ == "__main__":
-    print(COPASI.CVersion.VERSION.getVersion())
-    m = model_io.load_example("LM-test1")
-    print(get_fit_parameters())
-    print(get_parameters_solution())
-    run_parameter_estimation(method='LevenbergMarquardt')
-    print(get_parameters_solution())
-    model_io.open_copasi()

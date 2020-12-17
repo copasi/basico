@@ -66,11 +66,14 @@ def get_species(name=None, **kwargs):
     :param name: optional filter expression for the species, if it is not included in the species name,
                  the species will not be added to the data set.
     :type name: str
+
     :param kwargs: optional arguments to further filter down the species. recognized are:
 
      * | `model`: to specify the data model to be used (if not specified
        | the one from :func:`.get_current_model` will be taken)
+
      * `compartment`: to filter down only species in specific compartments
+
      * `type`: to filter for species of specific simulation type
 
     :return: a pandas dataframe with the information about the species
@@ -145,6 +148,7 @@ def get_events(name=None, **kwargs):
     :param name: optional filter expression for the event, if it is not included in the event name,
                  the event will not be added to the data set.
     :type name: str
+
     :param kwargs: optional arguments:
 
      * | `model`: to specify the data model to be used (if not specified
@@ -315,12 +319,15 @@ def add_compartment(name, initial_size=1.0, **kwargs):
 
     :param name: the name for the new compartment
     :type name: str
+
     :param initial_size: the initial size for the compartment
     :type initial_size: float
+
     :param kwargs: optional parameters, recognized are:
 
         * | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
+
         * all other parameters from :func:`set_compartment`.
 
     :return: the compartment added
@@ -345,12 +352,15 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
 
         :param name: the name for the new species
         :type name: str
+
         :param compartment_name: optional the name of the compartment in which the species should be
                created, it will default to the first compartment. If no compartment is present,
                a unit compartment named `compartment` will be created.
         :type compartment_name: str
+
         :param initial_concentration: optional the initial concentration of the species
         :type initial_concentration: float
+
         :param kwargs: optional parameters, recognized are:
 
             * | `model`: to specify the data model to be used (if not specified
@@ -385,12 +395,15 @@ def add_parameter(name, initial_value=1.0, **kwargs):
 
         :param name: the name for the new global parameter
         :type name: str
+
         :param initial_value: optional the initial value of the parameter (defaults to 1)
         :type initial_value: float
+
         :param kwargs: optional parameters, recognized are:
 
             * | `model`: to specify the data model to be used (if not specified
               | the one from :func:`.get_current_model` will be taken)
+
             * all other parameters from :func:`set_parameters`.
 
         :return: the newly created parameter
@@ -415,13 +428,16 @@ def add_event(name, trigger, assignments, **kwargs):
 
         :param name: the name for the new event
         :type name: str
+
         :param trigger: the trigger expression to be used. The expression can consist of all display names.
                for example `Time > 10` would make the event trigger at time 10.
         :type trigger: str
+
         :param assignments: All the assignments that should be made, when the event fires. This should be a
                 list of tuples where the first element is the name of the element to change, and the second element
                 the assignment expression.
         :type assignments: [(str,str)]
+
         :param kwargs: optional parameters, recognized are:
 
              * | `model`: to specify the data model to be used (if not specified
@@ -459,14 +475,17 @@ def add_reaction(name, scheme, **kwargs):
 
         :param name: the name for the new reaction
         :type name: str
+
         :param scheme: the reaction scheme for the new reaction, if it includes Species that do not exist yet
                in the model they will be created. So for example a scheme of `A -> B` would create species `A`
                and `B` if they would not exist in the model, before creating the irreversible reaction.
         :type scheme: str
+
         :param kwargs: optional parameters, recognized are:
 
            * | `model`: to specify the data model to be used (if not specified
              | the one from :func:`.get_current_model` will be taken)
+
            * all other parameters from :func:`set_reaction`.
 
         :return: the newly created reaction
@@ -493,6 +512,7 @@ def get_compartments(name=None, **kwargs):
         :param name: optional filter expression for the compartment, if it is not included in the name,
                      the compartment will not be added to the data set.
         :type name: str
+
         :param kwargs: optional arguments:
 
             * | `model`: to specify the data model to be used (if not specified
@@ -817,13 +837,19 @@ def set_compartment(name=None, **kwargs):
 
     :param name: the name of the compartment (or a substring of the name)
     :type name: str
+
     :param kwargs: optional arguments
 
         - | `initial_value` or `initial_size`: to set the initial size of the compartment
+
         - | `initial_expression`: the initial expression for the compartment
+
         - | `status` or `type`: the type of the compartment one of `fixed`, `assignment` or `ode`
+
         - | `expression`: the expression for the compartment (only valid when type is `ode` or `assignment`)
+
         - | `dimensionality`: sets the dimensionality of the compartment (int value 1..3)
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -1021,11 +1047,15 @@ def set_reaction(name=None, **kwargs):
 
     :param name: the name of the reaction (or a substring of the name)
     :type name: str
+
     :param kwargs: optional arguments
 
         - | `new_name`: new name of the reaction
+
         - | `scheme`: the reaction scheme, new species will be created automatically
+
         - | `function`: the function from the function database to set
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -1297,10 +1327,15 @@ def set_model_unit(**kwargs):
     :param kwargs: optional parameters
 
         - | `time_unit`: time unit expression
+
         - | `substance_unit` or `quantity_unit`: substance unit expression
+
         - | `length_unit`: length unit expression
+
         - | `area_unit`: area unit expression
+
         - | `volume_unit`: volume unit expression
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 

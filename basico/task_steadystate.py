@@ -32,15 +32,18 @@ def run_steadystate(**kwargs):
      - `update_model` (bool): sets whether the model should be updated, or reset to initial conditions.
 
      - | `criterion` (str): specifies the acceptance criterion to be used for a steady state can be one of:
+       |
        |  * `Distance and Rate`: both the Distance and the Rate criterion have to be fullfilled to accept
        |  * `Distance`: the distance criterion
        |  * `Rate`: the rate of change has to be sufficiently small
 
     :return: integer status information whether the steady state was reached:
+
        - `0`: not found
        - `1`: steady state found
        - `2`: equillibrium steady state found
        - `3`: steady state with negative concentrations found
+
     :rtype: int
     """
     model = kwargs.get('model', model_io.get_current_model())

@@ -84,7 +84,7 @@ def run_time_course(*args, **kwargs):
      - | `model`: to specify the data model to be used (if not specified
        | the one from :func:`.get_current_model` will be taken)
 
-    - `use_initial_values` (bool): whether to use initial values
+     - `use_initial_values` (bool): whether to use initial values
 
      - `scheduled` (bool): sets whether the task is scheduled or not
 
@@ -92,6 +92,7 @@ def run_time_course(*args, **kwargs):
 
      - | `method` (str): sets the simulation method to use (otherwise the previously set method will be used)
        | support methods:
+       |
        |   * `deterministic` / `lsoda`: the LSODA implementation
        |   * `stochastic`: the Gibson & Bruck Gillespie implementation
        |   * `directMethod`: Gillespie Direct Method
@@ -106,7 +107,7 @@ def run_time_course(*args, **kwargs):
      - | `start_time` (float): the output start time. If the model is not at that start time, a simulation
        |  will be performed in one step, to reach it before starting to collect output.
 
-     - | `step_number` or `intervals` (int): the number of output steps. (will only be used if `automatic` or
+     - | `step_number` or `intervals` (int): the number of output steps. (will only be used if `automatic`
        | or `stepsize` is not used.
 
      - | `stepsize` (float): the output step size (will only be used if `automatic` is False).

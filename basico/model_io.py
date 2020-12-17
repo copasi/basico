@@ -33,7 +33,15 @@ __temp_dirs = []
 
 
 def set_current_model(model):
-    # type: (COPASI.CDataModel) -> COPASI.CDataModel
+    """Sets the current model.
+
+    The current model, is the one that all functions will use if not is provided explicitly.
+
+    :param model: the model to be set as current
+    :type model: COPASI.CDataModel
+    :return: the model
+    :rtype: COPASI.CDataModel
+    """
     global __current_model
     global __model_list
     __current_model = model
@@ -46,7 +54,14 @@ def set_current_model(model):
 
 
 def get_current_model():
-    # type: () -> COPASI.CDataModel
+    """Returns the current model.
+
+    This function returns the current model. That is the model loaded / created last. If no model exists
+    a new one will be created first.
+
+    :return: the current model
+    :rtype: COPASI.CDataModel
+    """
     global __current_model
     if __current_model is None:
         logging.warning('There is no model, creating a new one')
@@ -55,7 +70,11 @@ def get_current_model():
 
 
 def create_datamodel():
-    # type: () -> COPASI.CDataModel
+    """creates a new data model
+
+    :return: new data model
+    :rtype: COPASI.CDataModel
+    """
     try:
         data_model = COPASI.CRootContainer.addDatamodel()
     except NameError:
@@ -65,7 +84,16 @@ def create_datamodel():
 
 
 def remove_datamodel(model):
-    # type: (COPASI.CDataModel) -> None
+    """Removes the model from the internal list of loaded models.
+
+    The model is removed from the list of models, and current model,
+    before it is freed
+
+    :param model: the model to be removed
+
+    :type model:COPASI.CDataModel
+    :return: None
+    """
     global __model_list
     global __current_model
     if model in __model_list:
@@ -77,6 +105,20 @@ def remove_datamodel(model):
 
 
 def new_model(**kwargs):
+    """Creates a new model and sets it as current.
+    
+    :param kwargs: optional arguments
+
+    - `name` (str): the name for the new model
+    - `quantity_unit` (str): the unit to use for species
+    - `time_unit` (str): the time unit to use
+    - `volume_unit` (str): the unit to use for 3D compartments
+    - `area_unit` (str): the unit to use for 2D compartments
+    - `length_unit` (str): the unit to use for 1D compartments
+
+    :return: the new model
+    :rtype: COPASI.CDataModel
+    """
     dm = create_datamodel()
     dm.newModel()
 
@@ -105,7 +147,13 @@ def new_model(**kwargs):
 
 
 def load_model_from_string(content):
-    # type: (str) -> COPASI.CDataModel
+    """Loads either COPASI model / SBML model from the raw string given.
+
+    :param content: the copasi / sbml model serialized as string
+    :type content: str
+    :return: the loaded model
+    :rtype: COPASI.CDataModel
+    """
     model = create_datamodel()
     if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
         return set_current_model(model)
@@ -117,7 +165,13 @@ def load_model_from_string(content):
 
 
 def load_model_from_url(url):
-    # type: (str) -> COPASI.CDataModel
+    """Loads either COPASI model / SBML model from the url.
+
+    :param url: url to a copasi / sbml model
+    :type url: str
+    :return: the loaded model
+    :rtype: COPASI.CDataModel
+    """
     if _use_urllib2:
         content = urllib2.urlopen(url).read()
     else:
@@ -128,7 +182,13 @@ def load_model_from_url(url):
 
 
 def load_model(location):
-    # type: (str) -> COPASI.CDataModel
+    """Loads the model and sets it as current
+
+    :param location: either a filename, url or raw string of a COPASI / SBML model
+    :type location: str
+    :return: the loaded model
+    :rtype: COPASI.CDataModel
+    """
     model = create_datamodel()
 
     if os.path.isfile(location):
@@ -150,7 +210,13 @@ def load_model(location):
 
 
 def load_biomodel(model_id):
-    # type: (Union[int, str, unicode]) -> COPASI.CDataModel
+    """Loads a model from the BioModels Database.
+
+    :param model_id: either an integer of the biomodels id, or a valid biomodels id
+    :type model_id: Union[int,str]
+    :return:
+    :rtype: COPASI.CDataModel
+    """
 
     from . import biomodels
 
@@ -158,7 +224,16 @@ def load_biomodel(model_id):
 
 
 def get_examples(selector=''):
-    # type: (str) -> [str]
+    """Returns the filenames of examples bundled with this version.
+
+    A number of example models are included with the distribution. This method returns the filenames
+    to those examples. Filtered by the argument.
+
+    :param selector: a filter expression to be used, only files matching `*{selector}.[cps|xml]` will be returned
+    :type selector: str
+    :return: the list of examples matching
+    :rtype: [str]
+    """
     dir_name = os.path.dirname(__file__)
     types = ('*.xml', '*.cps')
     files = []
@@ -169,7 +244,13 @@ def get_examples(selector=''):
 
 
 def load_example(selector):
-    # type: (str) -> COPASI.CDataModel
+    """Loads the example matching the selector.
+
+    :param selector: the filter expression to use for the examples see :func:`get_examples`
+    :type selector: str
+    :return: the loaded model, or None, if none matched
+    :rtype: COPASI.CDataModel or None
+    """
     files = get_examples(selector)
 
     if not files:
@@ -179,7 +260,14 @@ def load_example(selector):
 
 
 def overview(model=None):
-    # type: (COPASI.CDataModel) -> str
+    """Returns a basic representation of the model.
+
+    :param model: the model to get the overview for
+    :type model: COPASI.CDataModel or None
+
+    :return: a string, consisting of name, # compartments, # species, # parameters, # reaction
+    :rtype: str
+    """
     if model is None:
         model = get_current_model()
 
@@ -202,13 +290,38 @@ def overview(model=None):
 
 
 def print_model(model=None):
-    # type: (COPASI.CDataModel) -> None
-    if model is None:
-        model = get_current_model()
+    """Prints the model overview.
+
+    See also :func:`overview`
+
+    :param model: the model
+    :type model: COPASI.CDataModel
+
+    :return: None
+    """
     print(overview(model))
 
 
 def save_model(filename, **kwargs):
+    """Saves the model to the given filename.
+
+    :param filename: the file to be written
+    :type filename: str
+
+    :param kwargs: optional arguments:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - `type` (str): `copasi` to write COPASI files, `sbml` to write SBML files (defaults to `copasi`)
+    - `overwrite` (bool): whether the file should be overwritten if present (defaults to True)
+    - `level` (int): SBML level to export
+    - `version` (int): SBML version to export
+    - `export_copasi_miriam` (bool): whether to export copasi miriam annotations
+    - `export_incomplete` (bool): whether to export incomplete SBML model
+
+    :return: None
+    """
     # type: (str, **kwargs) -> None
     model = kwargs.get('model', get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
@@ -236,6 +349,21 @@ def save_model(filename, **kwargs):
 
 
 def save_model_and_data(filename, **kwargs):
+    """Saves the model to the give filename, along with all experimental data files.
+
+    :param filename: the filename of the COPASI file to write
+    :param filename: str
+    :param kwargs: optional arguments:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `delete_data_on_exit` (bool): a flag indicating whether the files should be deleted at the end of the
+      | python session (defaults to False)
+
+    :return: None
+    """
+
     try:
         from . import task_parameterestimation
     except ImportError:
@@ -315,6 +443,21 @@ def save_model_and_data(filename, **kwargs):
 
 
 def open_copasi(**kwargs):
+    """Saves the model as COPASI file and opens it in COPASI.
+
+    The file will be written to a temporary file, and then it will be executed, so that the
+    application registered to open it will start.
+
+    :param kwargs: optional arguments:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `filename` (str): the file name to write to, if not given a temp file will be created
+      | that will be deleted at the end of the python session.
+
+    :return: None
+    """
     model = kwargs.get('model', get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
     name = kwargs.get('filename', '')

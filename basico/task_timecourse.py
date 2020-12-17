@@ -1,3 +1,27 @@
+"""This module encapsulates methods for running time course simulations.
+
+main method provided is the :func:`run_time_course` method, that will
+simulate the given model (or the current :func:`.get_current_model`).
+
+Examples:
+
+    To run a time course for the duration of 10 time units use
+
+    >>> run_time_course(10)
+
+    To run a time course for the duration of 10 time units, in 50 simulation steps use
+
+    >>> run_time_course(10, 50)
+
+    To run a time course from 0, for the duration of 10 time units, in 50 simulation steps use:
+
+    >>> run_time_course(0, 10, 50)
+
+    all parameters can also be given as key value pairs.
+
+"""
+
+
 import COPASI
 from . import model_io
 import pandas
@@ -47,6 +71,64 @@ def __method_name_to_type(method_name):
 
 
 def run_time_course(*args, **kwargs):
+    """Simulates the current or given model, returning a data frame with the results
+
+    :param args: positional arguments
+
+     * 1 argument: the duration to simulate the model
+     * 2 arguments: the duration and number of steps to take
+     * 3 arguments: start time, duration, number of steps
+
+    :param kwargs: additional arguments
+
+     - | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
+
+    - `use_initial_values` (bool): whether to use initial values
+
+     - `scheduled` (bool): sets whether the task is scheduled or not
+
+     - `update_model` (bool): sets whether the model should be updated, or reset to initial conditions.
+
+     - | `method` (str): sets the simulation method to use (otherwise the previously set method will be used)
+       | support methods:
+       |   * `deterministic` / `lsoda`: the LSODA implementation
+       |   * `stochastic`: the Gibson & Bruck Gillespie implementation
+       |   * `directMethod`: Gillespie Direct Method
+       |   * others: `hybridode45`, `hybridlsoda`, `adaptivesa`, `tauleap`, `radau5`, `sde`
+
+     - `duration` (float): the duration in time units for how long to simulate
+
+     - `automatic` (bool): whether to use automatic determined steps (True), or the specified interval / number of steps
+
+     - `output_event` (bool): if true, output will be collected at the time a discrete event occurs.
+
+     - | `start_time` (float): the output start time. If the model is not at that start time, a simulation
+       |  will be performed in one step, to reach it before starting to collect output.
+
+     - | `step_number` or `intervals` (int): the number of output steps. (will only be used if `automatic` or
+       | or `stepsize` is not used.
+
+     - | `stepsize` (float): the output step size (will only be used if `automatic` is False).
+
+     - | `seed` (int): set the seed that will be used if `use_seed` is true, using this stochastic trajectories can
+       | be repeated
+
+     - | 'use_seed' (bool): if true, the specified seed will be used.
+
+     - | `a_tol` (float): the absolute tolerance to be used
+
+     - | `r_tol` (float): the relative tolerance to be used
+
+     - | `max_steps` (int): the maximum number of internal steps the integrator is allowed to use.
+
+     - | `use_concentrations` (bool): whether to return just the concentrations (default)
+
+     - | `use_numbers` (bool): return all elements collected
+
+    :return: data frame with simulation results
+    :rtype: pandas.DataFrame
+    """
     num_args = len(args)
     model = kwargs.get('model', model_io.get_current_model())
     use_initial_values = kwargs.get('use_initial_values', True)
@@ -114,7 +196,7 @@ def run_time_course(*args, **kwargs):
     if 'max_steps' in kwargs and method.getParameter('Max Internal Steps'):
         method.getParameter('Max Internal Steps').setIntValue(int(kwargs['max_steps']))
 
-    result = task.initializeRaw(COPASI.CCopasiTask.ONLY_TIME_SERIES)
+    result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result: 
         logging.error("Error while initializing the simulation: " +  
         COPASI.CCopasiMessage.getLastMessage().getText())

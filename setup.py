@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from setuptools import setup
+import versioneer
 
 
 def basico_testsuite():
@@ -9,8 +10,9 @@ def basico_testsuite():
     return test_suite
 
 
-setup(name='Basico',
-      version='1.0',
+setup(name='basico',
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       description='Simplified COPASI interface for python',
       long_description="""Basico provides utility functions around the SWIG generated COPASI bindings, it 
       simplifies tasks, by relying on pandas, and numpy.
@@ -27,11 +29,32 @@ setup(name='Basico',
       ],
       platforms=['Windows', 'Linux', 'MacOS'],
       classifiers=[
+          'Topic :: Scientific/Engineering :: Bio-Informatics',
           'Development Status :: 3 - Alpha',
           'License :: OSI Approved :: Artistic License',
+          'Intended Audience :: Science/Research',
+          'Intended Audience :: Education',
+          'Natural Language :: English',
+          'Operating System :: MacOS :: MacOS X',
+          'Operating System :: Microsoft :: Windows',
+          'Operating System :: POSIX :: Linux',
+          'Programming Language :: C++',
+          'Programming Language :: Python :: 2',
           'Programming Language :: Python :: 2.7',
-          'Topic :: Scientific/Engineering',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
+          'Programming Language :: Python :: Implementation :: CPython',
+          'Programming Language :: Python :: Implementation :: PyPy',
       ],
       keywords='copasi sbml systems biology',
+      project_urls={
+        "Github": "https://github.com/copasi/basico",
+        "Issues": "https://github.com/copasi/basico/issues",
+        "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/Creating_a_simple_model.ipynb",
+      },
       test_suite='setup.basico_testsuite'
       )

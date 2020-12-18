@@ -17,3 +17,4 @@
 *.RTF	 diff=astextplain
 
 *.cps linguist-language=XML
+basico/_version.py export-subst

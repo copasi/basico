@@ -21,3 +21,7 @@ from .array_tools import *
 from .compartment_array_tools import *
 
 settings = {}
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions

@@ -38,6 +38,7 @@ import json
 
 
 END_POINT = 'http://jjj.bio.vu.nl/rest/'
+MODEL_END_POINT = END_POINT + 'models/'
 
 
 def download_from(url):
@@ -88,7 +89,7 @@ def get_model_info(model_id):
     :param model_id: a valid jws slug
     :return: structure with information about the model [{}]
     """
-    return download_json(END_POINT + 'models/' + model_id + '/')
+    return download_json(MODEL_END_POINT + model_id + '/')
 
 
 def get_sbml_model(model_id):
@@ -97,7 +98,7 @@ def get_sbml_model(model_id):
     :param model_id: valid model slug
     :return: the model as sbml string
     """
-    return download_json(END_POINT + 'models/' + model_id + '/sbml')[model_id]
+    return download_json(MODEL_END_POINT + model_id + '/sbml')[model_id]
 
 
 def get_mathematica_model(model_id):
@@ -106,7 +107,7 @@ def get_mathematica_model(model_id):
     :param model_id: valid model slug
     :return: the model as mathematica notebook
     """
-    return download_from(END_POINT + 'models/' + model_id + '/nb')
+    return download_from(MODEL_END_POINT + model_id + '/nb')
 
 
 def get_manuscript(model_id):
@@ -117,7 +118,7 @@ def get_manuscript(model_id):
     :param model_id: valid model slug
     :return: manuscript structure (list of dictionary)
     """
-    return download_json(END_POINT + 'models/' + model_id + '/manuscript/')
+    return download_json(MODEL_END_POINT + model_id + '/manuscript/')
 
 
 def get_models_for_species(species):

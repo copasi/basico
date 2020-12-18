@@ -6,6 +6,25 @@ simplified spatial simulation.
 
 This submodule adds functions, to create such an array, to delete the template model.
 Additionally some basic plotting functionality is available as well.
+
+Example:
+
+    >>> dm = load_example('brusselator')
+    >>> create_rectangular_array(10, 10, ['X', 'Y'], [0.16, 0.8], delete_template=True)
+    >>> set_species(['X{compartment[1,1]}',
+    ...             'X{compartment[1,2]}',
+    ...             'X{compartment[2,1]}',
+    ...             'X{compartment[2,2]}'], initial_concentration=10)
+
+    >>> add_event('E0', 'Time > 10', [['X{compartment[1,1]}', '10'],
+    ...                              ['X{compartment[1,2]}', '10'],
+    ...                              ['X{compartment[2,1]}', '10'],
+    ...                              ['X{compartment[2,2]}', '10']])
+
+    >>> data = run_time_course(start_time=0, duration=500)
+    >>> animate_rectangular_time_course_as_image(data, metabs=["X", "Y"], min_range=0, max_range=10)
+
+
 """
 from basico import *
 
@@ -526,56 +545,3 @@ def create_rectangular_array(num_steps_x, num_steps_y, species=None, diffusion_c
                   diffusion_coefficients=diffusion_coefficients,
                   compartment_names=compartment_names,
                   delete_template=delete_template)
-
-
-if __name__ == "__main__":
-    #
-    load_example('brusselator')
-    set_species('X', initial_concentration=10)
-    add_event('E0', 'Time > 10', [['X', '10']])
-    data = run_time_course(start_time=0)
-    data.plot()
-    # open_copasi()
-    #
-    # create_linear_array(dm, 10, ['X', 'Y'], [0.16, 0.8], delete_template=True)
-    # set_species('X{compartment[1]}', initial_concentration=10)
-    # data = run_time_course()
-    # plot_linear_time_course(data, dm)
-    # plt.show()
-    # # open_copasi()
-    #
-    dm = load_example('brusselator')
-    create_rectangular_array(dm, 10, 10, ['X', 'Y'], [0.16, 0.8], delete_template=True)
-    set_species(['X{compartment[1,1]}',
-                 'X{compartment[1,2]}',
-                 'X{compartment[2,1]}',
-                 'X{compartment[2,2]}'], initial_concentration=10)
-
-    add_event('E0', 'Time > 10', [['X{compartment[1,1]}', '10'],
-                                  ['X{compartment[1,2]}', '10'],
-                                  ['X{compartment[2,1]}', '10'],
-                                  ['X{compartment[2,2]}', '10']])
-
-    data = run_time_course(start_time=0, duration=500)
-    # animate_rectangular_time_course(data, dm, "Y", min=0, max=9, filename='bruss_test_500.mp4')
-    animate_rectangular_time_course_as_image(data, dm, metabs=["X", "Y"], min_range=0, max_range=10)
-    plt.show()
-    # # open_copasi()
-    # #
-    # # print('loading model')
-    # # dm = load_example('enzyme_10_lin')
-    # # data = run_time_course()
-    # # plot_linear_time_course(data, dm)
-    # # plt.show()
-    # # dm = load_example('brusselator_lin')
-    # # dm = load_example('linear_rect')
-    # dm = load_example('turing_rect_20')
-    # # print('deleting compartments')
-    # # _delete_compartments(dm)
-    # print('running simulation')
-    # data = run_time_course(duration=50)
-    # print('creating animation')
-    # plot_rectangular_time_course_2(data, dm, times=[10, 90])
-    # # animate_rectangular_time_course(data, dm, "S2", min=0, max=1.75)
-    # # plot_rectangular_time_course(data, dm, times=[10, 90])
-    # plt.show()

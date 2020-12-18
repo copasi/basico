@@ -1128,6 +1128,8 @@ def remove_species(name, **kwargs):
     metab = model.getMetabolite(name)
     if metab is None:
         logging.warning('no such metabolite {0}'.format(name))
+        return
+
     key = metab.getKey()
     metab = None
     model.compileIfNecessary()
@@ -1157,6 +1159,8 @@ def remove_parameter(name, **kwargs):
     mv = model.getModelValue(name)
     if mv is None:
         logging.warning('no such global parameter {0}'.format(name))
+        return
+
     key = mv.getKey()
     mv = None
     model.compileIfNecessary()
@@ -1186,6 +1190,8 @@ def remove_compartment(name, **kwargs):
     comp = model.getCompartment(name)
     if comp is None:
         logging.warning('no such compartment {0}'.format(name))
+        return
+
     key = comp.getKey()
     comp = None
     model.compileIfNecessary()
@@ -1215,8 +1221,40 @@ def remove_event(name, **kwargs):
     ev = model.getEvent(name)
     if ev is None:
         logging.warning('no such event {0}'.format(name))
+        return
     key = ev.getKey()
     ev = None
+    model.compileIfNecessary()
+    model.removeEvent(key)
+    model.setCompileFlag(True)
+    model.compileIfNecessary()
+
+
+def remove_reaction(name, **kwargs):
+    """Deletes the named reaction
+
+    :param name: the name of a reaction in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    reaction = model.getReaction(name)
+    if reaction is None:
+        logging.warning('no such reaction {0}'.format(name))
+        return
+
+    key = reaction.getKey()
+    reaction = None
     model.compileIfNecessary()
     model.removeEvent(key)
     model.setCompileFlag(True)

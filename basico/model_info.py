@@ -16,6 +16,8 @@ from . import model_io
 import pandas
 import COPASI
 import logging
+import dateutil.parser
+import datetime
 
 try:
     from collections.abc import Iterable  # noqa
@@ -314,6 +316,334 @@ def _replace_cns_with_names(expression, **kwargs):
     return resulting_expression.strip()
 
 
+def set_notes(notes, **kwargs):
+    """Sets notes on the provided element
+
+    :param notes: the notes to be set, can be either plain text, or valid xhtml
+    :type notes: str
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+        * | `name`: the display name of the element to set the notes on.
+          | otherwise the main model will be taken.
+        * | `element`: any model element
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    element = dm.getModel()
+    if 'element' in kwargs:
+        element = kwargs['element']
+    elif 'name' in kwargs:
+        element = dm.findObjectByDisplayName(kwargs['name'])
+        if element is None:
+            logging.warning("Couldn't find element {0} to set notes.".format(kwargs['name']))
+            return
+
+    if element is None:
+        logging.warning("Couldn't find element to set notes.")
+        return
+
+    if isinstance(element, COPASI.CDataObject):
+        element = COPASI.CAnnotation.castObject(element)
+
+    if isinstance(element, COPASI.CAnnotation):
+        element.setNotes(notes)
+    else:
+        logging.warning("Unsupported element type for setting notes.")
+
+
+def get_notes(**kwargs):
+    """Returns all notes on the element or model.
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+        * | `name`: the display name of the element to set the notes on.
+          | otherwise the main model will be taken.
+        * | `element`: any model element
+
+    :return: the notes string (plain text, or xhtml)
+    :rtype: str
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    element = dm.getModel()
+    if 'element' in kwargs:
+        element = kwargs['element']
+    elif 'name' in kwargs:
+        element = dm.findObjectByDisplayName(kwargs['name'])
+        if element is None:
+            logging.warning("Couldn't find element {0} to get notes.".format(kwargs['name']))
+            return None
+
+    if element is None:
+        logging.warning("Couldn't find element to get notes.")
+        return None
+
+    if isinstance(element, COPASI.CDataObject):
+        element = COPASI.CAnnotation.castObject(element)
+
+    if isinstance(element, COPASI.CAnnotation):
+        return element.getNotes()
+    else:
+        logging.warning("Unsupported element type for getting notes.")
+    return None
+
+
+def get_miriam_annotation(**kwargs):
+    """Returns the elements miriam annotations as dictionary of the form:
+
+    {
+        'created': datetime,
+        'creators': [{
+            'first_name': '...',
+            'last_name': '...',
+            'email': '...',
+            'organization': '...'
+        },...],
+
+        'references': [{
+            'id': '...',
+            'uri': 'identifiers.org uri',
+            'resource': 'human readable name of resource',
+            'description', '...'
+        },...],
+
+        'descriptions': [{
+            'id': '...',
+            'qualifier': 'human readable qualifier string',
+            'uri': 'identifiers.org uri',
+            'resource': 'name of the resource referenced'
+        },...],
+        'modifications': [datetime,...]
+    }
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+        * | `name`: the display name of the element to set the notes on.
+          | otherwise the main model will be taken.
+        * | `element`: any model element
+
+    :return: the elements annotation as dictionary as described
+    :rtype: {}
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    element = dm.getModel()
+    if 'element' in kwargs:
+        element = kwargs['element']
+    elif 'name' in kwargs:
+        element = dm.findObjectByDisplayName(kwargs['name'])
+        if element is None:
+            logging.warning("Couldn't find element {0} to get annotations.".format(kwargs['name']))
+            return None
+
+    if element is None:
+        logging.warning("Couldn't find element to get annotations.")
+        return None
+
+    if isinstance(element, COPASI.CDataObject):
+        info = COPASI.CMIRIAMInfo()
+        info.load(element)
+        result = {'creators': [], 'references': [],
+                  'descriptions': [], 'modifications': []}
+
+        try:
+            dt = dateutil.parser.isoparse(info.getCreatedDT())
+            result['created'] = dt
+        except ValueError:
+            pass
+
+        for creator in info.getCreators():
+            result['creators'].append({
+                'first_name': creator.getGivenName(),
+                'last_name': creator.getFamilyName(),
+                'email': creator.getEmail(),
+                'organization': creator.getORG()
+            })
+
+        for reference in info.getReferences():
+            result['references'].append({
+                'id': reference.getId(),
+                'uri': reference.getMIRIAMResourceObject().getIdentifiersOrgURL(),
+                'resource': reference.getResource(),
+                'description': reference.getDescription()
+            })
+
+        for description in info.getBiologicalDescriptions():
+            assert (isinstance(description, COPASI.CBiologicalDescription))
+            result['descriptions'].append({
+                'id': description.getId(),
+                'qualifier': description.getPredicate(),
+                'uri': description.getMIRIAMResourceObject().getIdentifiersOrgURL(),
+                'resource': description.getResource(),
+            })
+
+        for modification in info.getModifications():
+            assert (isinstance(modification, COPASI.CModification))
+            result['modifications'].append(dateutil.parser.isoparse(modification.getDate()))
+
+        for key in ['creators', 'references', 'descriptions', 'modifications']:
+            if len(result[key]) == 0:
+                del result[key]
+
+        return result
+    else:
+        logging.warning("Unsupported element type for getting annotations.")
+    return None
+
+
+def set_miriam_annotation(created=None, creators=None, references=None, descriptions=None, modifications=None,
+                          replace=True,
+                          **kwargs):
+    """Sets the MIRIAM annotations for the provided element or model
+
+    :param created: the date/time to set as the objects creation time or None, if not to be set
+    :type created: datetime.datetime or None
+
+    :param creators: | None, if not to be modified, otherwise list of creators of the form:
+                     | {
+                     |  'first_name': '...',
+                     |  'last_name': '...',
+                     |  'email': '...',
+                     |  'organization': '...'
+                     | }
+    :type creators: list or None
+
+    :param references: | None if not to be modified, otherwise list of references of the form:
+                       |
+                       | {
+                       |   'resource': 'human readable name of resource',
+                       |   'id': '...',
+                       |   'uri': 'identifiers.org uri',
+                       |   'description', '...'
+                       | }
+                       |
+                       | only the uri needs to be provided, or alternatively id + resource.
+    :type references: list or None
+
+    :param descriptions: | None if not to be modified, otherwise list of descriptions of the form:
+                         |
+                         | {
+                         |   'resource': 'human readable name of resource',
+                         |   'id': '...',
+                         |   'qualifier': '...',
+                         |   'uri': 'identifiers.org uri',
+                         |   'description', '...'
+                         | }
+                         |
+                         | only the uri needs to be provided, or alternatively id + resource.
+
+    :type descriptions: list or None
+
+    :param modifications: | None if not to be modified, otherwise list of datetime objects representing
+                          | modification dates
+    :type modifications: list or None
+
+    :param replace: Boolean indicating whether existing entries should be removed.
+    :type replace: bool
+
+        :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+        * | `name`: the display name of the element to set the notes on.
+          | otherwise the main model will be taken.
+        * | `element`: any model element
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    element = dm.getModel()
+    if 'element' in kwargs:
+        element = kwargs['element']
+    elif 'name' in kwargs:
+        element = dm.findObjectByDisplayName(kwargs['name'])
+        if element is None:
+            logging.warning("Couldn't find element {0} to set annotations.".format(kwargs['name']))
+            return
+
+    if element is None:
+        logging.warning("Couldn't find element to set annotations.")
+        return
+
+    if isinstance(element, COPASI.CDataObject):
+        info = COPASI.CMIRIAMInfo()
+        info.load(element)
+
+        if created is not None and isinstance(created, datetime.datetime):
+            info.setCreatedDT(created.isoformat())
+
+        if creators is not None:
+            if replace:
+                info.getCreators().clear()
+            for creator in creators:
+                c = info.createCreator()
+                assert (isinstance(c, COPASI.CCreator))
+                if 'first_name' in creator:
+                    c.setGivenName(creator['first_name'])
+                if 'last_name' in creator:
+                    c.setFamilyName(creator['last_name'])
+                if 'email' in creator:
+                    c.setEmail(creator['email'])
+                if 'organization' in creator:
+                    c.setORG(creator['organization'])
+
+        if references is not None:
+            if replace:
+                info.getReferences().clear()
+            for reference in references:
+                r = info.createReference()
+                assert (isinstance(r, COPASI.CReference))
+                if 'resource' in reference:
+                    r.setResource(reference['resource'])
+                if 'id' in reference:
+                    r.setId(reference['id'])
+                if 'description' in reference:
+                    r.setDescription(reference['description'])
+                if 'uri' in reference:
+                    r.getMIRIAMResourceObject().setURI(reference['uri'])
+
+        if descriptions is not None:
+            if replace:
+                info.getBiologicalDescriptions().clear()
+            for desc in descriptions:
+                d = info.createBiologicalDescription()
+                assert (isinstance(d, COPASI.CBiologicalDescription))
+                if 'qualifier' in desc:
+                    d.setPredicate(desc['qualifier'])
+                if 'resource' in desc:
+                    d.setResource(desc['resource'])
+                if 'id' in desc:
+                    d.setId(desc['id'])
+                if 'uri' in desc:
+                    d.getMIRIAMResourceObject().setURI(desc['uri'])
+
+        if modifications is not None:
+            if replace:
+                info.getModifications().clear()
+            for modification in modifications:
+                m = info.createModification()
+                assert (isinstance(m, COPASI.CModification))
+                m.setDate(modification.isoformat())
+
+        info.save()
+    else:
+        logging.warning("Unsupported element type for setting annotations.")
+
+
 def add_compartment(name, initial_size=1.0, **kwargs):
     """Adds a new compartment to the model.
 
@@ -462,6 +792,7 @@ def add_event(name, trigger, assignments, **kwargs):
         assert (isinstance(ea, COPASI.CEventAssignment))
         target = dm.findObjectByDisplayName(assignment[0])
         if target is None:
+            logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
             continue
         ea.setTargetCN(target.getCN())
         ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
@@ -850,6 +1181,8 @@ def set_compartment(name=None, **kwargs):
 
         - | `dimensionality`: sets the dimensionality of the compartment (int value 1..3)
 
+        - | `notes`: sets notes for the compartment (either plain text, or valid xhtml)
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -864,6 +1197,8 @@ def set_compartment(name=None, **kwargs):
     compartments = model.getCompartments()
 
     num_compartments = compartments.size()
+
+    change_set = COPASI.ObjectStdVector()
 
     for i in range(num_compartments):
         compartment = compartments.get(i)
@@ -881,9 +1216,11 @@ def set_compartment(name=None, **kwargs):
 
         if 'initial_value' in kwargs:
             compartment.setInitialValue(kwargs['initial_value'])
+            change_set.append(compartment.getInitialValueReference())
 
         if 'initial_size' in kwargs:
             compartment.setInitialValue(kwargs['initial_size'])
+            change_set.append(compartment.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
             compartment.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
@@ -902,6 +1239,10 @@ def set_compartment(name=None, **kwargs):
         if 'dimensionality' in kwargs:
             compartment.setDimensionality(kwargs['dimensionality'])
 
+        if 'notes' in kwargs:
+            compartment.setNotes(kwargs['notes'])
+
+    model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
 
@@ -917,6 +1258,7 @@ def set_parameters(name=None, **kwargs):
         - | `initial_expression`: the initial expression
         - | `status` or `type`: the type of the parameter one of `fixed`, `assignment` or `ode`
         - | `expression`: the expression for the parameter (only valid when type is `ode` or `assignment`)
+        - | `notes`: sets notes for the parameter (either plain text, or valid xhtml)
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -932,6 +1274,8 @@ def set_parameters(name=None, **kwargs):
     assert (isinstance(parameters, COPASI.ModelValueVectorN))
 
     num_params = parameters.size()
+
+    change_set = COPASI.ObjectStdVector()
 
     for i in range(num_params):
         param = parameters.get(i)
@@ -952,6 +1296,7 @@ def set_parameters(name=None, **kwargs):
 
         if 'initial_value' in kwargs:
             param.setInitialValue(kwargs['initial_value'])
+            change_set.append(param.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
             param.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
@@ -967,6 +1312,10 @@ def set_parameters(name=None, **kwargs):
             param.setExpression(_replace_names_with_cns(kwargs['expression']))
             model.setCompileFlag(True)
 
+        if 'notes' in kwargs:
+            param.setNotes(kwargs['notes'])
+
+    model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
 
@@ -1056,6 +1405,8 @@ def set_reaction(name=None, **kwargs):
 
         - | `function`: the function from the function database to set
 
+        - | `notes`: sets notes for the reaction (either plain text, or valid xhtml)
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -1102,6 +1453,9 @@ def set_reaction(name=None, **kwargs):
             info.setFunctionAndDoMapping(kwargs['function'])
             info.writeBackToReaction(reaction)
             changed = True
+
+        if 'notes' in kwargs:
+            reaction.setNotes(kwargs['notes'])
 
     if changed:
         model.forceCompile()
@@ -1274,6 +1628,7 @@ def set_species(name=None, **kwargs):
         - | `initial_expression`: the initial expression for the species
         - | `status` or `type`: the type of the species one of `fixed`, `assignment` or `ode`
         - | `expression`: the expression for the species (only valid when type is `ode` or `assignment`)
+        - | `notes`: sets notes for the species (either plain text, or valid xhtml)
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -1333,6 +1688,9 @@ def set_species(name=None, **kwargs):
         if 'expression' in kwargs:
             metab.setExpression(_replace_names_with_cns(kwargs['expression']))
             model.setCompileFlag(True)
+
+        if 'notes' in kwargs:
+            metab.setNotes(kwargs['notes'])
 
     model.updateInitialValues(change_set)
     model.compileIfNecessary()

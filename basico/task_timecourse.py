@@ -63,7 +63,7 @@ def __method_name_to_type(method_name):
         'adaptivesa': COPASI.CTaskEnum.Method_adaptiveSA,
         'tauleap': COPASI.CTaskEnum.Method_tauLeap,
         'stochastic': COPASI.CTaskEnum.Method_stochastic,
-        'directMethod': COPASI.CTaskEnum.Method_directMethod,
+        'directmethod': COPASI.CTaskEnum.Method_directMethod,
         'radau5': COPASI.CTaskEnum.Method_RADAU5,
         'sde': COPASI.CTaskEnum.Method_stochasticRunkeKuttaRI5,
     }

@@ -3,7 +3,7 @@ import basico
 import COPASI
 
 
-class TestBasicoIO(unittest.TestCase):
+class TestBasicoIO_Brus(unittest.TestCase):
 
     def setUp(self):
         dm = basico.load_example('brusselator')
@@ -15,6 +15,21 @@ class TestBasicoIO(unittest.TestCase):
     def test_get_species(self):
         species = basico.get_species('X')
         self.assertTrue(species.shape[0] == 1)
+
+    def test_get_reaction_parameters(self):
+        parameters = basico.get_reaction_parameters('k1')
+        self.assertTrue(parameters.shape[0] == 4)
+        parameters = basico.get_reaction_parameters('(R1).k1')
+        self.assertTrue(parameters.shape[0] == 1)
+
+    def test_set_reaction_parameters(self):
+        parameters = basico.get_reaction_parameters('(R1).k1')
+        self.assertEqual(parameters.shape[0], 1)
+        value = parameters.iloc[0].value
+        self.assertEqual(value, 1)
+        basico.set_reaction_parameters('(R1).k1', value=2)
+        value = basico.get_reaction_parameters('(R1).k1').iloc[0].value
+        self.assertEqual(value, 2.0)
 
     def test_timecourse(self):
         data = basico.run_time_course()
@@ -39,6 +54,35 @@ class TestBasicoIO(unittest.TestCase):
 
         result = basico.model_info._split_by_cn('sin(A + B + C)')
         self.assertTrue(len(result) == 8)
+
+
+class TestBasicoIO_LM(unittest.TestCase):
+
+    def setUp(self):
+        dm = basico.load_example('LM-test1')
+        self.assertTrue(dm is not None)
+        self.assertTrue(isinstance(dm, COPASI.CDataModel))
+        self.assertTrue('Kinetics of a  Michaelian enzyme measured spectrophotometrically' in basico.model_io.overview())
+        print('Running setup')
+
+    def test_get_parameter(self):
+        params = basico.get_parameters()
+        self.assertEqual(params.shape[0], 3)
+        params = basico.get_parameters('epsilon')
+        self.assertEqual(params.shape[0], 1)
+        value = params.iloc[0].initial_value
+        self.assertEqual(value, 0.78)
+
+    def test_set_parameter(self):
+        params = basico.get_parameters('epsilon')
+        self.assertEqual(params.shape[0], 1)
+        value = params.iloc[0].initial_value
+        self.assertEqual(value, 0.78)
+        basico.set_parameters('epsilon', initial_value=2.0)
+        params = basico.get_parameters('epsilon')
+        self.assertEqual(params.shape[0], 1)
+        value = params.iloc[0].initial_value
+        self.assertEqual(value, 2.0)
 
 
 if __name__ == "__main__":

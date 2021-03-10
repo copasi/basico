@@ -83,6 +83,11 @@ class TestBasicoIO_LM(unittest.TestCase):
         self.assertEqual(params.shape[0], 1)
         value = params.iloc[0].initial_value
         self.assertEqual(value, 2.0)
+        basico.set_parameters('Values[epsilon]', initial_value=3.0)
+        params = basico.get_parameters('Values[epsilon]')
+        self.assertEqual(params.shape[0], 1)
+        value = params.iloc[0].initial_value
+        self.assertEqual(value, 3.0)
 
 
 if __name__ == "__main__":

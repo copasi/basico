@@ -948,10 +948,12 @@ def get_parameters(name=None, **kwargs):
             'key': param.getKey(),
         }
 
-        if 'name' in kwargs and kwargs['name'] not in param_data['name']:
+        display_name = param.getObjectDisplayName()
+
+        if 'name' in kwargs and (kwargs['name'] not in param_data['name'] and kwargs['name'] != display_name):
             continue
 
-        if name and name not in param_data['name']:
+        if name and (name not in param_data['name'] and name != display_name):
             continue
 
         if 'type' in kwargs and kwargs['type'] not in param_data['type']:
@@ -1281,14 +1283,15 @@ def set_parameters(name=None, **kwargs):
         param = parameters.get(i)
         assert (isinstance(param, COPASI.CModelValue))
         current_name = param.getObjectName()
+        display_name = param.getObjectDisplayName()
 
-        if 'name' in kwargs and kwargs['name'] not in current_name:
+        if 'name' in kwargs and (kwargs['name'] not in current_name and kwargs['name'] != display_name):
             continue
 
-        if name and type(name) is str and name not in current_name:
+        if name and type(name) is str and (name not in current_name and name != display_name):
             continue
 
-        if name and isinstance(name, Iterable) and current_name not in name:
+        if name and isinstance(name, Iterable) and (current_name not in name and display_name not in name):
             continue
 
         if 'unit' in kwargs:

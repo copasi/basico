@@ -572,8 +572,7 @@ def add_plot(name, **kwargs):
     plot_spec = dm.getPlotDefinitionList().createPlotSpec(name, COPASI.CPlotItem.plot2d)
 
     if not plot_spec:
-        ValueError('A plot named ' + name + ' already exists')
-        return None
+        raise ValueError('A plot named ' + name + ' already exists')
 
     set_plot_dict(plot_spec, **kwargs)
 

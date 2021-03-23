@@ -26,6 +26,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Simple_simulations_and_plotting_with_basico
    notebooks/Simple_simulations_with_basico
    notebooks/Arrays_of_Compartments
+   notebooks/Working_with_Plots
 
 .. toctree::
    :maxdepth: 2

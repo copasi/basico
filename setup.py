@@ -23,7 +23,7 @@ setup(name='basico',
       packages=['basico'],
       package_dir={'basico': 'basico'},
       package_data={'basico': ['data/*']},
-      license='Artistic',
+      license='Artistic-2.0',
       install_requires=[
           'python-copasi', 'pandas', 'numpy', 'matplotlib'
       ],

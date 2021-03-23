@@ -339,6 +339,45 @@ def get_plots(name=None, **kwargs):
 
 
 def get_plot_dict(plot_spec, **kwargs):
+    """Returns the information for the specified plot
+
+        :param plot_spec: the name, index or plot specification object
+        :type plot_spec: Union[str,int,COPASI.CPlotSpecification]
+
+        :param kwargs: optional arguments
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: dictionary of the form:
+                | {
+                |  'name': 'Phase Plot',
+                |  'active': True,
+                |  'log_x': False,
+                |  'log_y': False,
+                |  'tasks': '',
+                |  'curves':
+                |   [
+                |     {
+                |       'name': '[Y]|[X]', # the name of the curve
+                |       'type': 'curve2d',# type of the curve (one of `curve2d`, `histoItem1d`, `bandedGraph`
+                |                           or `spectogram`)
+                |       'channels': ['[X]', '[Y]'],  # display names of all the items to be plotted
+                |       'color': 'auto', # color as hex rgb value (i.e '#ff0000' for red) or 'auto'
+                |       'line_type': 'lines',# the line type (one of `lines`, `points`, `symbols` or
+                |                                            `lines_and_symbols`)
+                |       'line_subtype': 'solid', # line subtype (one of `solid`, `dotted`, `dashed`, `dot_dash` or
+                |                                 `dot_dot_dash`)
+                |       'line_width': 2.0, # line width
+                |       'symbol': 'small_cross', # the symbol to be used (one of `small_cross`, `large_cross`
+                |                                or `circle` )
+                |       'activity': 'during' # when the data should be collected (one of 'before', 'during', 'after')
+                |                              from task
+                |     }
+                |   ]
+                | }
+
+    """
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -362,10 +401,10 @@ def get_plot_dict(plot_spec, **kwargs):
 
         if plot_item.getParameter('Color'):
             curve_data['color'] = plot_item.getParameter('Color').getValue()
-        if plot_item.getParameter('Line subtype'):
-            curve_data['line_subtype'] = __line_subtype_to_string(plot_item.getParameter('Line subtype').getValue())
         if plot_item.getParameter('Line type'):
             curve_data['line_type'] = __line_type_to_string(plot_item.getParameter('Line type').getValue())
+        if plot_item.getParameter('Line subtype'):
+            curve_data['line_subtype'] = __line_subtype_to_string(plot_item.getParameter('Line subtype').getValue())
         if plot_item.getParameter('Line width'):
             curve_data['line_width'] = plot_item.getParameter('Line width').getValue()
         if plot_item.getParameter('Symbol subtype'):
@@ -416,18 +455,26 @@ def set_plot_curves(plot_spec, curves, **kwargs):
               |
               | [
               |   {
-              |    'name': '[Y]|[X]',     # the name of the plot
-              |    'type': 1,             # type of the plot
-              |    'channels': ['[X]', '[Y]'],  # display names of all the items to be plotted
-              |    'color': 'auto',       # color or 'auto'
-              |    'line_type': 0,        # the line type
-              |    'line_subtype': 0,     #  line subtype
-              |    'line_width': 2.0,     # line width
-              |    'symbol': 0,           # the symbol to be used
+              |    'name': '[Y]|[X]',          # the name of the curve
+              |    'type': 'curve2d',          # type of the curve (one of `curve2d`, `histoItem1d`, `bandedGraph`
+              |                                  or `spectogram`)
+              |    'channels': ['[X]', '[Y]'], # display names of all the items to be plotted
+              |    'color': 'auto',            # color as hex rgb value (i.e '#ff0000' for red) or 'auto'
+              |    'line_type': 'lines',       # the line type (one of `lines`, `points`, `symbols` or 
+              |                                  `lines_and_symbols`)
+              |    'line_subtype': 'solid',    #  line subtype (one of `solid`, `dotted`, `dashed`, `dot_dash` or
+              |                                   `dot_dot_dash`)
+              |    'line_width': 2.0,          # line width
+              |    'symbol': 'small_cross',    # the symbol to be used (one of `small_cross`, `large_cross` or `circle`)
               |    'activity': 'during'   # when the data should be collected (one of 'before', 'during', 'after')
               |   }
               | ]
               |
+              | Additionally, histograms may have the bin size in a `increment` element. Spectograms can have
+              | `log_z`, `color_map` (one of 'Default', 'Yellow-Red', 'Grayscale' or 'Blue-White-Red'),
+              | 'bilinear' (should the plot interpolate between values), 'contours' (at which values to draw contours)
+              | 'max_z' (max z value).
+
         :type curves: [{}]
 
         :param kwargs: optional arguments
@@ -464,7 +511,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
 
         color = curve['color'] if 'color' in curve else 'auto'
         if plot_item.getParameter('Color'):
-            plot_item.getParameter('Color').setValue(color)
+            plot_item.getParameter('Color').setStringValue(color)
         line_subtype = __line_subtype_to_int(curve['line_subtype']) if 'line_subtype' in curve else 0
         if plot_item.getParameter('Line subtype'):
             plot_item.getParameter('Line subtype').setValue(line_subtype)

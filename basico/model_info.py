@@ -2013,6 +2013,35 @@ def remove_event(name, **kwargs):
     model.compileIfNecessary()
 
 
+def remove_plot(name, **kwargs):
+    """Deletes the named plot
+
+    :param name: the name of an plot in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    output_list = dm.getPlotDefinitionList()
+    assert (isinstance(output_list, COPASI.COutputDefinitionVector))
+
+    for i in range(output_list.size()):
+        plot = output_list.get(i)
+        if plot.getObjectName() != name:
+            continue
+
+        output_list.remove(i)
+        return
+
+    logging.warning('no such plot {0}'.format(name))
+
+
 def remove_reaction(name, **kwargs):
     """Deletes the named reaction
 

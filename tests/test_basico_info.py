@@ -67,6 +67,10 @@ class TestBasicoIO_Brus(unittest.TestCase):
         self.assertTrue(len(plot['curves']) == 1)
         self.assertTrue(len(plot['curves'][0]['channels']) == 2)
         self.assertEqual(plot['curves'][0]['color'], '#FF0000')
+        basico.model_info.remove_plot('test')
+        result = basico.model_info.get_plots()
+        self.assertTrue(len(result) == 2)
+
 
 
 class TestBasicoIO_LM(unittest.TestCase):

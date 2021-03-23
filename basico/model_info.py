@@ -49,6 +49,95 @@ def __status_to_string(status):
     return strings.get(status, 'fixed')
 
 
+def __line_type_to_int(line_type):
+    # type: (str) -> int
+    types = {
+        'lines': 0,
+        'points': 1,
+        'symbols': 2,
+        'both': 3,
+        'lines_and_symbols': 3
+    }
+    return types.get(line_type, 0)
+
+
+def __line_type_to_string(line_type):
+    # type: (int) -> str
+    types = {
+        0: 'lines',
+        1: 'points',
+        2: 'symbols',
+        3: 'lines_and_symbols'
+    }
+    return types.get(line_type, 'lines')
+
+
+def __line_subtype_to_int(sub_type):
+    # type: (str) -> int
+    types = {
+        'solid': 0,
+        'dotted': 1,
+        'dashed': 2,
+        'dot_dash': 3,
+        'dot_dot_dash': 4
+    }
+    return types.get(sub_type, 0)
+
+
+def __line_subtype_to_string(sub_type):
+    # type: (int) -> str
+    types = {
+        0: 'solid',
+        1: 'dotted',
+        2: 'dashed',
+        3: 'dot_dash',
+        4: 'dot_dot_dash'
+    }
+    return types.get(sub_type, 'solid')
+
+
+def __symbol_to_int(symbol_type):
+    # type: (str) -> int
+    types = {
+        'small_cross': 0,
+        'large_cross': 1,
+        'circle': 2
+    }
+    return types.get(symbol_type, 0)
+
+
+def __symbol_to_string(symbol_type):
+    # type: (int) -> str
+    types = {
+        0: 'small_cross',
+        1: 'large_cross',
+        2: 'circle'
+    }
+    return types.get(symbol_type, 'small_cross')
+
+
+def __curve_type_to_int(curve_type):
+    # type: (str) -> int
+    types = {
+        'curve2d': 1,
+        'histoItem1d': 2,
+        'bandedGraph': 3,
+        'spectogram': 7
+    }
+    return types.get(curve_type, 1)
+
+
+def __curve_type_to_string(curve_type):
+    # type: (int) -> str
+    types = {
+        1: 'curve2d',
+        2: 'histoItem1d',
+        3: 'bandedGraph',
+        7: 'spectogram'
+    }
+    return types.get(curve_type, 'curve2d')
+
+
 def get_species(name=None, **kwargs):
     """Returns all information about the species as pandas dataframe.
 
@@ -207,6 +296,296 @@ def get_events(name=None, **kwargs):
         return None
 
     return pandas.DataFrame(data=data).set_index('name')
+
+
+def get_plots(name=None, **kwargs):
+    """Returns all information about the plot definitions as pandas dataframe.
+
+    :param name: optional filter expression for the plots, if it is not included in the plot name,
+                 the plot will not be added to the data set.
+    :type name: str
+
+    :param kwargs: optional arguments:
+
+     * | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
+
+    :return: a pandas dataframe with the information about the plot see also :func:`.get_plot_dict`
+    :rtype: pandas.DataFrame
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    data = []
+
+    for i in range(dm.getNumPlotSpecifications()):
+        plot_spec = dm.getPlotSpecification(i)
+        assert (isinstance(plot_spec, COPASI.CPlotSpecification))
+
+        plot_data = get_plot_dict(plot_spec, model=dm)
+
+        if 'name' in kwargs and not kwargs['name'] in plot_data['name']:
+            continue
+
+        if name and name not in plot_data['name']:
+            continue
+
+        data.append(plot_data)
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
+
+def get_plot_dict(plot_spec, **kwargs):
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if isinstance(plot_spec, str) or isinstance(plot_spec, int):
+        spec = dm.getPlotSpecification(plot_spec)
+        if spec is None:
+            logging.error('No plot specification: {0}'.format(plot_spec))
+            return
+
+        plot_spec = spec
+
+    curves = []
+    for j in range(plot_spec.getNumPlotItems()):
+        plot_item = plot_spec.getItem(j)
+        assert (isinstance(plot_item, COPASI.CPlotItem))
+        curve_data = {
+            'name': plot_item.getObjectName(),
+            'type': __curve_type_to_string(plot_item.getType()),
+            'channels': []
+        }
+
+        if plot_item.getParameter('Color'):
+            curve_data['color'] = plot_item.getParameter('Color').getValue()
+        if plot_item.getParameter('Line subtype'):
+            curve_data['line_subtype'] = __line_subtype_to_string(plot_item.getParameter('Line subtype').getValue())
+        if plot_item.getParameter('Line type'):
+            curve_data['line_type'] = __line_type_to_string(plot_item.getParameter('Line type').getValue())
+        if plot_item.getParameter('Line width'):
+            curve_data['line_width'] = plot_item.getParameter('Line width').getValue()
+        if plot_item.getParameter('Symbol subtype'):
+            curve_data['symbol'] = __symbol_to_string(plot_item.getParameter('Symbol subtype').getValue())
+        if plot_item.getParameter('Recording Activity'):
+            curve_data['activity'] = plot_item.getParameter('Recording Activity').getValue()
+        if plot_item.getParameter('increment'):
+            curve_data['increment'] = plot_item.getParameter('increment').getValue()
+        if plot_item.getParameter('logZ'):
+            curve_data['log_z'] = plot_item.getParameter('logZ').getValue()
+        if plot_item.getParameter('colorMap'):
+            curve_data['color_map'] = plot_item.getParameter('colorMap').getValue()
+        if plot_item.getParameter('bilinear'):
+            curve_data['bilinear'] = plot_item.getParameter('bilinear').getValue()
+        if plot_item.getParameter('contours'):
+            curve_data['contours'] = plot_item.getParameter('contours').getValue()
+        if plot_item.getParameter('maxZ'):
+            curve_data['max_z'] = plot_item.getParameter('maxZ').getValue()
+
+        channels = plot_item.getChannels()
+        for k in range(channels.size()):
+            channel_obj = dm.getObject(channels[k])
+            if channel_obj is None:
+                continue
+            curve_data['channels'].append(channel_obj.getObjectDisplayName())
+
+        curves.append(curve_data)
+
+    plot_data = {
+        'name': plot_spec.getObjectName(),
+        'active': plot_spec.isActive(),
+        'log_x': plot_spec.isLogX(),
+        'log_y': plot_spec.isLogY(),
+        'tasks': plot_spec.getTaskTypes(),
+        'curves': curves
+    }
+
+    return plot_data
+
+
+def set_plot_curves(plot_spec, curves, **kwargs):
+    """Sets all curves of the named plot specification (all curves will be replaced)
+
+        :param plot_spec: the name, index or plot specification object
+        :type plot_spec: Union[str,int,COPASI.CPlotSpecification]
+
+        :param curves: | list of dictionaries of curve items to be added. For example
+              |
+              | [
+              |   {
+              |    'name': '[Y]|[X]',     # the name of the plot
+              |    'type': 1,             # type of the plot
+              |    'channels': ['[X]', '[Y]'],  # display names of all the items to be plotted
+              |    'color': 'auto',       # color or 'auto'
+              |    'line_type': 0,        # the line type
+              |    'line_subtype': 0,     #  line subtype
+              |    'line_width': 2.0,     # line width
+              |    'symbol': 0,           # the symbol to be used
+              |    'activity': 'during'   # when the data should be collected (one of 'before', 'during', 'after')
+              |   }
+              | ]
+              |
+        :type curves: [{}]
+
+        :param kwargs: optional arguments
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: None
+        """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if isinstance(plot_spec, str) or isinstance(plot_spec, int):
+        spec = dm.getPlotSpecification(plot_spec)
+        if spec is None:
+            logging.error('No plot specification: {0}'.format(plot_spec))
+            return
+
+        plot_spec = spec
+
+    assert (isinstance(plot_spec, COPASI.CPlotSpecification))
+
+    plot_spec.cleanup()
+
+    if not curves:
+        return
+
+    for curve in curves:
+        name = curve['name'] if 'name' in curve else 'curve_{0}'.format(plot_spec.getNumPlotItems())
+        curve_type = __curve_type_to_int(curve['type']) if 'type' in curve else 1
+
+        plot_item = plot_spec.createItem(name, curve_type)
+        assert (isinstance(plot_item, COPASI.CPlotItem))
+
+        color = curve['color'] if 'color' in curve else 'auto'
+        if plot_item.getParameter('Color'):
+            plot_item.getParameter('Color').setValue(color)
+        line_subtype = __line_subtype_to_int(curve['line_subtype']) if 'line_subtype' in curve else 0
+        if plot_item.getParameter('Line subtype'):
+            plot_item.getParameter('Line subtype').setValue(line_subtype)
+        line_type = __line_type_to_int(curve['line_type']) if 'line_type' in curve else 0
+        if plot_item.getParameter('Line type'):
+            plot_item.getParameter('Line type').setValue(line_type)
+        line_width = curve['line_width'] if 'line_width' in curve else 2.0
+        if plot_item.getParameter('Line width'):
+            plot_item.getParameter('Line width').setValue(line_width)
+        symbol = __symbol_to_int(curve['symbol']) if 'symbol' in curve else 0
+        if plot_item.getParameter('Symbol subtype'):
+            plot_item.getParameter('Symbol subtype').setValue(symbol)
+        activity = curve['activity'] if 'activity' in curve else 'during'
+        if plot_item.getParameter('Recording Activity'):
+            plot_item.getParameter('Recording Activity').setValue(activity)
+
+        if plot_item.getParameter('increment') and 'increment' in curve:
+            plot_item.getParameter('increment').setValue(curve['increment'])
+        if plot_item.getParameter('logZ') and 'log_z' in curve:
+            plot_item.getParameter('logZ').setValue(curve['log_z'])
+        if plot_item.getParameter('colorMap') and 'color_map' in curve:
+            plot_item.getParameter('colorMap').setValue(curve['color_map'])
+        if plot_item.getParameter('bilinear') and 'bilinear' in curve:
+            plot_item.getParameter('bilinear').setValue(curve['bilinear'])
+        if plot_item.getParameter('contours') and 'contours' in curve:
+            plot_item.getParameter('contours').setValue(curve['contours'])
+        if plot_item.getParameter('maxZ') and 'max_z' in curve:
+            plot_item.getParameter('maxZ').setValue(curve['max_z'])
+
+        if 'channels' in curve:
+            for channel in curve['channels']:
+                obj = dm.findObjectByDisplayName(channel)
+                if channel == 'Time':
+                    obj = dm.getModel().getValueReference()
+                if obj is None:
+                    logging.warning("Couldn't resolve {0} when adding curve spec".format(channel))
+                    continue
+                plot_item.addChannel(COPASI.CPlotDataChannelSpec(obj.getCN()))
+
+
+def add_plot(name, **kwargs):
+    """Adds a new plot specification to the model.
+
+        :param name: the name for the new plot specification
+        :type name: str
+
+        :param kwargs: optional parameters, recognized are:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+            * all other parameters from :func:`set_plot_dict`.
+
+        :return: the plot
+        """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+    plot_spec = dm.getPlotDefinitionList().createPlotSpec(name, COPASI.CPlotItem.plot2d)
+
+    if not plot_spec:
+        ValueError('A plot named ' + name + ' already exists')
+        return None
+
+    set_plot_dict(plot_spec, **kwargs)
+
+    return plot_spec
+
+
+def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **kwargs):
+    """Sets properties of the named plot specification.
+
+        :param plot_spec: the name, index or plot specification object
+        :type plot_spec: Union[str,int,COPASI.CPlotSpecification]
+
+        :param active: boolean indicating whether plot should be active (defaults to true)
+        :type active: bool
+
+        :param log_x: boolean indicating that the x axis should be logarithmic
+        :type log_x: bool
+
+        :param log_y: boolean indicating that the y axis should be logarithmic
+        :type log_y: bool
+
+        :param tasks: | task type (or colon separated list of task types) for which the plot
+                      | should be brought up
+        :type tasks: str
+
+        :param kwargs: optional arguments
+
+            - | `new_name`: to rename the plot specification
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+            - `curves`: dictionary in the format as described in :func:`set_plot_curves`.
+
+        :return: None
+        """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if isinstance(plot_spec, str) or isinstance(plot_spec, int):
+        spec = dm.getPlotSpecification(plot_spec)
+        if spec is None:
+            logging.error('No plot specification: {0}'.format(plot_spec))
+            return
+
+        plot_spec = spec
+
+    assert (isinstance(plot_spec, COPASI.CPlotSpecification))
+
+    plot_spec.setActive(active)
+    plot_spec.setLogX(log_x)
+    plot_spec.setLogY(log_y)
+    plot_spec.setTaskTypes(tasks)
+
+    if 'curves' in kwargs:
+        set_plot_curves(plot_spec, **kwargs)
+
+    if 'new_name' in kwargs:
+        plot_spec.setObjectName(kwargs['new_name'])
 
 
 def _replace_names_with_cns(expression, **kwargs):

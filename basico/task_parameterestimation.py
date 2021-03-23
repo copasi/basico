@@ -349,6 +349,59 @@ def get_experiment_data_from_model(model=None):
     return result
 
 
+def get_fit_item_template(include_local=False, include_global=False, default_lb=0.001, default_ub=1000, model=None):
+    """Returns a template list of items to be used for the parameter estimation
+
+    :param include_local: boolean, indicating whether to include local parameters
+    :type include_local: bool
+
+    :param include_global:  boolean indicating whether to include global parameters
+    :type include_global: bool
+
+    :param default_lb: default lower bound to be used
+    :type default_lb: float
+
+    :param default_ub: default upper bound to be used
+    :type default_ub: float
+
+    :param model: the model or None
+    :type model: COPASI.CDataModel or None
+
+    :return: List of dictionaries, with the local / global parameters in the format needed by:
+             :func:`set_fit_parameters`.
+    :rtype: [{}]
+    """
+
+    if model is None:
+        model = model_io.get_current_model()
+
+    result = []
+
+    if include_global:
+
+        for mv in model.getModel().getModelValues():
+            result.append({
+                'name': mv.getObjectDisplayName(),
+                'lower': default_lb,
+                'upper': default_ub
+            })
+
+    if include_local:
+
+        from . import model_info
+        local_params = model_info.get_reaction_parameters().reset_index()
+        for name, local in zip(local_params['name'], local_params['type']):
+
+            if local == 'local':
+                result.append({
+                    'name': name,
+                    'lower': default_lb,
+                    'upper': default_ub
+                })
+
+    return result
+
+
 def get_fit_parameters(model=None):
     """Returns a data frame with all fit parameters
 

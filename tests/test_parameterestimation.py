@@ -32,6 +32,10 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         exp, sim = basico.get_simulation_results()
         self.assertTrue(len(exp) == len(sim))
 
+    def test_get_item_template(self):
+        template = basico.get_fit_item_template(include_local=True, include_global=True)
+        self.assertTrue(len(template) == 6)
+
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):
 

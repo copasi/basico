@@ -28,10 +28,12 @@ Examples:
 
 try:
     import urllib2
+    from urllib2 import quote_plus
     _use_urllib2 = True
 except ModuleNotFoundError:
     import urllib
     import urllib.request
+    from urllib.parse import quote_plus
     _use_urllib2 = False
 
 import json
@@ -145,13 +147,28 @@ def search_for_model(query, offset=0, num_results=10, sort='id-asc'):
             }
         ]
 
-    :param query: the query to use
+        Note by default, it will include only manually curated models, to obtain Non-curated models you would use:
+
+        >>> search_for_model('Hodgkin AND curationstatus:"Non-curated"')
+        [...,
+            {
+            'format': 'SBML',
+            'id': 'MODEL1006230012',
+            'lastModified': '2012-02-02T00:00:00Z'',
+            'name': 'Stewart2009_ActionPotential_PurkinjeFibreCells',
+            'submissionDate': '2010-06-22T23:00:00Z',
+            'submitter': 'Camille Laibe',
+            'url': 'https://www.ebi.ac.uk/biomodels/MODEL1006230012'
+            }
+        ]
+
+    :param query: the query to use (it will be encoded with quote_plus before send out, so it is safe to use spaces)
     :param offset: offset (defaults to 0)
     :param num_results: number of results to obtain (defaults to 10)
     :param sort: sort criteria to be used (defaults to id-asc)
     :return: the search result as [{}]
     """
-    url = END_POINT + 'search?query=' + query
+    url = END_POINT + 'search?query=' + quote_plus(query)
     url += '&offset=' + str(offset)
     url += "&numResults=" + str(num_results)
     url += '&sort=' + sort

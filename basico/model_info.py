@@ -2174,6 +2174,38 @@ def set_time_unit(unit, **kwargs):
         model.setTimeUnit(kwargs['unit'])
 
 
+def get_model_units(**kwargs):
+    """Returns all model units as dictionary.
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: a dictionary containing the model units in the form:
+        | {
+        |    'time_unit': '',
+        |    'quantity_unit': '',
+        |    'length_unit': '',
+        |    'area_unit': '',
+        |    'volume_unit': '',
+        | }
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    return {
+        'time_unit': model.getTimeUnit(),
+        'quantity_unit': model.getQuantityUnit(),
+        'length_unit': model.getLengthUnit(),
+        'area_unit': model.getAreaUnit(),
+        'volume_unit': model.getVolumeUnit(),
+    }
+
+
 def set_model_unit(**kwargs):
     """Sets the model units.
 

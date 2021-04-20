@@ -121,6 +121,8 @@ def new_model(**kwargs):
 
     - `length_unit` (str): the unit to use for 1D compartments
 
+    - | `notes`: sets notes for the model (either plain text, or valid xhtml)
+
     :return: the new model
     :rtype: COPASI.CDataModel
     """
@@ -147,6 +149,9 @@ def new_model(**kwargs):
 
     if 'time_unit' in kwargs:
         model.setTimeUnit(kwargs['time_unit'])
+
+    if 'notes' in kwargs:
+        model.setNotes(kwargs['notes'])
 
     return set_current_model(dm)
 

@@ -36,7 +36,6 @@ try:
         from urllib2 import quote_plus
     _use_urllib2 = True
 except ImportError:
-    raise
     import urllib
     import urllib.request
     from urllib.parse import quote_plus

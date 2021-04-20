@@ -30,7 +30,7 @@ try:
     import urllib2
     from urllib2 import quote_plus
     _use_urllib2 = True
-except ModuleNotFoundError:
+except ImportError:
     import urllib
     import urllib.request
     from urllib.parse import quote_plus

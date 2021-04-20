@@ -12,7 +12,7 @@ import os
 try:
     import urllib2
     _use_urllib2 = True
-except ModuleNotFoundError:
+except ImportError:
     import urllib
     import urllib.request
     _use_urllib2 = False

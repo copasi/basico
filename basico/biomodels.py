@@ -27,10 +27,16 @@ Examples:
 """
 
 try:
-    import urllib2
-    from urllib2 import quote_plus
+    import sys
+    if sys.version_info.major == 2:
+        import urllib as urllib2
+        from urllib import quote_plus
+    else:
+        import urllib2
+        from urllib2 import quote_plus
     _use_urllib2 = True
 except ImportError:
+    raise
     import urllib
     import urllib.request
     from urllib.parse import quote_plus

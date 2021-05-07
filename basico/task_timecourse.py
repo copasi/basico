@@ -29,16 +29,26 @@ import numpy
 import logging
 
 
-def __build_result_from_ts(time_series, use_concentrations=True):
+def __build_result_from_ts(time_series, use_concentrations=True, use_sbml_id=False, model=None):
     # type: (COPASI.CTimeSeries) -> pandas.DataFrame
     col_count = time_series.getNumVariables()
     row_count = time_series.getRecordedSteps()
+
+    if use_sbml_id and model is None:
+        model = model_io.get_current_model()
 
     column_names = []
     column_keys = []
     for i in range(col_count):
         column_keys.append(time_series.getKey(i))
-        column_names.append(time_series.getTitle(i))
+        name = time_series.getTitle(i)
+
+        if use_sbml_id and name != 'Time':
+            sbml_id = time_series.getSBMLId(i, model)
+            if sbml_id:
+                name = sbml_id
+
+        column_names.append(name)
 
     concentrations = numpy.empty([row_count, col_count])
     for i in range(row_count):
@@ -210,5 +220,7 @@ def run_time_course(*args, **kwargs):
     use_concentrations = kwargs.get('use_concentrations', True)
     if 'use_numbers' in kwargs and kwargs['use_numbers']:
         use_concentrations = False
+
+    use_sbml_id = kwargs.get('use_sbml_id', False)
     
-    return __build_result_from_ts(task.getTimeSeries(), use_concentrations)
+    return __build_result_from_ts(task.getTimeSeries(), use_concentrations, use_sbml_id, model)

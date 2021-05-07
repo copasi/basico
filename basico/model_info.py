@@ -206,6 +206,7 @@ def get_species(name=None, **kwargs):
             'rate': metab.getConcentrationRate(),
             'particle_number_rate': metab.getRate(),
             'key': metab.getKey(),
+            'sbml_id': metab.getSBMLId()
         }
 
         display_name = metab.getObjectDisplayName()
@@ -223,6 +224,9 @@ def get_species(name=None, **kwargs):
             continue
 
         if 'type' in kwargs and kwargs['type'] not in metab_data['type']:
+            continue
+
+        if 'sbml_id' in kwargs and kwargs['sbml_id']  != metab_data['sbml_id']:
             continue
 
         data.append(metab_data)
@@ -282,12 +286,16 @@ def get_events(name=None, **kwargs):
             'delay': _replace_cns_with_names(event.getDelayExpression(), model=dm),
             'assignments': assignments,
             'key': event.getKey(),
+            'sbml_id': event.getSBMLId()
         }
 
         if 'name' in kwargs and not kwargs['name'] in event_data['name']:
             continue
 
         if name and name not in event_data['name']:
+            continue
+
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != event_data['sbml_id']:
             continue
 
         data.append(event_data)
@@ -1308,6 +1316,7 @@ def get_compartments(name=None, **kwargs):
             'size': compartment.getValue(),
             'rate': compartment.getRate(),
             'key': compartment.getKey(),
+            'sbml_id': compartment.getSBMLId()
         }
 
         if 'name' in kwargs and kwargs['name'] not in comp_data['name']:
@@ -1317,6 +1326,9 @@ def get_compartments(name=None, **kwargs):
             continue
 
         if 'type' in kwargs and kwargs['type'] not in comp_data['type']:
+            continue
+
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != comp_data['sbml_id']:
             continue
 
         data.append(comp_data)
@@ -1371,6 +1383,7 @@ def get_parameters(name=None, **kwargs):
             'value': param.getValue(),
             'rate': param.getRate(),
             'key': param.getKey(),
+            'sbml_id': param.getSBMLId()
         }
 
         display_name = param.getObjectDisplayName()
@@ -1382,6 +1395,9 @@ def get_parameters(name=None, **kwargs):
             continue
 
         if 'type' in kwargs and kwargs['type'] not in param_data['type']:
+            continue
+
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != param_data['sbml_id']:
             continue
 
         data.append(param_data)
@@ -1560,13 +1576,18 @@ def get_reactions(name=None, **kwargs):
             'scheme': reaction.getReactionScheme(),
             'flux': reaction.getFlux(),
             'particle_flux': reaction.getParticleFlux(),
-            'function': reaction.getFunction().getObjectName()
+            'function': reaction.getFunction().getObjectName(),
+            'key': reaction.getKey(),
+            'sbml_id': reaction.getSBMLId()
         }
 
         if 'name' in kwargs and kwargs['name'] not in reaction_data['name']:
             continue
 
         if name and name not in reaction_data['name']:
+            continue
+
+        if 'sbml_id' in kwargs and kwargs['sbml_id']  != reaction_data['sbml_id']:
             continue
 
         data.append(reaction_data)
@@ -1669,6 +1690,9 @@ def set_compartment(name=None, **kwargs):
         if 'notes' in kwargs:
             compartment.setNotes(kwargs['notes'])
 
+        if 'sbml_id' in kwargs:
+            compartment.setSBMLId(kwargs['sbml_id'])
+
     model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
@@ -1742,6 +1766,9 @@ def set_parameters(name=None, **kwargs):
 
         if 'notes' in kwargs:
             param.setNotes(kwargs['notes'])
+
+        if 'sbml_id' in kwargs:
+            param.setSBMLId(kwargs['sbml_id'])
 
     model.updateInitialValues(change_set)
     model.compileIfNecessary()
@@ -1884,6 +1911,9 @@ def set_reaction(name=None, **kwargs):
 
         if 'notes' in kwargs:
             reaction.setNotes(kwargs['notes'])
+
+        if 'sbml_id' in kwargs:
+            reaction.setSBMLId(kwargs['sbml_id'])
 
     if changed:
         model.forceCompile()
@@ -2149,6 +2179,10 @@ def set_species(name=None, **kwargs):
         if 'notes' in kwargs:
             metab.setNotes(kwargs['notes'])
 
+        if 'sbml_id' in kwargs:
+            metab.setSBMLId(kwargs['sbml_id'])
+
+
     model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
@@ -2251,3 +2285,84 @@ def set_model_unit(**kwargs):
         model.setVolumeUnit(kwargs['volume_unit'])
 
     model.updateInitialValues(COPASI.CCore.Framework_Concentration)
+
+
+def add_amount_expressions(**kwargs):
+    """ Utility function that adds model values for all metabolites to the model to compute the amount
+
+    The global parameters created will be named amount(metab_name), and so can be accessed at any time.
+    Should the amount already exist, it will not be modified.
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    for metab in model.getMetabolites():
+        assert (isinstance(metab, COPASI.CMetab))
+        if metab.getCompartment() is None:
+            logging.warning('Cannot create an amount expression for {0} as it has no compartment'.format(
+                metab.getObjectDisplayName()))
+            continue
+
+        if 'ignore_fixed' in kwargs \
+               and kwargs['ignore_fixed'] == True \
+               and metab.getStatus() == COPASI.CModelEntity.Status_FIXED:
+            continue
+
+        if 'ignore_assignment' in kwargs \
+                and kwargs['ignore_assignment'] == True\
+                and metab.getStatus() == COPASI.CModelEntity.Status_ASSIGNMENT:
+            continue
+
+        mv_name = 'amount({0})'.format(metab.getObjectDisplayName())
+        if 'use_sbml_ids' in kwargs:
+            mv_name = 'amount({0})'.format(metab.getSBMLId())
+
+        mv = model.getModelValue(mv_name)
+        if mv is not None:
+            continue
+        add_parameter(mv_name,
+                      status='assignment',
+                      expression='<{0}> * <{1}>'.format(
+                          metab.getConcentrationReference().getCN(),
+                          metab.getCompartment().getValueReference().getCN()),
+                      notes='Amount expression for {0}'.format(metab.getObjectDisplayName())
+                      )
+
+
+def remove_amount_expressions(**kwargs):
+    """ Utility function that removes model values created using `add_amount_expressions`.
+
+    The global parameters created will be named amount(metab_name), and so can be accessed at any time.
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    keys = []
+    for mv in model.getModelValues():
+        assert(isinstance(mv, COPASI.CModelValue))
+        if mv.getNotes().startswith('Amount ex'):
+            keys.append(mv.getKey())
+
+    for key in keys:
+        model.removeModelValue(key)
+        model.compileIfNecessary()

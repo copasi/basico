@@ -32,14 +32,19 @@ class TestBasicoIO(unittest.TestCase):
         self.assertTrue(isinstance(dm, COPASI.CDataModel))
         self.assertTrue('Stewart2009' in basico.model_io.overview())
         params = basico.get_parameters()
-        self.assertTrue(params.shape[0] == 176)
+        self.assertEqual(params.shape[0], 176)
         basico.remove_datamodel(dm)
 
     def test_search_biomodels(self):
         models = basico.biomodels.search_for_model('Hodgkin')
-        self.assertTrue(len(models) == 10)
+        model_ids = [model['id'] for model in models]
+        curated_models = len(models)
+        self.assertTrue(curated_models > 0)
         models = basico.biomodels.search_for_model('Hodgkin AND curationstatus:"Non-curated"')
-        self.assertTrue(len(models) == 9)
+        uncurated = len(models)
+        self.assertTrue(uncurated > 0)
+        uncurated_ids = [model['id'] for model in models]
+        self.assertNotEqual(model_ids, uncurated_ids)
 
     def test_simulate(self):
         dm = basico.load_example('LM')

@@ -11,6 +11,7 @@ Here all functionality for interrogating and manipulating the model is hosted. F
 you will find functions to add, get, set, and remove them.
 
 """
+import tempfile
 
 from . import model_io
 import pandas
@@ -972,7 +973,6 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
                          |   'id': '...',
                          |   'qualifier': '...',
                          |   'uri': 'identifiers.org uri',
-                         |   'description', '...'
                          | }
                          |
                          | only the uri needs to be provided, or alternatively id + resource.
@@ -1021,9 +1021,11 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
         if creators is not None:
             if replace:
-                info.getCreators().clear()
+                num_entries = info.getCreators().size()
+                for i in range(num_entries):
+                    info.removeCreator(info.getCreators().get(0))
             for creator in creators:
-                c = info.createCreator()
+                c = info.createCreator('')
                 assert (isinstance(c, COPASI.CCreator))
                 if 'first_name' in creator:
                     c.setGivenName(creator['first_name'])
@@ -1036,9 +1038,11 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
         if references is not None:
             if replace:
-                info.getReferences().clear()
+                num_entries = info.getReferences().size()
+                for i in range(num_entries):
+                    info.removeReference(info.getReferences().get(0))
             for reference in references:
-                r = info.createReference()
+                r = info.createReference('')
                 assert (isinstance(r, COPASI.CReference))
                 if 'resource' in reference:
                     r.setResource(reference['resource'])
@@ -1051,7 +1055,9 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
         if descriptions is not None:
             if replace:
-                info.getBiologicalDescriptions().clear()
+                num_entries = info.getBiologicalDescriptions().size()
+                for i in range(num_entries):
+                    info.removeBiologicalDescription(info.getBiologicalDescriptions().get(0))
             for desc in descriptions:
                 d = info.createBiologicalDescription()
                 assert (isinstance(d, COPASI.CBiologicalDescription))
@@ -1066,9 +1072,11 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
         if modifications is not None:
             if replace:
-                info.getModifications().clear()
+                num_entries = info.getModifications().size()
+                for i in range(num_entries):
+                    info.removeModification(info.getModifications().get(0))
             for modification in modifications:
-                m = info.createModification()
+                m = info.createModification('')
                 assert (isinstance(m, COPASI.CModification))
                 m.setDate(modification.isoformat())
 
@@ -2366,3 +2374,37 @@ def remove_amount_expressions(**kwargs):
     for key in keys:
         model.removeModelValue(key)
         model.compileIfNecessary()
+
+
+def get_miriam_resources():
+    resources = []
+    try:
+        miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
+        assert (isinstance(miriam, COPASI.CMIRIAMResources))
+        for i in range(miriam.getResourceList().size()):
+            res = miriam.getMIRIAMResource(i)
+            assert (isinstance(res, COPASI.CMIRIAMResource))
+            resources.append({
+                'resource': res.getMIRIAMDisplayName(),
+                'is_citation': res.getMIRIAMCitation(),
+                'uri': res.getIdentifiersOrgURL()
+            })
+    except:
+        logging.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")
+
+    return pandas.DataFrame(data=resources).set_index('resource')
+
+
+def update_miriam_resources():
+    try:
+        import biomodels
+    except ImportError:
+        from . import biomodels
+
+    with tempfile.NamedTemporaryFile() as temp_file:
+        temp_file.write(biomodels.download_from('http://copasi.org/static/miriam.xml').encode('utf-8'))
+        name = temp_file.name
+        temp_file.close()
+        miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
+        assert (isinstance(miriam, COPASI.CMIRIAMResources))
+        miriam.updateMIRIAMResourcesFromFile(None, name)

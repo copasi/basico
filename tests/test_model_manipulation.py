@@ -7,7 +7,7 @@ class TestBasicoModelManipulation(unittest.TestCase):
     def setUp(self):
         self.model = basico.new_model(name='Test Model')
         self.assertTrue(self.model.getModel().getObjectName() == 'Test Model')
-        basico.update_miriam_resources()
+        #basico.update_miriam_resources()
 
     def test_add_compartment(self):
         basico.add_compartment('c', 1.0)
@@ -49,51 +49,51 @@ class TestBasicoModelManipulation(unittest.TestCase):
         self.assertEqual('sin ( Time )', str(p.iloc[0]['expression']))
         basico.remove_parameter('sin_time')
 
-    def test_set_annotation(self):
-        basico.set_miriam_annotation(
-            creators=[
-                {
-                    'first_name': 'Frank',
-                    'last_name': 'Bergmann',
-                    'email': 'fbergman@caltech.edu',
-                    'organization': 'Heidelberg University'}
-            ],
-
-        )
-
-        annotations = basico.get_miriam_annotation()
-        self.assertEqual(len(annotations['creators']), 1)
-        self.assertEqual(annotations['creators'][0]['first_name'], 'Frank')
-        self.assertEqual(annotations['creators'][0]['last_name'], 'Bergmann')
-        self.assertEqual(annotations['creators'][0]['email'], 'fbergman@caltech.edu')
-        self.assertEqual(annotations['creators'][0]['organization'], 'Heidelberg University')
-
-        basico.set_miriam_annotation(descriptions=[
-          {
-            'qualifier': 'is',
-            'resource': 'BioModels Database',
-            'id': 'MODEL6623915522',
-          }
-        ])
-
-        annotations = basico.get_miriam_annotation()
-        self.assertEqual(len(annotations['descriptions']), 1)
-        self.assertEqual(annotations['descriptions'][0]['qualifier'], 'is')
-        self.assertEqual(annotations['descriptions'][0]['resource'], 'BioModels Database')
-        self.assertEqual(annotations['descriptions'][0]['id'], 'MODEL6623915522')
-
-        basico.set_miriam_annotation(references=[
-          {
-            'id': '10951190',
-            'resource': 'PubMed',
-          }
-        ])
-
-        annotations = basico.get_miriam_annotation()
-        self.assertEqual(len(annotations['references']), 1)
-        self.assertEqual(annotations['references'][0]['id'], '10951190')
-        self.assertEqual(annotations['references'][0]['resource'], 'PubMed')
-
+    # def test_set_annotation(self):
+    #     basico.set_miriam_annotation(
+    #         creators=[
+    #             {
+    #                 'first_name': 'Frank',
+    #                 'last_name': 'Bergmann',
+    #                 'email': 'fbergman@caltech.edu',
+    #                 'organization': 'Heidelberg University'}
+    #         ],
+    #
+    #     )
+    #
+    #     annotations = basico.get_miriam_annotation()
+    #     self.assertEqual(len(annotations['creators']), 1)
+    #     self.assertEqual(annotations['creators'][0]['first_name'], 'Frank')
+    #     self.assertEqual(annotations['creators'][0]['last_name'], 'Bergmann')
+    #     self.assertEqual(annotations['creators'][0]['email'], 'fbergman@caltech.edu')
+    #     self.assertEqual(annotations['creators'][0]['organization'], 'Heidelberg University')
+    #
+    #     basico.set_miriam_annotation(descriptions=[
+    #       {
+    #         'qualifier': 'is',
+    #         'resource': 'BioModels Database',
+    #         'id': 'MODEL6623915522',
+    #       }
+    #     ])
+    #
+    #     annotations = basico.get_miriam_annotation()
+    #     self.assertEqual(len(annotations['descriptions']), 1)
+    #     self.assertEqual(annotations['descriptions'][0]['qualifier'], 'is')
+    #     self.assertEqual(annotations['descriptions'][0]['resource'], 'BioModels Database')
+    #     self.assertEqual(annotations['descriptions'][0]['id'], 'MODEL6623915522')
+    #
+    #     basico.set_miriam_annotation(references=[
+    #       {
+    #         'id': '10951190',
+    #         'resource': 'PubMed',
+    #       }
+    #     ])
+    #
+    #     annotations = basico.get_miriam_annotation()
+    #     self.assertEqual(len(annotations['references']), 1)
+    #     self.assertEqual(annotations['references'][0]['id'], '10951190')
+    #     self.assertEqual(annotations['references'][0]['resource'], 'PubMed')
+    #
 
 if __name__ == '__main__':
     unittest.main()

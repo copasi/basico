@@ -7,6 +7,7 @@ class TestBasicoModelManipulation(unittest.TestCase):
     def setUp(self):
         self.model = basico.new_model(name='Test Model')
         self.assertTrue(self.model.getModel().getObjectName() == 'Test Model')
+        basico.update_miriam_resources()
 
     def test_add_compartment(self):
         basico.add_compartment('c', 1.0)

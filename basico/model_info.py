@@ -2384,6 +2384,7 @@ def have_miriam_resources():
     except:
         return False
 
+
 def get_miriam_resources():
     resources = []
     try:
@@ -2412,10 +2413,12 @@ def update_miriam_resources():
     except ImportError:
         from . import biomodels
 
-    with tempfile.NamedTemporaryFile() as temp_file:
+    with tempfile.NamedTemporaryFile(encoding='utf-8') as temp_file:
         temp_file.write(biomodels.download_from('http://copasi.org/static/miriam.xml').encode('utf-8'))
         name = temp_file.name
         temp_file.close()
-        miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
+        config = COPASI.CRootContainer.getConfiguration()
+        miriam = config.getRecentMIRIAMResources()
         assert (isinstance(miriam, COPASI.CMIRIAMResources))
         miriam.updateMIRIAMResourcesFromFile(None, name)
+        config.save()

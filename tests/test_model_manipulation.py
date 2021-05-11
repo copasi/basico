@@ -62,6 +62,8 @@ class TestBasicoModelManipulation(unittest.TestCase):
 
         )
 
+        self.assertTrue(basico.have_miriam_resources())
+
         annotations = basico.get_miriam_annotation()
         self.assertEqual(len(annotations['creators']), 1)
         self.assertEqual(annotations['creators'][0]['first_name'], 'Frank')

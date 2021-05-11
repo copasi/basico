@@ -19,11 +19,15 @@ import COPASI
 import logging
 import dateutil.parser
 import datetime
+import sys
 
 try:
     from collections.abc import Iterable  # noqa
 except ImportError:
     from collections import Iterable  # noqa
+
+if sys.version_info[0] < 3:
+    from io import open
 
 
 def __status_to_int(status):

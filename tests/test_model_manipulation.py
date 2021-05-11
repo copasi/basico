@@ -7,8 +7,6 @@ class TestBasicoModelManipulation(unittest.TestCase):
     def setUp(self):
         self.model = basico.new_model(name='Test Model')
         self.assertTrue(self.model.getModel().getObjectName() == 'Test Model')
-        if not basico.have_miriam_resources():
-            basico.update_miriam_resources()
 
     def test_add_compartment(self):
         basico.add_compartment('c', 1.0)
@@ -51,6 +49,9 @@ class TestBasicoModelManipulation(unittest.TestCase):
         basico.remove_parameter('sin_time')
 
     def test_set_annotation(self):
+        if not basico.have_miriam_resources():
+            basico.update_miriam_resources()
+
         basico.set_miriam_annotation(
             creators=[
                 {

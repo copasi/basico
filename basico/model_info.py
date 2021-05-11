@@ -2413,12 +2413,13 @@ def update_miriam_resources():
     except ImportError:
         from . import biomodels
 
-    with tempfile.NamedTemporaryFile() as temp_file:
-        temp_file.write(biomodels.download_from('http://copasi.org/static/miriam.xml').encode('utf-8'))
-        name = temp_file.name
+    temp_name = tempfile.mktemp()
+
+    with open(temp_name, mode='w', encoding='utf-8') as temp_file:
+        temp_file.write(biomodels.download_from('http://copasi.org/static/miriam.xml'))
         temp_file.close()
-        config = COPASI.CRootContainer.getConfiguration()
-        miriam = config.getRecentMIRIAMResources()
-        assert (isinstance(miriam, COPASI.CMIRIAMResources))
-        miriam.updateMIRIAMResourcesFromFile(None, name)
-        config.save()
+    config = COPASI.CRootContainer.getConfiguration()
+    miriam = config.getRecentMIRIAMResources()
+    assert (isinstance(miriam, COPASI.CMIRIAMResources))
+    miriam.updateMIRIAMResourcesFromFile(None, temp_name)
+    config.save()

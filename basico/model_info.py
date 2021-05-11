@@ -2376,6 +2376,14 @@ def remove_amount_expressions(**kwargs):
         model.compileIfNecessary()
 
 
+def have_miriam_resources():
+    try:
+        miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
+        assert (isinstance(miriam, COPASI.CMIRIAMResources))
+        return miriam.getResourceList().size() > 0
+    except:
+        return False
+
 def get_miriam_resources():
     resources = []
     try:
@@ -2392,7 +2400,10 @@ def get_miriam_resources():
     except:
         logging.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")
 
-    return pandas.DataFrame(data=resources).set_index('resource')
+    df = pandas.DataFrame(data=resources)
+    if resources:
+        df.set_index('resource')
+    return df
 
 
 def update_miriam_resources():

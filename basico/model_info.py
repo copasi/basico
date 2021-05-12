@@ -21,7 +21,7 @@ import dateutil.parser
 import datetime
 import sys
 
-MIRIAM_XML = 'https://copasi.org/static/miriam.xml'
+MIRIAM_XML = 'http://copasi.org/static/miriam.xml' # noqa
 
 try:
     from collections.abc import Iterable  # noqa

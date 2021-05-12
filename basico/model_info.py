@@ -21,6 +21,8 @@ import dateutil.parser
 import datetime
 import sys
 
+MIRIAM_XML = 'https://copasi.org/static/miriam.xml'
+
 try:
     from collections.abc import Iterable  # noqa
 except ImportError:
@@ -2381,15 +2383,25 @@ def remove_amount_expressions(**kwargs):
 
 
 def have_miriam_resources():
+    """Utility function returning whether MIRIAM resources are avaialble
+
+    :return: boolean indicating whether there are MIRIAM resources available or not
+    :rtype: bool
+    """
     try:
         miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
         assert (isinstance(miriam, COPASI.CMIRIAMResources))
         return miriam.getResourceList().size() > 0
-    except:
+    except AttributeError:
         return False
 
 
 def get_miriam_resources():
+    """Retrieves the current MIRIAM resources from the configuration
+
+    :return: dataframe with the list of current miriam resources
+    :rtype: pandas.DataFrame
+    """
     resources = []
     try:
         miriam = COPASI.CRootContainer.getConfiguration().getRecentMIRIAMResources()
@@ -2402,7 +2414,7 @@ def get_miriam_resources():
                 'is_citation': res.getMIRIAMCitation(),
                 'uri': res.getIdentifiersOrgURL()
             })
-    except:
+    except AttributeError:
         logging.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")
 
     df = pandas.DataFrame(data=resources)
@@ -2412,6 +2424,7 @@ def get_miriam_resources():
 
 
 def update_miriam_resources():
+    """This method downloads the latest miriam resources from the COPASI website and stores the configuration"""
     try:
         import biomodels
     except ImportError:
@@ -2420,7 +2433,10 @@ def update_miriam_resources():
     temp_name = tempfile.mktemp()
 
     with open(temp_name, mode='w', encoding='utf-8') as temp_file:
-        temp_file.write(biomodels.download_from('http://copasi.org/static/miriam.xml'))
+        if sys.version_info[0] < 3:
+            temp_file.write(biomodels.download_from(MIRIAM_XML).decode('utf-8'))
+        else:
+            temp_file.write(biomodels.download_from(MIRIAM_XML))
         temp_file.close()
     config = COPASI.CRootContainer.getConfiguration()
     miriam = config.getRecentMIRIAMResources()

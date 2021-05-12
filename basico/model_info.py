@@ -1018,77 +1018,94 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
         logging.warning("Couldn't find element to set annotations.")
         return
 
-    if isinstance(element, COPASI.CDataObject):
-        info = COPASI.CMIRIAMInfo()
-        info.load(element)
-
-        if created is not None and isinstance(created, datetime.datetime):
-            info.setCreatedDT(created.isoformat())
-
-        if creators is not None:
-            if replace:
-                num_entries = info.getCreators().size()
-                for i in range(num_entries):
-                    info.removeCreator(info.getCreators().get(0))
-            for creator in creators:
-                c = info.createCreator('')
-                assert (isinstance(c, COPASI.CCreator))
-                if 'first_name' in creator:
-                    c.setGivenName(creator['first_name'])
-                if 'last_name' in creator:
-                    c.setFamilyName(creator['last_name'])
-                if 'email' in creator:
-                    c.setEmail(creator['email'])
-                if 'organization' in creator:
-                    c.setORG(creator['organization'])
-
-        if references is not None:
-            if replace:
-                num_entries = info.getReferences().size()
-                for i in range(num_entries):
-                    info.removeReference(info.getReferences().get(0))
-            for reference in references:
-                r = info.createReference('')
-                assert (isinstance(r, COPASI.CReference))
-                if 'resource' in reference:
-                    r.setResource(reference['resource'])
-                if 'id' in reference:
-                    r.setId(reference['id'])
-                if 'description' in reference:
-                    r.setDescription(reference['description'])
-                if 'uri' in reference:
-                    r.getMIRIAMResourceObject().setURI(reference['uri'])
-
-        if descriptions is not None:
-            if replace:
-                num_entries = info.getBiologicalDescriptions().size()
-                for i in range(num_entries):
-                    info.removeBiologicalDescription(info.getBiologicalDescriptions().get(0))
-            for desc in descriptions:
-                d = info.createBiologicalDescription()
-                assert (isinstance(d, COPASI.CBiologicalDescription))
-                if 'qualifier' in desc:
-                    d.setPredicate(desc['qualifier'])
-                if 'resource' in desc:
-                    d.setResource(desc['resource'])
-                if 'id' in desc:
-                    d.setId(desc['id'])
-                if 'uri' in desc:
-                    d.getMIRIAMResourceObject().setURI(desc['uri'])
-
-        if modifications is not None:
-            if replace:
-                num_entries = info.getModifications().size()
-                for i in range(num_entries):
-                    info.removeModification(info.getModifications().get(0))
-            for modification in modifications:
-                m = info.createModification('')
-                assert (isinstance(m, COPASI.CModification))
-                m.setDate(modification.isoformat())
-
-        info.save()
-    else:
+    if not isinstance(element, COPASI.CDataObject):
         logging.warning("Unsupported element type for setting annotations.")
+        return
+
+    info = COPASI.CMIRIAMInfo()
+    info.load(element)
+
+    if created is not None and isinstance(created, datetime.datetime):
+        info.setCreatedDT(created.isoformat())
+
+    if creators is not None:
+        if replace:
+            _remove_creators(info)
+        for creator in creators:
+            c = info.createCreator('')
+            assert (isinstance(c, COPASI.CCreator))
+            if 'first_name' in creator:
+                c.setGivenName(creator['first_name'])
+            if 'last_name' in creator:
+                c.setFamilyName(creator['last_name'])
+            if 'email' in creator:
+                c.setEmail(creator['email'])
+            if 'organization' in creator:
+                c.setORG(creator['organization'])
+
+    if references is not None:
+        if replace:
+            _remove_references(info)
+        for reference in references:
+            r = info.createReference('')
+            assert (isinstance(r, COPASI.CReference))
+            if 'resource' in reference:
+                r.setResource(reference['resource'])
+            if 'id' in reference:
+                r.setId(reference['id'])
+            if 'description' in reference:
+                r.setDescription(reference['description'])
+            if 'uri' in reference:
+                r.getMIRIAMResourceObject().setURI(reference['uri'])
+
+    if descriptions is not None:
+        if replace:
+            _remove_descriptions(info)
+        for desc in descriptions:
+            d = info.createBiologicalDescription()
+            assert (isinstance(d, COPASI.CBiologicalDescription))
+            if 'qualifier' in desc:
+                d.setPredicate(desc['qualifier'])
+            if 'resource' in desc:
+                d.setResource(desc['resource'])
+            if 'id' in desc:
+                d.setId(desc['id'])
+            if 'uri' in desc:
+                d.getMIRIAMResourceObject().setURI(desc['uri'])
+
+    if modifications is not None:
+        if replace:
+            _remove_modifications(info)
+        for modification in modifications:
+            m = info.createModification('')
+            assert (isinstance(m, COPASI.CModification))
+            m.setDate(modification.isoformat())
+
+    info.save()
+
+
+def _remove_modifications(info):
+    num_entries = info.getModifications().size()
+    for i in range(num_entries):
+        info.removeModification(info.getModifications().get(0))
+
+
+def _remove_descriptions(info):
+    num_entries = info.getBiologicalDescriptions().size()
+    for i in range(num_entries):
+        info.removeBiologicalDescription(info.getBiologicalDescriptions().get(0))
+
+
+def _remove_references(info):
+    num_entries = info.getReferences().size()
+    for i in range(num_entries):
+        info.removeReference(info.getReferences().get(0))
+
+
+def _remove_creators(info):
+    num_entries = info.getCreators().size()
+    for i in range(num_entries):
+        info.removeCreator(info.getCreators().get(0))
 
 
 def add_compartment(name, initial_size=1.0, **kwargs):

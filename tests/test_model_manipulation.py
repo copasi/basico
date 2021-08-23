@@ -105,9 +105,6 @@ class TestBasicoModelManipulation(unittest.TestCase):
         expression = basico.add_equation(
             '[E]=([E]_0 exp(-k_d t))/(1+([PGME])/K_s + ((k_2 [PGME])/(K_s ((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3) ))(1+([7-ADCA])/K_n +([PGME])/K_si )+([CEX])/K_p +([PG])/K_p2i )')
 
-        basico.open_copasi()
-        expression = basico.add_equation('d[Y]/dt = [K]_0 * exp({Time})')
-
     def test_add_function(self):
         # add
         basico.add_function('MA KD', 'vr*(K_d-1)')

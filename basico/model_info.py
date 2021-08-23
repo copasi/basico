@@ -2905,7 +2905,7 @@ def add_equation(eqn, time_symbol='t', **kwargs):
                 assert (isinstance(element, COPASI.CMetab))
                 obj = element.getInitialConcentrationReference().getCN() if token[
                     'is_initial'] else element.getConcentrationReference().getCN()
-            if token['var'] == time_symbol:
+            elif token['var'] == time_symbol:
                 obj = model.getValueReference().getCN()
             else:
                 element = model.getModelValue(token['var'])

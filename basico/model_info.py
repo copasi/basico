@@ -2686,7 +2686,15 @@ def _tokenize_eqn(eqn):
     tokens = []
 
     operators = ['/', '*', '+', '-', '^', '(', ')']
-    functions = ['exp', 'pow']
+    functions = ['exp', 'pow', 'abs', 'floor', 'factorial',
+                 'log', 'log10', 'sin', 'cos', 'tan', 'sec',
+                 'csc', 'cot', 'sinh', 'cosh', 'tanh', 'sech'
+                 'csch', 'coth', 'asin', 'acos', 'atan', 'arcsec',
+                 'arccsc', 'arccot', 'arcsinh', 'arccosh',
+                 'arctanh', 'arcsech', 'arccsch', 'arccoth',
+                 'uniform', 'normal', 'gamma', 'poisson',
+                 'le', 'lt', 'ge', 'gt', 'ne', 'eq', 'and',
+                 'or', 'xor', 'not', 'if']
 
     chunk = ''
     var = None
@@ -2698,7 +2706,6 @@ def _tokenize_eqn(eqn):
         c_0 = eqn[i]
         c_1 = eqn[i + 1] if i + 1 < num_chars else None
         c_2 = eqn[i + 2] if i + 2 < num_chars else None
-        c_3 = eqn[i + 3] if i + 3 < num_chars else None
 
         if c_0 == '[' and c_1 is not None:
             var, var_is_initial, var_is_species = _store_variable(parameters, species, tokens, var, var_is_initial,
@@ -2728,6 +2735,10 @@ def _tokenize_eqn(eqn):
             continue
 
         elif c_0 == '=':
+
+            if var is None:
+                var = chunk
+
             token = {
                 'var': var,
                 'is_species': var_is_species,

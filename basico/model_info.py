@@ -145,6 +145,56 @@ def __curve_type_to_string(curve_type):
     return types.get(curve_type, 'curve2d')
 
 
+def __function_type_to_int(function_type):
+    # type: (str) -> int
+    types = {
+        'general': -1,
+        'reversible': 1,
+        'irreversible': 0
+    }
+    return types.get(function_type, -1)
+
+
+def __function_type_to_string(function_type):
+    # type: (int) -> str
+    types = {
+        -1: 'general',
+        1: 'reversible',
+        0: 'irreversible'
+    }
+    return types.get(function_type, 'general')
+
+
+def __usage_to_int(usage):
+    # type:  (str) -> int
+    types = {
+        "substrate": 0,
+        "product": 1,
+        "modifier": 2,
+        "parameter": 3,
+        "volume": 4,
+        "time": 5,
+        "variable": 6,
+        "temporary": 7,
+    }
+    return types.get(usage, 3)
+
+
+def __usage_to_string(usage):
+    # type:  (int) -> str
+    types = {
+        0: "substrate",
+        1: "product",
+        2: "modifier",
+        3: "parameter",
+        4: "volume",
+        5: "time",
+        6: "variable",
+        7: "temporary",
+    }
+    return types.get(usage, "parameter")
+
+
 def get_species(name=None, **kwargs):
     """Returns all information about the species as pandas dataframe.
 
@@ -1141,6 +1191,125 @@ def add_compartment(name, initial_size=1.0, **kwargs):
     return compartment
 
 
+def add_function(name, infix, type='general', mapping=None, **kwargs):
+    """Adds a new function definition if none with that name already exists
+
+    :param name: the name for the new function
+    :type name: str
+
+    :param infix: the formula for the new function (e.g: `V * S / ( K + S )`)
+    :type infix: str
+
+    :param type: optional flag specifying whether the function is
+                 'reversible', 'irreversible' or 'general'
+    :type type: str
+
+    :param mapping: optional dictionary mapping the elements of the infix
+           to their usage. If not specified, the usage will default to `parameter`,
+           other values possible would be `substrate`, `product`, `modifier`, `volume or
+           `time`. One example for the infix for the infix above  we would specify that
+           `S` is `substrate`:
+
+           { 'S': 'substrate' }
+
+    :type mapping: dict
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    """
+    root = COPASI.CRootContainer.getRoot()
+    assert (isinstance(root, COPASI.CRootContainer))
+    db = root.getFunctionList()
+    assert (isinstance(db, COPASI.CFunctionDB))
+    functions = db.loadedFunctions()
+
+    if mapping is None:
+        mapping = {}
+    
+    if db.findLoadFunction(name) is not None:
+        logging.error('A function with name "' + name + '" already exists')
+        return
+
+    fun = db.createFunction(name, COPASI.CEvaluationTree.Function)
+    if fun is None:
+        logging.error('Could not create a function with name "' + name + '" already exists')
+        return
+
+    fun.setInfix(infix)
+    fun.setReversible(__function_type_to_int(type))
+
+    variables = fun.getVariables()
+    assert(isinstance(variables, COPASI.CFunctionParameters))
+
+    for i in range(variables.size()):
+        param = variables.getParameter(i)
+        assert(isinstance(param, COPASI.CFunctionParameter))
+        usage = __usage_to_int(mapping.get(param.getObjectName(), 'parameter'))
+        param.setUsage(usage)
+
+    return fun
+
+
+def remove_function(name, **kwargs):
+    """Removes the function with the given name
+
+    :param name: the name of the function to be removed
+    :type name: str
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    root = COPASI.CRootContainer.getRoot()
+    assert (isinstance(root, COPASI.CRootContainer))
+    db = root.getFunctionList()
+    assert(isinstance(db, COPASI.CFunctionDB))
+
+    fun = db.findFunction(name)
+    assert(isinstance(fun, COPASI.CFunction))
+    if fun is None:
+        logging.warning('A function with name "' + name + '" does not exists')
+        return
+
+    if fun.isReadOnly():
+        logging.error('The function "' + name + '" is readonly and cannot be deleted')
+        return
+
+    key = fun.getKey()
+    fun = None
+
+    db.removeFunction(key)
+
+
+def remove_user_defined_functions():
+    """Removes all user defined functions along with all elements that still use them
+    """
+    root = COPASI.CRootContainer.getRoot()
+    assert (isinstance(root, COPASI.CRootContainer))
+    db = root.getFunctionList()
+    assert(isinstance(db, COPASI.CFunctionDB))
+    funs = db.loadedFunctions()
+
+    to_be_deleted = []
+
+    for i in range(funs.size()):
+        fun = funs.get(i)
+        if fun is None:
+            continue
+        if fun.isReadOnly():
+            continue
+        to_be_deleted.append(fun.getKey())
+
+    for key in to_be_deleted:
+        db.removeFunction(key)
+
+
 def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
     """Adds a new species to the model.
 
@@ -2128,7 +2297,7 @@ def remove_reaction(name, **kwargs):
     key = reaction.getKey()
     reaction = None
     model.compileIfNecessary()
-    model.removeEvent(key)
+    model.removeReaction(key)
     model.setCompileFlag(True)
     model.compileIfNecessary()
 
@@ -2213,7 +2382,6 @@ def set_species(name=None, **kwargs):
         if 'sbml_id' in kwargs:
             metab.setSBMLId(kwargs['sbml_id'])
 
-
     model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
@@ -2269,6 +2437,38 @@ def get_model_units(**kwargs):
         'area_unit': model.getAreaUnit(),
         'volume_unit': model.getVolumeUnit(),
     }
+
+
+def set_element_name(element, new_name, **kwargs):
+    """Sets the name of the element
+
+    :param element: the element whose name to change
+    :type element: COPASI.CDataObject or str
+
+    :param new_name: the new name for the element
+    :type new_name: str
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if type(element) is COPASI.CDataObject:
+        if not element.setObjectName(new_name):
+            logging.warning("couldn't change name of the element")
+        return
+    if type(element) is str:
+        obj = dm.findObjectByDisplayName(element)
+        if obj is not None:
+            if not element.setObjectName(new_name):
+                logging.warning("couldn't change name of the element")
+            return
+
+    logging.warning("couldn't change name of the element (could not find the object)")
 
 
 def set_model_unit(**kwargs):
@@ -2460,3 +2660,276 @@ def update_miriam_resources():
     assert (isinstance(miriam, COPASI.CMIRIAMResources))
     miriam.updateMIRIAMResourcesFromFile(None, temp_name)
     config.save()
+
+
+def _is_number(x):
+    try:
+        float(x)
+        return True
+    except:
+        return False
+
+def _tokenize_eqn(eqn):
+    """ Utility function for tokenizing equations into variables and functions
+
+    :param eqn: an equation
+    :type eqn: str
+    :return: a dictionary of the tokens
+    :rtype: dict
+    """
+    result = {}
+    num_chars = len(eqn)
+    i = 0
+
+    species = []
+    parameters = []
+    tokens = []
+
+    operators = ['/', '*', '+', '-', '^', '(', ')']
+    functions = ['exp', 'pow']
+
+    chunk = ''
+    var = None
+    var_is_species = False
+    var_is_initial = False
+    is_ode = False
+
+    while i < num_chars:
+        c_0 = eqn[i]
+        c_1 = eqn[i + 1] if i + 1 < num_chars else None
+        c_2 = eqn[i + 2] if i + 2 < num_chars else None
+        c_3 = eqn[i + 3] if i + 3 < num_chars else None
+
+        if c_0 == '[' and c_1 is not None:
+            var, var_is_initial, var_is_species = _store_variable(parameters, species, tokens, var, var_is_initial,
+                                                                  var_is_species)
+            pos = eqn.find(']', i+1)
+            if pos != -1:
+                var = eqn[i + 1:pos]
+                var_is_species = True
+                i = pos + 1
+                c_0 = eqn[i]
+                c_1 = eqn[i + 1] if i + 1 < num_chars else None
+
+                if c_0 == '_' and c_1 == '0':
+                    var_is_initial = True
+                    i = i + 2
+
+                continue
+
+        elif c_0 == '/' and c_1 == 'd' and c_2 == 't':
+            is_ode = True
+            i += 3
+
+            if chunk.startswith('d'):
+                chunk = chunk[1:]
+                continue
+
+            continue
+
+        elif c_0 == '=':
+            token = {
+                'var': var,
+                'is_species': var_is_species,
+                'is_initial': var_is_initial
+            }
+            #tokens.append(token)
+            #tokens.append('=')
+            result['lhs'] = token
+            if var_is_species and var not in species:
+                species.append(var)
+            elif not var_is_species and var not in parameters:
+                parameters.append(var)
+            var = None
+            var_is_species = False
+            var_is_initial = False
+            chunk = ''
+            result['is_ode'] = is_ode
+            i = i+1
+            continue
+
+        elif c_0 == ' ':
+            var, var_is_initial, var_is_species = _store_variable(parameters, species, tokens, var, var_is_initial,
+                                                                  var_is_species)
+
+            if chunk != '':
+                if chunk in functions or _is_number(chunk):
+                    if tokens and type(tokens[-1]) is dict:
+                        tokens.append('*')
+                    tokens.append(chunk)
+                else:
+                    token = {
+                        'var': chunk,
+                        'is_species': False,
+                        'is_initial': False
+                    }
+                    if chunk not in parameters:
+                        parameters.append(chunk)
+                    if tokens and type(tokens[-1]) is dict:
+                        tokens.append('*')
+                    tokens.append(token)
+
+            chunk = ''
+        elif c_0 in operators:
+            var, var_is_initial, var_is_species = _store_variable(parameters, species, tokens, var, var_is_initial,
+                                                                  var_is_species)
+
+            if chunk != '':
+                if chunk in functions or _is_number(chunk):
+                    if tokens and type(tokens[-1]) is dict:
+                        tokens.append('*')
+                    tokens.append(chunk)
+                else:
+                    token = {
+                        'var': chunk,
+                        'is_species': False,
+                        'is_initial': False
+                    }
+                    if chunk not in parameters:
+                        parameters.append(chunk)
+                    if tokens and type(tokens[-1]) is dict:
+                        tokens.append('*')
+                    tokens.append(token)
+
+            chunk = ''
+
+            if c_0 == '(' and tokens and (tokens[-1] == ')' or type(tokens[-1]) is dict):
+                tokens.append('*')
+
+            tokens.append(c_0)
+        else:
+            chunk = chunk + c_0
+
+        i += 1
+
+    if chunk != '':
+        if chunk in functions  or _is_number(chunk):
+            if tokens and type(tokens[-1]) is dict:
+                tokens.append('*')
+            tokens.append(chunk)
+        else:
+            token = {
+                'var': chunk,
+                'is_species': False,
+                'is_initial': False
+            }
+            if chunk not in parameters:
+                parameters.append(chunk)
+            if tokens and type(tokens[-1]) is dict:
+                tokens.append('*')
+            tokens.append(token)
+
+    if var is not None:
+        token = {
+            'var': var,
+            'is_species': var_is_species,
+            'is_ode': is_ode,
+            'is_initial': var_is_initial
+        }
+        if var_is_species and var not in species:
+            species.append(var)
+        elif not var_is_species and var not in parameters:
+            parameters.append(var)
+
+        if tokens and type(tokens[-1]) is dict:
+            tokens.append('*')
+        tokens.append(token)
+
+    result['tokens'] = tokens
+    result['species'] = species
+    result['parameters'] = parameters
+
+    return result
+
+
+def _store_variable(parameters, species, tokens, var, var_is_initial, var_is_species):
+    if var is not None:
+        token = {
+            'var': var,
+            'is_species': var_is_species,
+            'is_initial': var_is_initial
+        }
+        if var_is_species and var not in species:
+            species.append(var)
+        elif not var_is_species and var not in parameters:
+            parameters.append(var)
+        if tokens and type(tokens[-1]) is dict:
+            tokens.append('*')
+        tokens.append(token)
+        var = None
+        var_is_species = False
+        var_is_initial = False
+    return var, var_is_initial, var_is_species
+
+
+def add_equation(eqn, time_symbol='t', **kwargs):
+    """This function allows to add arbitrary equations to the current model.
+
+    This function allows adding arbitrary ODE's / assignments to the model. Nonexisting
+    model entities will be created.
+
+    :param eqn: the equation for example of form: d[X]/dt = k1 * exp({Time})
+    :type eqn: str
+
+    :param time_symbol: optional symbol that will be used for time (defaults to t)
+    :type time_symbol: str
+
+    :param kwargs:
+    :return:
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    result = _tokenize_eqn(eqn)
+
+    # first create all non-existing species / parameters
+    for species in result['species']:
+        if model.getMetabolite(species) is None:
+            add_species(species)
+
+    for parameter in result['parameters']:
+        if parameter == time_symbol:
+            continue
+        if model.getModelValue(parameter) is None:
+            add_parameter(parameter)
+
+    # now create the equation from the tokens
+    expression = ''
+    for token in result['tokens']:
+        if type(token) is dict:
+            if token['is_species']:
+                element = model.getMetabolite(token['var'])
+                assert (isinstance(element, COPASI.CMetab))
+                obj = element.getInitialConcentrationReference().getCN() if token[
+                    'is_initial'] else element.getConcentrationReference().getCN()
+            if token['var'] == time_symbol:
+                obj = model.getValueReference().getCN()
+            else:
+                element = model.getModelValue(token['var'])
+                assert (isinstance(element, COPASI.CModelValue))
+                obj = element.getInitialValueReference().getCN() if token[
+                    'is_initial'] else element.getValueReference().getCN()
+            expression = expression + "<" + obj.getString() + ">"
+        else:
+            expression = expression + token
+
+    # then lets add the equation
+    if 'lhs' in result:
+        lhs = result['lhs']
+        if lhs['is_species']:
+            element = model.getMetabolite(lhs['var'])
+        else:
+            element = model.getModelValue(lhs['var'])
+
+        assert (isinstance(element, COPASI.CModelEntity))
+        element.setStatus(COPASI.CModelEntity.Status_ODE if result['is_ode'] else COPASI.CModelEntity.Status_ASSIGNMENT)
+        issue = element.setExpression(expression)
+        assert (isinstance(issue, COPASI.CIssue))
+        assert (issue.isSuccess())
+
+    # mark the model as needing to be compiled
+    model.setCompileFlag(True)
+

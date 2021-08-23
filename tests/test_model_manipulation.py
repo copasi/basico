@@ -98,6 +98,29 @@ class TestBasicoModelManipulation(unittest.TestCase):
         self.assertEqual(annotations['references'][0]['id'], '10951190')
         self.assertEqual(annotations['references'][0]['resource'], 'PubMed')
 
+    def test_add_ode(self):
+        expression = basico.add_equation('d[PG]/dt=([E]/((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3))((k_2 [PGME])/K_s   +(k_4b [CEX])/K_p )(k_3+(k_5 [7-ADCA])/K_n   +(k_6 [PGME])/K_si )')
+        expression = basico.add_equation(
+            'd[CEX]/dt=(k_2 [E][PGME])/K_s -([E]/((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3))((k_2 [PGME])/K_s   +(k_4b [CEX])/K_p )(k_3+(k_5 [7-ADCA])/K_n )')
+        expression = basico.add_equation(
+            '[E]=([E]_0 exp(-k_d t))/(1+([PGME])/K_s + ((k_2 [PGME])/(K_s ((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3) ))(1+([7-ADCA])/K_n +([PGME])/K_si )+([CEX])/K_p +([PG])/K_p2i )')
+
+        basico.open_copasi()
+        expression = basico.add_equation('d[Y]/dt = [K]_0 * exp({Time})')
+
+    def test_add_function(self):
+        # add
+        basico.add_function('MA KD', 'vr*(K_d-1)')
+        funs = basico.get_functions('MA KD')
+        self.assertTrue(funs is not None)
+        self.assertEqual(funs.values[0][0], False)
+        self.assertEqual(funs.values[0][1], 'vr*(K_d-1)')
+        self.assertEqual(funs.values[0][2], True)
+        # remove
+        basico.remove_function('MA KD')
+        funs = basico.get_functions('MA KD')
+        self.assertTrue(funs is None)
+
 
 if __name__ == '__main__':
     unittest.main()

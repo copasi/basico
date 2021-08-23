@@ -836,26 +836,52 @@ def get_simulation_results(**kwargs):
             cn = independent.iloc[j].cn
             value = df.iloc[0][name]
             obj = dm.getObject(COPASI.CCommonName(cn))
-            if obj is not None:
-                if cn.endswith('InitialConcentration'):
-                    obj.getObjectParent().setInitialConcentration(value)
-                else:
-                    obj.getObjectParent().setInitialValue(value)
-                change_set.append(obj)
 
-        if change_set.size() > 0:
-            model.updateInitialValues(change_set)
+            if obj is None:     # not found skip
+                continue
 
+            if obj.getObjectName() == 'InitialConcentration':
+                obj.getObjectParent().setInitialConcentration(value)
+            else:
+                obj.getObjectParent().setInitialValue(value)
+
+            change_set.append(obj)
+            logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
+
+        params = get_fit_parameters(dm)
         for j in range(solution.shape[0]):
             name = solution.iloc[j].name
             value = solution.iloc[j].sol
+            cn = params.iloc[j].cn
             if np.isnan(value):
                 continue
             affected = solution.iloc[j].affected
             if any(affected) and exp_name not in affected:
                 continue
 
-            basico.set_reaction_parameters(name, value=value)
+            obj = dm.getObject(COPASI.CCommonName(cn))
+
+            if obj is None:  # not found skip
+                continue
+
+            if type(obj) is COPASI.CDataObject:
+
+                if obj.getObjectName() == 'InitialConcentration':
+                    obj.getObjectParent().setInitialConcentration(value)
+                elif type(obj.getObjectParent()) is COPASI.CCopasiParameter:
+                    obj.setDblValue(value)
+                    model.updateInitialValues(obj)
+                else:
+                    obj.getObjectParent().setInitialValue(value)
+
+                change_set.append(obj)
+                logging.debug('set solution value "{0}" to "{1}"'.format(cn, value))
+            else:
+                basico.set_reaction_parameters(name, value=value)
+                logging.debug('set reaction parameter "{0}" to "{1}"'.format(name, value))
+
+        if change_set.size() > 0:
+            model.updateInitialValues(change_set)
 
         duration = df.iloc[-1].Time
         data = basico.run_time_course(duration=duration)

@@ -1,4 +1,7 @@
 import unittest
+
+import matplotlib.pyplot
+
 import basico
 
 
@@ -63,6 +66,14 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         # now simulate
         exp, sim = basico.get_simulation_results()
         self.assertTrue(len(exp) == len(sim) == 2)
+
+        # ensure that simulations are different
+        self.assertGreater(float(((sim[0][['Fru1,6-P2']] - sim[1][['Fru1,6-P2']]) ** 2).sum()), 10)
+
+        # plotting is tested manually only
+        # basico.plot_per_experiment()
+        # basico.plot_per_dependent_variable()
+        # matplotlib.pyplot.show()
 
     def test_set_fit_items(self):
         old_fit_items = basico.get_fit_parameters().reset_index()

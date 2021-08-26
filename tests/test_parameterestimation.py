@@ -37,7 +37,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
 
     def test_get_item_template(self):
         template = basico.get_fit_item_template(include_local=True, include_global=True)
-        self.assertTrue(len(template) == 6)
+        self.assertTrue(len(template) == 5)
 
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):

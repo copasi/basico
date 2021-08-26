@@ -2059,6 +2059,10 @@ def set_reaction(name=None, **kwargs):
         - | `scheme`: the reaction scheme, new species will be created automatically
 
         - | `function`: the function from the function database to set
+        
+        - | `mapping`: an optional dictionary that maps model elements to the function
+          |            parameters. (can be any volume, species, modelvalue or in case of 
+          |            local parameters a value)
 
         - | `notes`: sets notes for the reaction (either plain text, or valid xhtml)
 
@@ -2107,6 +2111,65 @@ def set_reaction(name=None, **kwargs):
             info.init(reaction)
             info.setFunctionAndDoMapping(kwargs['function'])
             info.writeBackToReaction(reaction)
+            reaction.compile()
+            changed = True
+
+        if 'mapping' in kwargs:
+            mapping = kwargs['mapping']
+            info = COPASI.CReactionInterface()
+            info.init(reaction)
+            for j in range(info.size()):
+                p_type = info.getUsage(j)
+                p_name = info.getParameterName(j)
+                if p_name in mapping:
+                    mapped_to = mapping[p_name]
+                    if p_type == COPASI.CFunctionParameter.Role_PARAMETER:
+                        try:
+                            value = float(mapped_to)
+                            info.setLocalValue(j, value)
+                        except ValueError:
+                            obj = model.getModelValue(mapped_to)
+                            if obj is None:
+                                obj = dm.findObjectByDisplayName(mapped_to)
+                                if obj is not None and type(obj) != COPASI.CModelValue:
+                                    logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                                    continue
+                            if obj is None:
+                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                                continue
+
+                            info.setMapping(j, obj.getObjectName())
+
+                    elif p_type == COPASI.CFunctionParameter.Role_SUBSTRATE or \
+                         p_type == COPASI.CFunctionParameter.Role_PRODUCT or \
+                         p_type == COPASI.CFunctionParameter.Role_MODIFIER:
+                        obj = model.getMetabolite(mapped_to)
+                        if obj is None:
+                            obj = dm.findObjectByDisplayName(mapped_to)
+                            if obj is not None and type(obj) != COPASI.CMetab:
+                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                                continue
+                        if obj is None:
+                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            continue
+
+                        info.setMapping(j, obj.getObjectName())
+                        pass
+                    elif p_type == COPASI.CFunctionParameter.Role_VOLUME:
+                        obj = model.getCompartment(mapped_to)
+                        if obj is None:
+                            obj = dm.findObjectByDisplayName(mapped_to)
+                            if obj is not None and type(obj) != COPASI.CCompartment:
+                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                                continue
+                        if obj is None:
+                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            continue
+
+                        info.setMapping(j, obj.getObjectName())
+                        pass
+            info.writeBackToReaction(reaction)
+            reaction.compile()
             changed = True
 
         if 'notes' in kwargs:

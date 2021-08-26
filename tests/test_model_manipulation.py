@@ -129,6 +129,11 @@ class TestBasicoModelManipulation(unittest.TestCase):
         funs = basico.get_functions('MA KD')
         self.assertTrue(funs is None)
 
+    def test_change_mapping(self):
+        basico.add_function('MA Keq', 'vr*(Keq-1)')
+        basico.add_parameter('K_d', initial_value=1)
+        basico.add_reaction('r1 ma keq', scheme='A -> B', function='MA KD', mapping={'vr': 1000, 'Keq': 'K_d'})
+
 
 if __name__ == '__main__':
     unittest.main()

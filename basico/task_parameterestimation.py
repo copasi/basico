@@ -380,11 +380,12 @@ def get_fit_item_template(include_local=False, include_global=False, default_lb=
     if include_global:
 
         for mv in model.getModel().getModelValues():
-            result.append({
-                'name': mv.getObjectDisplayName(),
-                'lower': default_lb,
-                'upper': default_ub
-            })
+            if mv.getStatus() == COPASI.CModelEntity.Status_FIXED:
+                result.append({
+                    'name': mv.getInitialValueReference().getObjectDisplayName(),
+                    'lower': default_lb,
+                    'upper': default_ub
+                })
 
     if include_local:
 

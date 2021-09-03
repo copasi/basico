@@ -1,3 +1,4 @@
+# coding: utf-8
 import unittest
 import basico
 import basico.model_info

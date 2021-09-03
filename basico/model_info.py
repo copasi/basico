@@ -13,6 +13,8 @@ you will find functions to add, get, set, and remove them.
 """
 import tempfile
 
+import pandas as pd
+
 from . import model_io
 import pandas
 import COPASI
@@ -2770,6 +2772,11 @@ def _tokenize_eqn(eqn):
         c_1 = eqn[i + 1] if i + 1 < num_chars else None
         c_2 = eqn[i + 2] if i + 2 < num_chars else None
 
+        if ord(c_0) > 127:  # skip non-ascii characters
+            logging.warning(u'Encountered invalid character {0} while tokenizing equation, skipping it.'.format(c_0))
+            i = i + 1
+            continue
+
         if c_0 == '[' and c_1 is not None:
             var, var_is_initial, var_is_species = _store_variable(parameters, species, tokens, var, var_is_initial,
                                                                   var_is_species)
@@ -3007,3 +3014,155 @@ def add_equation(eqn, time_symbol='t', **kwargs):
     # mark the model as needing to be compiled
     model.setCompileFlag(True)
 
+
+def _annotated_matrix_to_df(ann_matrix):
+    """Converts the annotated matrix to a pandas dataframe
+
+    :param ann_matrix: the matrix to convert
+    :type ann_matrix: COPASI.CDataArray
+    :return: a pandas dataframe representing the matrix
+    :rtype: pd.DataFrame
+    """
+    assert(isinstance(ann_matrix, COPASI.CDataArray))
+    if ann_matrix.dimensionality() != 2:
+        logging.error('only two dimensional matrices are supported at this time')
+        return None
+
+    matrix = ann_matrix.getArray()
+    columns = [s for s in ann_matrix.getAnnotationsString(1)]
+    index = [s for s in ann_matrix.getAnnotationsString(0)]
+    data = []
+    for x in range(len(index)):
+        row = {}
+        for y in range(len(columns)):
+            row[columns[y]] = matrix.get(x, y)
+        data.append(row)
+    return pd.DataFrame(data, columns=columns, index=index)
+
+
+def get_stoichiometry_matrix(**kwargs):
+    """Returns the stoichiometry matrix of the model
+
+    :return: the stoichiometry matrix of the current model
+    :rtype: pd.DataFrame
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+    return _annotated_matrix_to_df(model.getStoiAnnotation())
+
+
+def get_reduced_stoichiometry_matrix(**kwargs):
+    """Returns the reduced stoichiometry matrix of the model
+
+    :return: the stoichiometry matrix of the current model
+    :rtype: pd.DataFrame
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+    return _annotated_matrix_to_df(model.getRedStoiAnnotation())
+
+
+def get_jacobian_matrix(apply_initial_values=False, **kwargs):
+    """Returns the jacobian matrix of the model at the current state
+
+    :param apply_initial_values: if set to the the initial values will be applied, otherwise
+         the jacobian from the current state will be returned
+    :type apply_initial_values: bool
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the stoichiometry matrix of the current model
+    :rtype: pd.DataFrame
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if apply_initial_values:
+        model.applyInitialValues()
+
+    jacobian = COPASI.FloatMatrix()
+    model.getMathContainer().calculateJacobian(jacobian, 1e-12, False)
+    state_template = model.getStateTemplate()
+    user_order = state_template.getUserOrder()
+    name_vector = []
+
+    for i in range(0, user_order.size()):
+        entity = state_template.getEntity(user_order.get(i))
+        if entity is None:
+            continue
+        status = entity.getStatus()
+
+        if status == COPASI.CModelEntity.Status_ODE or (status == COPASI.CModelEntity.Status_REACTIONS and entity.isUsed()):
+            name_vector.append(entity.getObjectName())
+
+    assert len(name_vector) == jacobian.numRows()
+
+    data = []
+
+    for i in range(0, len(name_vector)):
+        row = {}
+        for j in range(0, len(name_vector)):
+            row[name_vector[j]] = jacobian.get(i, j)
+        data.append(row)
+
+    return pd.DataFrame(data, columns=name_vector, index=name_vector)
+
+
+def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
+    """Returns the jacobian matrix of the reduced model at the current state
+
+        :param apply_initial_values: if set to the the initial values will be applied, otherwise
+             the jacobian from the current state will be returned
+        :type apply_initial_values: bool
+
+        :param kwargs: optional parameters
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: the stoichiometry matrix of the reduced current model
+        :rtype: pd.DataFrame
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if apply_initial_values:
+        model.applyInitialValues()
+
+    jacobian = COPASI.FloatMatrix()
+    model.getMathContainer().calculateJacobian(jacobian, 1e-12, True)
+    state_template = model.getStateTemplate()
+    name_vector = []
+    data = []
+
+    iMax = state_template.getNumIndependent()
+
+    for i in range(0, iMax):
+        name_vector.append(state_template.getIndependent(i).getObjectName())
+
+    for i in range(0, iMax):
+        row = {}
+        for j in range(0, iMax):
+            row[name_vector[j]] = jacobian.get(i, j)
+        data.append(row)
+
+    return pd.DataFrame(data, columns=name_vector, index=name_vector)

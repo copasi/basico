@@ -1,5 +1,6 @@
 import unittest
 import basico
+import basico.model_info
 
 
 class TestBasicoModelManipulation(unittest.TestCase):
@@ -114,6 +115,11 @@ class TestBasicoModelManipulation(unittest.TestCase):
         basico.add_equation('obs=sin(t)')
         self.assertEqual(basico.get_parameters().loc['obs'].type, 'assignment')
         self.assertEqual(basico.get_parameters().loc['obs'].expression, 'sin ( Time )')
+
+        # encountered an odd issue when pasting in equations with unicode characters
+        tokens = basico.model_info._tokenize_eqn(u'[E]=([E]_0  exp⁡(-k_d t))/(1+[PGME]/K_s +[PGME]^2/(K_s K_si )+[7-ADCA]/K_n +((k_2 [PGME])/(K_s ((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +k3) ))((k_2 [PGME])/K_s   +(k_7 [PGME]^2)/(K_s K_si )+(k_4b [CEX])/K_p )(1+[7-ADCA]/K_n +[PGME]/K_si )+[CEX]/K_p +[PG]/K_p2i )')
+        self.assertTrue(tokens is not None)
+        self.assertEqual(tokens['tokens'][3], 'exp')
 
     def test_add_function(self):
         # add

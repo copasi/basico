@@ -164,6 +164,7 @@ def run_time_course(*args, **kwargs):
 
     if 'duration' in kwargs:
         problem.setDuration(kwargs['duration'])
+        problem.setUseValues(False)
 
     if 'automatic' in kwargs:
         problem.setAutomaticStepSize(kwargs['automatic'])
@@ -182,6 +183,19 @@ def run_time_course(*args, **kwargs):
 
     if 'stepsize' in kwargs:
         problem.setStepSize(kwargs['stepsize'])
+
+    if 'values' in kwargs:
+        vals = kwargs['values']
+        if type(vals) != str:
+            new_vals = ''
+            for val in vals:
+                new_vals += ' ' + str(val)
+            vals = new_vals.strip()
+        problem.setValues(vals)
+        problem.setUseValues(True)
+
+    if 'use_values' in kwargs:
+        problem.setUseValues(kwargs['use_values'])
 
     if num_args == 3:
         problem.setOutputStartTime(args[0])

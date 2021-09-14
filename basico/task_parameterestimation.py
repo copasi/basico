@@ -787,8 +787,11 @@ def run_parameter_estimation(**kwargs):
     return get_parameters_solution(model)
 
 
-def get_simulation_results(**kwargs):
+def get_simulation_results(values_only=False, **kwargs):
     """Runs the current solution statistics and returns result of simulation and experimental data
+
+    :param values_only: if true, only time points at the measurements will be returned
+    :type values_only: bool
 
     :param kwargs:
 
@@ -885,7 +888,10 @@ def get_simulation_results(**kwargs):
             model.updateInitialValues(change_set)
 
         duration = df.iloc[-1].Time
-        data = basico.run_time_course(duration=duration)
+        if values_only:
+            data = basico.run_time_course(values=df.Time.to_list(), start_time=df.iloc[0].Time)
+        else:
+            data = basico.run_time_course(duration=duration)
 
         exp_data.append(df)
         sim_data.append(data)

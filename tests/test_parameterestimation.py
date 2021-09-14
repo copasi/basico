@@ -34,6 +34,8 @@ class TestBasicoParamterEstimation(unittest.TestCase):
     def test_get_plotting_data(self):
         exp, sim = basico.get_simulation_results()
         self.assertTrue(len(exp) == len(sim))
+        exp, sim = basico.get_simulation_results(values_only=True)
+        self.assertListEqual(exp[0].Time.to_list(), sim[0].reset_index().Time.to_list())
 
     def test_get_item_template(self):
         template = basico.get_fit_item_template(include_local=True, include_global=True)

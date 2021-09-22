@@ -41,6 +41,17 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         template = basico.get_fit_item_template(include_local=True, include_global=True)
         self.assertTrue(len(template) == 5)
 
+    def test_get_settings(self):
+        settings = basico.get_task_settings('Parameter Estimation')
+        self.assertTrue('method' in settings)
+        self.assertTrue('Iteration Limit' in settings['method'])
+        self.assertEqual(settings['method']['Iteration Limit'], 500)
+        basico.set_task_settings('Parameter Estimation', {'method': {'Iteration Limit': 600}})
+        settings = basico.get_task_settings('Parameter Estimation')
+        self.assertTrue('method' in settings)
+        self.assertTrue('Iteration Limit' in settings['method'])
+        self.assertEqual(settings['method']['Iteration Limit'], 600)
+
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):
 

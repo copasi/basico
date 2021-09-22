@@ -27,8 +27,32 @@ import pandas as pd
 import os
 import logging
 
+import basico
+
 AFFECTED_EXPERIMENTS = 'Affected Experiments'
 TASK_PARAMETER_ESTIMATION = 'Parameter Estimation'
+
+
+class PE:
+    """Constants for Parameter estimation method names"""
+    CURRENT_SOLUTION = "Current Solution Statistics"
+    RANDOM_SEARCH = "Random Search"
+    SIMULATED_ANNEALING = "Simulated Annealing"
+    DIFFERENTIAL_EVOLUTION = "Differential Evolution"
+    SCATTER_SEARCH = "Scatter Search"
+    GENETIC_ALGORITHM = "Genetic Algorithm"
+    EVOLUTIONARY_PROGRAMMING = "Evolutionary Programming"
+    GENETIC_ALGORITHM_SR = "Genetic Algorithm SR"
+    EVOLUTIONARY_STRATEGY_SRES = "Evolution Strategy (SRES)"
+    PARTICLE_SWARM = "Particle Swarm"
+    LEVENBERG_MARQUARDT = "Levenberg - Marquardt"
+    HOOKE_JEEVES = "Hooke & Jeeves"
+    NELDER_MEAD = "Nelder - Mead"
+    STEEPEST_DESCENT = "Steepest Descent"
+    NL2SOL = "NL2SOL"
+    PRAXIS = "Praxis"
+    TRUNCATED_NEWTON = "Truncated Newton"
+
 
 try:
     from . import model_io
@@ -569,7 +593,7 @@ def get_parameters_solution(model=None):
         })
 
     if not data:
-        return None
+        return pandas.DataFrame()
 
     return pandas.DataFrame(data=data).set_index('name')
 
@@ -730,6 +754,9 @@ def run_parameter_estimation(**kwargs):
 
     - `update_model` (bool): sets whether the model should be updated, or reset to initial conditions.
 
+    - `settings` (dict): a dictionary with settings to use, in the same format as the ones obtained from
+                         :func:`.get_task_settings`
+
     :return: the solution for the fit parameters see :func:`get_get_parameters_solution`.
     :rtype: pandas.DataFrame
     """
@@ -772,6 +799,9 @@ def run_parameter_estimation(**kwargs):
 
     use_initial_values = kwargs.get('use_initial_values', True)
 
+    if 'settings' in kwargs:
+        basico.set_task_settings(task, kwargs['settings'])
+
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logging.error("Error while initializing the simulation: " +
@@ -798,6 +828,9 @@ def get_simulation_results(values_only=False, **kwargs):
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
+    - | `solution`: a solution data frame to use, if not specified a current solution
+                    statistic will be computed
+
     :return: tuple of lists of experiment data, and a list of simulation data
     :rtype: ([pandas.DataFrame],[pandas.DataFrame])
     """
@@ -818,7 +851,10 @@ def get_simulation_results(values_only=False, **kwargs):
     if num_experiments == 0:
         return result
 
-    solution = run_parameter_estimation(method='Current Solution Statistics')
+    if 'solution' in kwargs:
+        solution = kwargs['solution']
+    else:
+        solution = run_parameter_estimation(method='Current Solution Statistics')
 
     model = dm.getModel()
 
@@ -1021,3 +1057,23 @@ def plot_per_dependent_variable(**kwargs):
         result.append((fig, ax))
 
     return result
+
+
+def prune_simulation_results(simulation_results):
+    """Removes all columns & time points from the simulation set, that are not available in the measurement set
+
+    :param simulation_results: the simulation result as obtained by get_simulation_results
+
+    :return:
+    """
+    assert len(simulation_results[0]) == len(simulation_results[1])
+    for i in range(len(simulation_results[0])):
+        s_df = simulation_results[1][i].reset_index()
+        e_df = simulation_results[0][i]
+        s_df = s_df[s_df.Time.isin(e_df.Time.to_list())]
+        s_df = s_df.reset_index()
+        common_cols = [c for c in e_df.columns.to_list() if c in s_df.columns.to_list()]
+        s_df = s_df[common_cols]
+        simulation_results[1][i] = s_df
+
+    return simulation_results

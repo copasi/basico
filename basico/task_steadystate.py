@@ -12,6 +12,7 @@ Example:
 """
 import COPASI
 from . import model_io
+from . import model_info
 import logging
 
 
@@ -33,9 +34,13 @@ def run_steadystate(**kwargs):
 
      - | `criterion` (str): specifies the acceptance criterion to be used for a steady state can be one of:
        |
-       |  * `Distance and Rate`: both the Distance and the Rate criterion have to be fullfilled to accept
+       |  * `Distance and Rate`: both the Distance and the Rate criterion have to be fulfilled to accept
        |  * `Distance`: the distance criterion
        |  * `Rate`: the rate of change has to be sufficiently small
+
+
+     - `settings` (dict): a dictionary with settings to use, in the same format as the ones obtained from
+                         :func:`.get_task_settings`
 
     :return: integer status information whether the steady state was reached:
 
@@ -67,6 +72,9 @@ def run_steadystate(**kwargs):
     assert (isinstance(problem, COPASI.CSteadyStateProblem))
 
     use_initial_values = kwargs.get('use_initial_values', True)
+
+    if 'settings' in kwargs:
+        model_info.set_task_settings(task, kwargs['settings'])
 
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:

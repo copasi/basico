@@ -24,6 +24,7 @@ Examples:
 
 import COPASI
 from . import model_io
+from . import model_info
 import pandas
 import numpy
 import logging
@@ -220,6 +221,9 @@ def run_time_course(*args, **kwargs):
         method.getParameter('Relative Tolerance').setDblValue(float(kwargs['r_tol'])) 
     if 'max_steps' in kwargs and method.getParameter('Max Internal Steps'):
         method.getParameter('Max Internal Steps').setIntValue(int(kwargs['max_steps']))
+
+    if 'settings' in kwargs:
+        model_info.set_task_settings(task, kwargs['settings'])
 
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result: 

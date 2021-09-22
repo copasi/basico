@@ -3166,3 +3166,169 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
         data.append(row)
 
     return pd.DataFrame(data, columns=name_vector, index=name_vector)
+
+def _get_group_as_dict(group, basic_only=True):
+    """Returns the values from the given parameter group as dictionary
+
+    :param group: the copasi parameter group
+    :type group: COPASI.CCopasiParameterGroup
+
+    :param basic_only: boolean indicating, whether only basic parameters should be returned (default)
+    :type basic_only: bool
+
+    :return: dictionary with the values
+    """
+    result = {}
+    for i in range(group.size()):
+        param = group.getParameter(i)
+        assert (isinstance(param, COPASI.CCopasiParameter))
+
+        if isinstance(param, COPASI.CCopasiParameterGroup):
+            continue
+
+        if not param.isEditable():
+            continue
+
+        if not param.isBasic() and basic_only:
+            continue
+
+        name = param.getObjectName()
+        param_type = param.getType()
+
+        if param_type == COPASI.CCopasiParameter.Type_STRING:
+            result[name] = param.getStringValue()
+        elif param_type == COPASI.CCopasiParameter.Type_INT:
+            result[name] = param.getIntValue()
+        elif param_type == COPASI.CCopasiParameter.Type_UINT:
+            result[name] = param.getUIntValue()
+        elif param_type == COPASI.CCopasiParameter.Type_DOUBLE:
+            result[name] = param.getDblValue()
+        elif param_type == COPASI.CCopasiParameter.Type_UDOUBLE:
+            result[name] = param.getUDblValue()
+        elif param_type == COPASI.CCopasiParameter.Type_BOOL:
+            result[name] = param.getBoolValue()
+
+    return result
+
+
+def _set_group_from_dict(group, values):
+    """Changes settings in the given parameter group to the values specified in the values dictionary
+
+    :param group: the copasi parameter group to update
+    :type group: COPASI.CCopasiParameterGroup
+    :param values: dictionary with new values
+    :type values: dict
+    :return:
+    """
+    for key in values:
+        param = group.getParameter(key)
+        if param is None:
+            continue
+
+        if isinstance(param, COPASI.CCopasiParameterGroup):
+            continue
+
+        assert (isinstance(param, COPASI.CCopasiParameter))
+        param_type = param.getType()
+
+        if param_type == COPASI.CCopasiParameter.Type_STRING:
+            param.setStringValue(str(values[key]))
+        elif param_type == COPASI.CCopasiParameter.Type_INT:
+            param.setIntValue(int(values[key]))
+        elif param_type == COPASI.CCopasiParameter.Type_UINT:
+            param.setUIntValue(int(values[key]))
+        elif param_type == COPASI.CCopasiParameter.Type_DOUBLE:
+            param.setDblValue(float(values[key]))
+        elif param_type == COPASI.CCopasiParameter.Type_UDOUBLE:
+            param.setUDblValue(float(values[key]))
+        elif param_type == COPASI.CCopasiParameter.Type_BOOL:
+            param.setBoolValue(bool(values[key]))
+
+
+def get_task_settings(task, basic_only=True, **kwargs):
+    """Returns the settings of the given task
+
+    :param task: the task to read the settings of
+    :type task: COPASI.CCopasiTask or str
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: dict of task settings
+    :rtype: {}
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if not isinstance(task, COPASI.CCopasiTask):
+        name = task
+        task = dm.getTask(name)
+
+    if not isinstance(task, COPASI.CCopasiTask):
+        logging.error('no such task')
+        return {}
+
+    result = {
+        'is_scheduled': task.isScheduled(),
+        'is_update_model': task.isUpdateModel(),
+    }
+
+    problem = task.getProblem()
+    result['problem'] = _get_group_as_dict(problem, basic_only)
+
+    method = task.getMethod()
+    result['method'] = _get_group_as_dict(method, basic_only)
+    result['method']['name'] = method.getObjectName()
+
+    return result
+
+
+def set_task_settings(task, settings, **kwargs):
+    """Applies the task settings present in the settings object
+
+    :param task: the task to set
+    :type task: COPASI.CCopasiTask or str
+    :param settings: dictionary in the same format as the ones obtained from :func:`.get_task_settings`
+    :type settings: dict
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if not isinstance(task, COPASI.CCopasiTask):
+        name = task
+        task = dm.getTask(name)
+
+    if not isinstance(task, COPASI.CCopasiTask):
+        logging.error('no such task')
+        return
+
+    if 'is_scheduled' in settings:
+        task.setScheduled(settings['is_scheduled'])
+
+    if 'is_update_model' in settings:
+        task.setUpdateModel(settings['is_update_model'])
+
+    if 'problem' in settings:
+        problem = task.getProblem()
+        _set_group_from_dict(problem, settings['problem'])
+
+    if 'method' in settings:
+        method = task.getMethod()
+        m_dict = settings['method']
+        if 'name' in m_dict:
+            name = m_dict['name']
+            if name != method.getObjectName():
+                task.setMethodType(COPASI.CCopasiMethod_TypeNameToEnum(name))
+                method = task.getMethod()
+
+        _set_group_from_dict(method, m_dict)

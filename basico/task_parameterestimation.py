@@ -373,6 +373,38 @@ def get_experiment_data_from_model(model=None):
     return result
 
 
+def get_experiment_filenames(model=None):
+    """Returns filenames of all experiments
+
+    :param model: the model to get the data from
+    :type model: COPASI.CDataModel or None
+    :return: list of filenames of experimental data
+    :rtype: [str]
+    """
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getExperimentSet()
+    assert (isinstance(experiments, COPASI.CExperimentSet))
+
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        result.append(_get_experiment_file(experiment))
+
+    return result
+
+
 def get_fit_item_template(include_local=False, include_global=False, default_lb=0.001, default_ub=1000, model=None):
     """Returns a template list of items to be used for the parameter estimation
 
@@ -766,14 +798,18 @@ def run_parameter_estimation(**kwargs):
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
 
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    if problem.getOptItemSize() == 0:
+        logging.warning('No fit parameters defined, skipping parameter estimation run')
+        return get_parameters_solution(model)
+
     if 'scheduled' in kwargs:
         task.setScheduled(kwargs['scheduled'])
 
     if 'update_model' in kwargs:
         task.setUpdateModel(kwargs['update_model'])
-
-    problem = task.getProblem()
-    assert (isinstance(problem, COPASI.CFitProblem))
 
     old_create_parameter_sets = problem.getCreateParameterSets()
     # old_calculate_statistics = problem.getCalculateStatistics()

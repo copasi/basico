@@ -53,9 +53,9 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertEqual(settings['method']['Iteration Limit'], 600)
 
     def test_run(self):
-        sol = basico.run_parameter_estimation()
+        sol = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         self.assertTrue(sol is not None)
-        self.assertAlmostEqual(sol.loc['(R1).k2'].sol, 0, places=4)
+        self.assertAlmostEqual(sol.loc['(R1).k2'].sol, 1.0, places=2)
 
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):

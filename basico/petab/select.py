@@ -106,7 +106,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     )
 
     # load into basico
-    out_name = f'cps_{test_model.model_id}'
+    out_name = 'cps_{0}'.format(test_model.model_id)
     cps_file = os.path.join(temp_dir, out_name + '.cps')
     files.append(cps_file)
     core.load_petab(yaml_file, temp_dir, out_name)
@@ -146,7 +146,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         value = test_model.parameters[param_id]
         if value == value:  # we only want to include what we estimated
             continue
-        name = f'Values[{param_id}]'
+        name = 'Values[{0}]'.format(param_id)
         if name in sol.index:
             test_model.estimated_parameters[param_id] = sol.loc[name].sol
 

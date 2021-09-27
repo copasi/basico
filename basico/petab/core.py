@@ -1,7 +1,7 @@
 import petab
 import basico
 import pandas as pd
-import convert_petab
+import copasi_petab_importer
 import os
 
 

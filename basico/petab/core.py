@@ -93,7 +93,7 @@ def load_petab(yaml_file, output_dir, out_name=None):
     :return:
     """
     # convert to COPASI file
-    converter = convert_petab.PEtabConverter.from_yaml(yaml_file, out_dir=output_dir, out_name=out_name)
+    converter = copasi_petab_importer.PEtabConverter.from_yaml(yaml_file, out_dir=output_dir, out_name=out_name)
     converter.convert()
 
     # load into basico

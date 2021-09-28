@@ -6,4 +6,8 @@ petab_select. it requires the petab / petab select packages from pip
 """
 
 from .core import *
-from .select import *
+
+try:
+    from .select import *
+except ImportError:
+    pass

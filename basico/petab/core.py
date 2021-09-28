@@ -27,13 +27,14 @@ def create_simulation_df(measurement_df, simulation_results):
                 continue
             if 'Values[' in obs:
                 obs_id = obs[len('Values['):-1]
+
             values = s_df[obs].to_list()
 
             # deal with duplicates
             num_values = len(values)
             num_expected = len(sim.loc[(sim.observableId == obs_id) & (sim.simulationConditionId == cond_id), 'simulation'])
             for i in range(num_expected-num_values):
-                values.append(values[0])
+                values.append(values[-1])
 
             sim.loc[(sim.observableId == obs_id) & (sim.simulationConditionId == cond_id), 'simulation'] = values
     return sim

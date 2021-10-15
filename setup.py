@@ -10,7 +10,7 @@ def basico_testsuite():
     return test_suite
 
 
-setup(name='basico',
+setup(name='copasi_basico',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
       description='Simplified COPASI interface for python',

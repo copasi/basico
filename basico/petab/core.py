@@ -163,23 +163,29 @@ class PetabSimulator(petab.simulate.Simulator):
 
     """
 
-    def __init__(self, *args, settings=None, name='', **kwargs):
+    def __init__(self, petab_problem, working_dir=None, settings=None, name='', **kwargs):
         """ Inititializes the simulator
 
-        :param args: args to be passed to the base class (PEtab problem is expected first,
-               optionally followed by a path to safe the files in.
+        :param petab_problem: A PEtab problem.
+        :type petab_problem: petab.Problem
+
+        :param working_dir: optional working dir (temp directory will be taken if it does not exist
+        :type working_dir: Optional[Union[pathlib.Path, str]]
+
         :param settings: the settings to use for the parameter estimation (by default the converter will
                setup 'Current Solution Statistic', i.e: no parameter estimation will actually be carried out
                and just the values are returned.
         :type settings: {} or None
+
         :param name: an optional name that will be passed as model specific suffix to use while creating temp
                files (since the petab_problem will be serialized to files in order to be imported)s
         :type name: str
+
         :param kwargs: will be passed to base class. If it contains an argument:
 
             * 'cps_file' (str): this COPASI file will be loaded,
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(petab_problem, working_dir, **kwargs)
         self.settings = settings
         self.name = name
         self.cps_file = None

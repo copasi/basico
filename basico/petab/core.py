@@ -216,17 +216,20 @@ class PetabSimulator(petab.simulate.Simulator):
             basico.set_task_settings('Parameter Estimation', self.settings)
         return basico.run_parameter_estimation()
 
-    def simulate_without_noise(self) -> pd.DataFrame:
+    def simulate_without_noise(self):
         """Simulate the PEtab problem.
 
         This is an abstract method that should be implemented with a simulation
         package. Examples of this are referenced in the class docstring.
 
-        Returns:
+        :return:
             Simulated data, as a PEtab measurements table, which should be
             equivalent to replacing all values in the `petab.C.MEASUREMENT`
             column of the measurements table (of the PEtab problem supplied to
             the `__init__` method), with simulated values.
+
+        :rtype: pandas.DataFrame
+
         """
 
         simulation_results = basico.get_simulation_results(values_only=True, solution=self.evaluate())

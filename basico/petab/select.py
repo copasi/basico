@@ -44,7 +44,7 @@ def default_evaluation():
     :return: found paramter values
     """
     basico.run_parameter_estimation(method='Particle Swarm', update_model=True,
-                                    settings={'method': {'Iteration Limit': 1000}})
+                                    settings={'method': {'Iteration Limit': 600}})
     sol = basico.run_parameter_estimation(method='Levenberg - Marquardt', update_model=True)
     return sol
 
@@ -78,38 +78,17 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         temp_dir = tempfile.mkdtemp()
         created_temp_dir = True
 
-    yaml_file = os.path.join(temp_dir, 'problem_{0}.yaml'.format(test_model.model_id))
-    model_file = os.path.join(temp_dir, 'model_{0}.xml'.format(test_model.model_id))
-    cond_file = os.path.join(temp_dir, 'experimentalCondition_{0}.tsv'.format(test_model.model_id))
-    data_file = os.path.join(temp_dir, 'measurementData_{0}.tsv'.format(test_model.model_id))
-    param_file = os.path.join(temp_dir, 'parameters_{0}.tsv'.format(test_model.model_id))
-    obs_file = os.path.join(temp_dir, 'observables_{0}.tsv'.format(test_model.model_id))
-    result_file = os.path.join(temp_dir, 'result_{0}.yaml'.format(test_model.model_id))
-    files = [
-        model_file,
-        cond_file,
-        data_file,
-        param_file,
-        obs_file,
-        yaml_file,
-        result_file
-    ]
-
-    # write to files
-    pp.to_files(
-        sbml_file=model_file,
-        condition_file=cond_file,
-        measurement_file=data_file,
-        parameter_file=param_file,
-        observable_file=obs_file,
-        yaml_file=yaml_file
-    )
+    model_id = test_model.model_id
+    files = core.write_problem_to(pp, temp_dir, model_id)
 
     # load into basico
-    out_name = 'cps_{0}'.format(test_model.model_id)
+    out_name = 'cps_{0}'.format(model_id)
     cps_file = os.path.join(temp_dir, out_name + '.cps')
+    core.load_petab(files['problem'], temp_dir, out_name)
+
+    files = files.values()
     files.append(cps_file)
-    core.load_petab(yaml_file, temp_dir, out_name)
+
     files = files + basico.get_experiment_filenames()
 
     # run parameter estimation
@@ -151,6 +130,8 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
             test_model.estimated_parameters[param_id] = sol.loc[name].sol
 
     # write result for testing
+    result_file = os.path.join(temp_dir, 'result_{0}.yaml'.format(model_id))
+    files.append(result_file)
     test_model.to_yaml(result_file)
 
     # delete temp files if needed

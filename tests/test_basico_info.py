@@ -71,6 +71,50 @@ class TestBasicoIO_Brus(unittest.TestCase):
         result = basico.model_info.get_plots()
         self.assertTrue(len(result) == 2)
 
+    def test_collect_data(self):
+        basico.add_parameter('quantity', initial_value=1)
+        mod = basico.get_current_model().getModel()
+        assert (isinstance(mod, COPASI.CModel))
+        mod.applyInitialValues()
+        data = basico.model_info._collect_data(cns=[
+            'CN=Root,Model=The Brusselator,Reference=Time',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Reference=InitialVolume',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Reference=Rate',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Reference=Volume',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=InitialParticleNumber',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=ParticleNumber',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=ParticleNumberRate',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=Rate',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=Concentration',
+            'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Vector=Metabolites[X],Reference=InitialConcentration',
+            'CN=Root,Model=The Brusselator,Vector=Values[quantity],Reference=Value',
+            'CN=Root,Model=The Brusselator,Vector=Values[quantity],Reference=InitialValue',
+            'CN=Root,Model=The Brusselator,Vector=Values[quantity],Reference=Rate',
+            'CN=Root,Model=The Brusselator,Vector=Reactions[R1],Reference=Flux',
+            'CN=Root,Model=The Brusselator,Vector=Reactions[R1],Reference=ParticleFlux',
+            'CN=Root,Model=The Brusselator,Vector=Reactions[R1],ParameterGroup=Parameters,Parameter=k1,Reference=Value'
+        ])
+
+        data2 = basico.model_info._collect_data(names=[
+            'Time',
+            'Compartments[compartment].InitialVolume',
+            'Compartments[compartment].Rate',
+            'Compartments[compartment].Volume',
+            'X.InitialParticleNumber',
+            'X.ParticleNumber',
+            'X.InitialParticleNumberRate',
+            'X.ParticleNumberRate',
+            'X.Rate',
+            '[X]',
+            '[X]_0',
+            'Values[quantity]',
+            'Values[quantity].InitialValue',
+            'Values[quantity].Rate',
+            '(R1).Flux',
+            '(R1).ParticleFlux',
+            '(R1).k1'
+        ])
+        self.assertTrue(data2 is not None)
 
 
 class TestBasicoIO_LM(unittest.TestCase):

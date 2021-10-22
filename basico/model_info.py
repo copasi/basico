@@ -3332,3 +3332,132 @@ def set_task_settings(task, settings, **kwargs):
                 method = task.getMethod()
 
         _set_group_from_dict(method, m_dict)
+
+
+def _collect_data(names=None, cns=None, **kwargs):
+    """Collects data from the model, returning it as dataframe
+
+    :param names: list of names of elements to return
+    :type names: list or None
+    :param cns: list of common names of references for which to return the results
+    :type cns: list or None
+    :return: data frame with the results
+    :rtype: pd.DataFrame
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    data = []
+
+    value = None
+
+    if cns:
+        for cn in cns:
+            c_cn = COPASI.CCommonName(cn)
+            obj = model.getObject(c_cn)
+            if obj is None:
+                # couldn't find that object in the model
+                logging.warning('No object for cn: {0}'.format(str(cn)))
+                continue
+            assert(isinstance(obj, COPASI.CDataObject))
+            value = _get_value_from_reference(obj)
+
+            data.append({'name': obj.getObjectDisplayName(), 'value': value})
+
+    if names:
+        for name in names:
+            obj = model.findObjectByDisplayName(name)
+            if obj is None:
+                # couldn't find that object in the model
+                logging.warning('No object for name: {0}'.format(name))
+                continue
+            assert (isinstance(obj, COPASI.CDataObject))
+            if obj.getObjectType() == 'Reference':
+                value = _get_value_from_reference(obj)
+            else:
+                if isinstance(obj, COPASI.CMetab):
+                    value = _get_value_from_reference(obj.getConcentrationReference())
+                elif isinstance(obj, COPASI.CModelValue) or isinstance(obj, COPASI.CCompartment) or isinstance(obj, COPASI.CModel):
+                    value = _get_value_from_reference(obj.getValueReference())
+                elif isinstance(obj, COPASI.CReaction):
+                    value = _get_value_from_reference(obj.getFluxReference())
+                elif isinstance(obj, COPASI.CCopasiParameter):
+                    value = _get_value_from_reference(obj.getValueReference())
+                else:
+                    value = None
+
+            data.append({'name': obj.getObjectDisplayName(), 'value': value})
+
+    return pandas.DataFrame(data=data).set_index('name')
+
+
+def _get_value_from_reference(obj):
+    """ Utility function returning a value from the given reference object
+
+    :param obj: the reference object
+    :type obj: COPASI.CDataObject
+    :return: the value, if it could be resolved or None
+    :rtype: float or None
+    """
+    if obj is None:
+        return None
+    parent = obj.getObjectParent()
+    if parent is None:
+        return None
+    name = obj.getObjectName()
+    value = _get_named_value(parent, name)
+    return value
+
+
+def _get_named_value(obj, name):
+    """ Utility function that returns the value of the given copasi object
+
+    :param obj: a copasi object, that could be a compartment, species, parameter, reaction
+    :param name: the reference name to return
+    :return:
+    """
+    is_metab = isinstance(obj, COPASI.CMetab)
+    is_reaction = isinstance(obj, COPASI.CReaction)
+    is_model = isinstance(obj, COPASI.CModel)
+    is_cparam = isinstance(obj, COPASI.CCopasiParameter)
+
+    value = None
+
+    if is_reaction:
+        value = {
+            'Flux': obj.getFlux(),
+            'ParticleFlux': obj.getParticleFlux(),
+        }.get(name, None)
+
+    elif is_metab:
+        value = {
+            'ParticleNumber': obj.getValue(),
+            'ParticleNumberRate': obj.getRate(),
+            'InitialParticleNumber': obj.getInitialValue(),
+            'InitialConcentration': obj.getInitialConcentration(),
+            'Concentration': obj.getConcentration(),
+            'Rate': obj.getConcentrationRate(),
+        }.get(name, None)
+
+    elif is_model:
+        value = {
+            'Time': obj.getValue(),
+        }.get(name, None)
+
+    elif is_cparam:
+        # this will be the case if it is a local parameter
+        parent = obj.getObjectParent().getObjectParent()
+        assert (isinstance(parent, COPASI.CReaction))
+        value = parent.getParameterValue(obj.getObjectName())
+
+    if pd.isna(value):
+        value = {
+            'Time': obj.getValue(),
+            'Volume': obj.getValue(),
+            'Value': obj.getValue(),
+            'Rate': obj.getRate(),
+            'InitialValue': obj.getInitialValue(),
+            'InitialVolume': obj.getInitialValue(),
+            'InitialParticleNumber': obj.getInitialValue(),
+        }.get(name, None)
+
+    return value

@@ -304,6 +304,7 @@ def get_data_from_experiment(experiment, **kwargs):
 
             elif role == COPASI.CExperiment.ignore:
                 drop_cols.append(i)
+                count += 1
 
             else:
                 cn = obj_map.getObjectCN(i)
@@ -902,6 +903,8 @@ def get_simulation_results(values_only=False, **kwargs):
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
         df = get_data_from_experiment(experiment, rename_headers=True)
+        have_time = 'Time' in df.columns
+        columns = df.columns.to_list()
         mapping = get_experiment_mapping(experiment)
 
         # set independent values for that experiment
@@ -910,10 +913,16 @@ def get_simulation_results(values_only=False, **kwargs):
         for j in range(num_independent):
             name = independent.iloc[j].mapping
             cn = independent.iloc[j].cn
+
+            if name not in columns:
+                # independent value is not found in df
+                continue
+
             value = df.iloc[0][name]
             obj = dm.getObject(COPASI.CCommonName(cn))
 
             if obj is None:     # not found skip
+                logging.debug('independent object not found for cn: {0}'.format(cn))
                 continue
 
             if obj.getObjectName() == 'InitialConcentration':
@@ -924,51 +933,69 @@ def get_simulation_results(values_only=False, **kwargs):
             change_set.append(obj)
             logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
 
-        params = get_fit_parameters(dm)
-        for j in range(solution.shape[0]):
-            name = solution.iloc[j].name
-            value = solution.iloc[j].sol
-            cn = params.iloc[j].cn
-            if np.isnan(value):
-                continue
-            affected = solution.iloc[j].affected
-            if any(affected) and exp_name not in affected:
-                continue
+        _update_fit_parameters_from(dm, solution, exp_name)
 
-            obj = dm.getObject(COPASI.CCommonName(cn))
-
-            if obj is None:  # not found skip
-                continue
-
-            if type(obj) is COPASI.CDataObject:
-
-                if obj.getObjectName() == 'InitialConcentration':
-                    obj.getObjectParent().setInitialConcentration(value)
-                elif type(obj.getObjectParent()) is COPASI.CCopasiParameter:
-                    obj.setDblValue(value)
-                    model.updateInitialValues(obj)
-                else:
-                    obj.getObjectParent().setInitialValue(value)
-
-                change_set.append(obj)
-                logging.debug('set solution value "{0}" to "{1}"'.format(cn, value))
-            else:
-                basico.set_reaction_parameters(name, value=value)
-                logging.debug('set reaction parameter "{0}" to "{1}"'.format(name, value))
-
-        if change_set.size() > 0:
-            model.updateInitialValues(change_set)
-
-        duration = df.iloc[-1].Time
-        if values_only:
-            data = basico.run_time_course(values=df.Time.to_list(), start_time=df.iloc[0].Time)
+        if experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState:
+            # run steady state
+            basico.run_steadystate(model=dm)
+            data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
         else:
-            data = basico.run_time_course(duration=duration)
+            # run time course
+            duration = df.iloc[-1].Time
+            if values_only:
+                data = basico.run_time_course(values=df.Time.to_list(), start_time=df.iloc[0].Time)
+            else:
+                data = basico.run_time_course(duration=duration)
 
         exp_data.append(df)
         sim_data.append(data)
 
     return exp_data, sim_data
+
+
+def _update_fit_parameters_from(dm, solution, exp_name=''):
+    """ Utility function that updates the models fit parameters for the given solution
+
+    :param dm: the current model
+    :param solution: the computed solution dataframe
+    :param exp_name: the affected experiment or empty for all
+    :return: None
+    """
+    change_set = COPASI.DataObjectSet()
+    model = dm.getModel()
+    params = get_fit_parameters(dm)
+    for j in range(solution.shape[0]):
+        name = solution.iloc[j].name
+        value = solution.iloc[j].sol
+        cn = params.iloc[j].cn
+        if np.isnan(value):
+            continue
+        affected = solution.iloc[j].affected
+        if any(affected) and exp_name not in affected:
+            continue
+
+        obj = dm.getObject(COPASI.CCommonName(cn))
+
+        if obj is None:  # not found skip
+            continue
+
+        if type(obj) is COPASI.CDataObject:
+
+            if obj.getObjectName() == 'InitialConcentration':
+                obj.getObjectParent().setInitialConcentration(value)
+            elif type(obj.getObjectParent()) is COPASI.CCopasiParameter:
+                obj.setDblValue(value)
+                model.updateInitialValues(obj)
+            else:
+                obj.getObjectParent().setInitialValue(value)
+
+            change_set.append(obj)
+            logging.debug('set solution value "{0}" to "{1}"'.format(cn, value))
+        else:
+            basico.set_reaction_parameters(name, value=value)
+            logging.debug('set reaction parameter "{0}" to "{1}"'.format(name, value))
+    if change_set.size() > 0:
+        model.updateInitialValues(change_set)
 
 
 def plot_per_experiment(**kwargs):

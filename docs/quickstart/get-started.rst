@@ -5,11 +5,31 @@ Getting Started
 Installation
 ---------------
 
-BasiCO is not yet available in pypi, however you can pip install it using:
+BasiCO is is finally available in pypi: 
+
+.. code-block:: bash
+
+    pip install copasi-basico
+
+
+however you can pip install it using:
 
 .. code-block:: bash
 
     pip install git+https://github.com/copasi/basico.git
+
+Currently there is one additional package available that provides 
+support for PEtab and petab-select, that can be installed using 
+
+.. code-block:: bash
+
+    pip install copasi-basico
+
+or 
+
+.. code-block:: bash
+
+    pip install git+https://github.com/copasi/basico.git#egg=basico[petab]
 
 
 Use the package

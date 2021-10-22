@@ -1,3 +1,6 @@
+import logging
+
+import numpy as np
 import petab
 import petab.simulate
 import basico
@@ -22,23 +25,60 @@ def create_simulation_df(measurement_df, simulation_results):
     for i in range(len(exp_names)):
         cond_id = exp_names[i]
         s_df = simulation_results[1][i]
-        for obs in s_df.columns.to_list():
-            obs_id = obs
-            if obs == 'Time':
-                continue
-            if 'Values[' in obs:
-                obs_id = obs[len('Values['):-1]
-
-            values = s_df[obs].to_list()
-
-            # deal with duplicates
-            num_values = len(values)
-            num_expected = len(sim.loc[(sim.observableId == obs_id) & (sim.simulationConditionId == cond_id), 'simulation'])
-            for j in range(num_expected-num_values):
-                values.append(values[-1])
-
-            sim.loc[(sim.observableId == obs_id) & (sim.simulationConditionId == cond_id), 'simulation'] = values
+        _update_df_from_simulation(sim, s_df, cond_id)
     return sim
+
+
+def _update_df_from_simulation(petab_df, basico_df, experiment_name):
+    """ Updates a simulation data frame with simulation results from one experiment
+
+    :param petab_df: the petab simulation data frame to update
+    :type petab_df: pd.DataFrame
+    :param basico_df: a basico data frame of simulation results, whose values should be written into `s_df`
+    :type basico_df: pd.DataFrame
+    :param experiment_name: the experiment (or condition_id) to update in `s_df`
+    :type experiment_name: str
+    :return: None
+    """
+    sim_col = petab_df.columns.get_loc('simulation')
+    sim_times = basico_df.index.to_list()
+    have_time = 'Time' in basico_df.reset_index().columns
+    for obs in basico_df.columns.to_list():
+        obs_id = obs
+        if obs == 'Time':
+            continue
+        if 'Values[' in obs:
+            obs_id = obs[len('Values['):-1]
+
+        values = basico_df[obs].to_list()
+        num_values = len(values)
+
+        sub_set = petab_df.loc[
+            (petab_df.observableId == obs_id) & (petab_df.simulationConditionId == experiment_name), 'simulation']
+        num_expected = len(sub_set)
+        if num_expected == 0:
+            # this observable is not in the measurements, so we dont have values to update
+            continue
+        elif num_expected != num_values:
+            # we only have certain times and will have to update them individually
+            expected = petab_df.loc[
+                (petab_df.observableId == obs_id) & (petab_df.simulationConditionId == experiment_name)
+            ][['time', 'simulation']]
+            for index, row in expected.iterrows():
+                if row.time in sim_times and have_time:
+                    basic_data = basico_df.loc[row.time, obs]
+                    if basic_data.size > 1:
+                        # if there are more rows, we still only can take the first one
+                        basic_data = basic_data.iloc[0]
+                    petab_df.iloc[index, sim_col] = basic_data
+                if np.isinf(row.time):
+                    # update from steady state:
+                    petab_df.iloc[index, sim_col] = basico_df[obs]
+            continue
+
+        petab_df.loc[
+            (petab_df.observableId == obs_id) & (petab_df.simulationConditionId == experiment_name), 'simulation'
+        ] = values
 
 
 def petab_llh(pp, sim):

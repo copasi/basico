@@ -1,5 +1,5 @@
 import unittest
-
+import os
 import matplotlib.pyplot
 
 import basico
@@ -107,7 +107,9 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
 class TestMultipleResults(unittest.TestCase):
 
     def setUp(self):
-        self.model = basico.load_model('multiple_experiments.cps')
+        self.model = basico.load_model(
+            os.path.join(os.path.dirname(__file__), 'multiple_experiments.cps')
+        )
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'multiple_experiments')
 

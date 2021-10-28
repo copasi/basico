@@ -104,5 +104,18 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertEqual(old_first['upper'], new_first['upper'])
 
 
+class TestMultipleResults(unittest.TestCase):
+
+    def setUp(self):
+        self.model = basico.load_model('multiple_experiments.cps')
+        self.assertTrue(self.model.getModel().getObjectName() ==
+                        'multiple_experiments')
+
+    def test_current_solution(self):
+        result = basico.get_simulation_results()
+        self.assertTrue(len(result) == 2)
+        self.assertTrue(len(result[0]) == len(result[0]))
+
+
 if __name__ == '__main__':
     unittest.main()

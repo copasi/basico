@@ -441,21 +441,24 @@ def get_fit_item_template(include_local=False, include_global=False, default_lb=
                 result.append({
                     'name': mv.getInitialValueReference().getObjectDisplayName(),
                     'lower': default_lb,
-                    'upper': default_ub
+                    'upper': default_ub,
+                    'start': mv.getInitialValue()
                 })
 
     if include_local:
 
         from . import model_info
         local_params = model_info.get_reaction_parameters().reset_index()
-        for name, local in zip(local_params['name'], local_params['type']):
+        if 'name' in local_params:
+            for name, local, value in zip(local_params['name'], local_params['type'], local_params['value']):
 
-            if local == 'local':
-                result.append({
-                    'name': name,
-                    'lower': default_lb,
-                    'upper': default_ub
-                })
+                if local == 'local':
+                    result.append({
+                        'name': name,
+                        'lower': default_lb,
+                        'upper': default_ub,
+                        'start': value
+                    })
 
     return result
 
@@ -615,7 +618,11 @@ def get_parameters_solution(model=None):
     for i in range(solution.size()):
         item = items[i]
         sol = solution.get(i)
-        obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
+        obj = model.getObject(COPASI.CCommonName(item.getObjectCN()))
+        if obj is None:
+            logging.debug('fit item not in model, cn: {0}'.format(item.getObjectCN()))
+            continue
+        obj = obj.toObject().getObjectParent()
         name = obj.getObjectDisplayName()
         data.append({
             'name': name,
@@ -932,6 +939,9 @@ def get_simulation_results(values_only=False, **kwargs):
 
             change_set.append(obj)
             logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
+
+        if change_set.size() > 0:
+            model.updateInitialValues(change_set)
 
         _update_fit_parameters_from(dm, solution, exp_name)
 

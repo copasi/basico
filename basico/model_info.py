@@ -34,6 +34,22 @@ if sys.version_info[0] < 3:
     from io import open
 
 
+class T:
+    STEADY_STATE = "Steady-State"
+    TIME_COURSE = "Time-Course"
+    SCAN = "Scan"
+    EFM = "Elementary Flux Modes"
+    OPTIMIZATION = "Optimization"
+    PARAMETER_ESTIMATION = "Parameter Estimation"
+    MCA = "Metabolic Control Analysis"
+    LYAPUNOV_EXPONENTS = "Lyapunov Exponents"
+    TIME_SCALE_SEPARATION = "Time Scale Separation Analysis"
+    SENSITIVITIES = "Sensitivities"
+    MOIETIES = "Moieties"
+    CROSS_SECTION = "Cross Section"
+    LNA = "Linear Noise Approximation"
+    TIME_COURSE_SENSITIVITIES = "Time-Course Sensitivities"
+
 def __status_to_int(status):
     # type: (str)->int
     codes = {
@@ -56,6 +72,46 @@ def __status_to_string(status):
         COPASI.CModelEntity.Status_TIME: "time",
     }
     return strings.get(status, 'fixed')
+
+
+def __xml_task_type_to_string(type):
+    strings = {
+        COPASI.CTaskEnum.Task_steadyState: T.STEADY_STATE,
+        COPASI.CTaskEnum.Task_timeCourse: T.TIME_COURSE,
+        COPASI.CTaskEnum.Task_scan: T.SCAN,
+        COPASI.CTaskEnum.Task_fluxMode: T.EFM,
+        COPASI.CTaskEnum.Task_optimization: T.OPTIMIZATION,
+        COPASI.CTaskEnum.Task_parameterFitting: T.PARAMETER_ESTIMATION,
+        COPASI.CTaskEnum.Task_mca: T.MCA,
+        COPASI.CTaskEnum.Task_lyap: T.LYAPUNOV_EXPONENTS,
+        COPASI.CTaskEnum.Task_tssAnalysis: T.TIME_SCALE_SEPARATION,
+        COPASI.CTaskEnum.Task_sens: T.SENSITIVITIES,
+        COPASI.CTaskEnum.Task_moieties: T.MOIETIES,
+        COPASI.CTaskEnum.Task_crosssection: T.CROSS_SECTION,
+        COPASI.CTaskEnum.Task_lna: T.LNA,
+        COPASI.CTaskEnum.Task_timeSens: T.TIME_COURSE_SENSITIVITIES,
+    }
+    return strings.get(type, T.TIME_COURSE)
+
+
+def __task_name_to_xml_type(name):
+    strings = {
+        T.STEADY_STATE: COPASI.CTaskEnum.Task_steadyState,
+        T.TIME_COURSE: COPASI.CTaskEnum.Task_timeCourse,
+        T.SCAN: COPASI.CTaskEnum.Task_scan,
+        T.EFM: COPASI.CTaskEnum.Task_fluxMode,
+        T.OPTIMIZATION: COPASI.CTaskEnum.Task_optimization,
+        T.PARAMETER_ESTIMATION: COPASI.CTaskEnum.Task_parameterFitting,
+        T.MCA: COPASI.CTaskEnum.Task_mca,
+        T.LYAPUNOV_EXPONENTS: COPASI.CTaskEnum.Task_lyap,
+        T.TIME_SCALE_SEPARATION: COPASI.CTaskEnum.Task_tssAnalysis,
+        T.SENSITIVITIES: COPASI.CTaskEnum.Task_sens,
+        T.MOIETIES: COPASI.CTaskEnum.Task_moieties,
+        T.CROSS_SECTION: COPASI.CTaskEnum.Task_crosssection,
+        T.LNA: COPASI.CTaskEnum.Task_lna,
+        T.TIME_COURSE_SENSITIVITIES: COPASI.CTaskEnum.Task_timeSens,
+    }
+    return strings.get(type, COPASI.CTaskEnum.Task_timeCourse)
 
 
 def __line_type_to_int(line_type):
@@ -405,6 +461,115 @@ def get_plots(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
+def get_reports(name=None, ignore_automatic=False, task=None, **kwargs):
+    """Returns the reports as dataframe
+
+    :param name: optional filter by name
+    :param ignore_automatic: if true, only manually created reports are returned
+    :param task: optional task name, to the get the report for
+    :param kwargs: optional arguments:
+
+     * | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
+
+    :return: a data frame with all the report information
+    :rtype: pd.DataFrame
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    data = []
+
+    for i in range(dm.getNumReportDefinitions()):
+        report = dm.getReportDefinition(i)
+        assert (isinstance(report, COPASI.CReportDefinition))
+
+        report_data = get_report_dict(report, model=dm)
+
+        if 'name' in kwargs and not kwargs['name'] in report_data['name']:
+            continue
+
+        if ignore_automatic and 'comment' in report_data and 'Automatically generated report' in report_data['comment']:
+            continue
+
+        if task and 'task' in report_data and task not in report_data['task']:
+            continue
+
+        if name and name not in report_data['name']:
+            continue
+
+        data.append(report_data)
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
+
+def get_report_dict(report, **kwargs):
+    """Returns all information about the plot as dictionary
+
+    :param report: report definition, index or name
+    :type report: COPASI.CReportDefinition or int or str
+    :param kwargs: optional arguments
+
+     * | `model`: to specify the data model to be used (if not specified
+       | the one from :func:`.get_current_model` will be taken)
+
+    :return: a dictionary with all information about the plot
+    :rtype: dict
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if isinstance(report, str) or isinstance(report, int):
+        spec = dm.getReportDefinition(report)
+        if spec is None:
+            logging.error('No plot specification: {0}'.format(report))
+            return
+
+        report = spec
+
+    assert (isinstance(report, COPASI.CReportDefinition))
+
+    result = {
+        'name': report.getObjectName(),
+        'separator': report.getSeparator().getStaticString(),
+        'precision': report.getPrecision(),
+        'task': __xml_task_type_to_string(report.getTaskType()),
+        'comment': report.getComment(),
+        'is_table': report.isTable()
+    }
+
+    if report.isTable():
+        result['print_headers'] = report.getTitle()
+        table_items = _add_report_items_to_list([], report.getNumTableItems(), report.getNthTableItem, dm)
+        result['table'] = table_items
+
+    else:
+        result['header'] = _add_report_items_to_list([], report.getNumHeaderItems(), report.getNthHeaderItem, dm)
+        result['body'] = _add_report_items_to_list([], report.getNumBodyItems(), report.getNthBodyItem, dm)
+        result['footer'] = _add_report_items_to_list([], report.getNumFooterItems(), report.getNthFooterItem, dm)
+
+    return result
+
+
+def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
+    for i in range(num_elements):
+        cn = get_nth_function(i)
+        obj = dm.getObject(cn)
+        if obj is None:
+            logging.warning('report item cannot be resolved: {0}'.format(cn.getString()))
+            continue
+        reverse = dm.findObjectByDisplayName(obj.getObjectDisplayName())
+        if reverse is None:
+            # item that cannot be resolved by name so use cn
+            result.append(cn.getString())
+        else:
+            result.append(obj.getObjectDisplayName())
+
+    return result
+
 def get_plot_dict(plot_spec, **kwargs):
     """Returns the information for the specified plot
 
@@ -699,6 +864,151 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
 
     if 'new_name' in kwargs:
         plot_spec.setObjectName(kwargs['new_name'])
+
+
+def add_report(name, **kwargs):
+    """Adds a new report specification to the model.
+
+        :param name: the name for the new plot specification
+        :type name: str
+
+        :param kwargs: optional parameters, recognized are:
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+            * all other parameters from :func:`set_report_dict`.
+
+        :return: the report definition
+        """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+    spec = dm.getReportDefinitionList().createReportDefinition(name, "")
+
+    if not spec:
+        raise ValueError('A report named ' + name + ' already exists')
+
+    set_report_dict(spec, **kwargs)
+
+    return spec
+
+
+def set_report_dict(spec, precision=None, separator=None, table=None,
+                    print_headers=True, header=None, body=None, footer=None, task=None, comment=None, **kwargs):
+    """Sets properties of the named report definition.
+
+        :param spec: the name, index or report definition object
+        :type spec: Union[str,int,COPASI.CReportDefinition]
+
+        :param precision: number of digits to print (defaults to 6)
+        :type precision: Optional[int]
+
+        :param separator: the separator to use between elements (defaults to \t)
+        :type separator: Optional[str]
+
+        :param table: a list of CNs or display names of elements to collect in a table. If `table` is specified
+              the header, body, footer argument will be ignored
+        :type table: [str]
+
+        :param print_headers: optional arguments, indicating whether table headers will be printed (only applies
+               when the `table` argument is given
+        :type print_headers: bool
+
+        :param header: a list of CNs or display names of elements to collect in the header column
+        :type header: [str]
+
+        :param body: a list of CNs or display names of elements to collect in the body rows
+        :type body: [str]
+
+        :param footer: a list of CNs or display names of elements to collect in the footer column
+        :type footer: [str]
+
+        :param task: | task name for which the report should be used
+        :type task: Optional[str]
+
+        :param comment: a documentation string for the report (can bei either string, or xhtml string)
+        :type comment: Optional[str]
+
+        :param kwargs: optional arguments
+
+            - | `new_name`: to rename the report
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
+        :return: None
+        """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    if isinstance(spec, str) or isinstance(spec, int):
+        r = dm.getReportDefinition(spec)
+        if r is None:
+            logging.error('No report specification: {0}'.format(spec))
+            return
+
+        spec = r
+
+    assert (isinstance(spec, COPASI.CReportDefinition))
+
+    if 'new_name' in kwargs:
+        spec.setObjectName(kwargs['new_name'])
+
+    if comment:
+        spec.setComment(comment)
+
+    if precision:
+        spec.setPrecision(precision)
+
+    if separator:
+        spec.setSeparator(separator)
+
+    if task is not None:
+        spec.setTaskType(__task_name_to_xml_type(task))
+
+    if table:
+        spec.setIsTable(True)
+        spec.setTitle(print_headers)
+        _set_report_vector(spec.getTableAddr(), table, dm)
+    else:
+        if header:
+            _set_report_vector(spec.getHeaderAddr(), header, dm)
+            spec.setIsTable(False)
+        if body:
+            _set_report_vector(spec.getBodyAddr(), body, dm)
+            spec.setIsTable(False)
+        if footer:
+            _set_report_vector(spec.getFooterAddr(), footer, dm)
+            spec.setIsTable(False)
+
+
+def _set_report_vector(vec, list_of_cns, dm):
+    """ Sets the given vector to the elements of the list
+
+    :param vec: the vector to change
+    :type vec: COPASI.ReportItemVector
+    :param list_of_cns: list of cns or display names to add
+    :type list_of_cns: [str]
+    :return: None
+    """
+    vec.clear()
+
+    if not list_of_cns:
+        return
+
+    for item in list_of_cns:
+        if item.startswith('CN'):
+            vec.append(COPASI.CRegisteredCommonName(item))
+            continue
+
+        obj = dm.findObjectByDisplayName(item)
+        if obj:
+            vec.append(COPASI.CRegisteredCommonName(obj.getCN()))
+            continue
+
+        if not item.startswith('String='):
+            item = 'String=' + item
+        vec.append(COPASI.CRegisteredCommonName(item))
 
 
 def _replace_names_with_cns(expression, **kwargs):
@@ -1736,7 +2046,7 @@ def get_reaction_parameters(name=None, **kwargs):
             data.append(param_data)
 
     if not data:
-        return None
+        return pandas.DataFrame()
 
     return pandas.DataFrame(data=data).set_index('name')
 
@@ -2334,6 +2644,35 @@ def remove_plot(name, **kwargs):
         return
 
     logging.warning('no such plot {0}'.format(name))
+
+
+def remove_report(name, **kwargs):
+    """Deletes the named report
+
+    :param name: the name of a report in the model
+    :type name: str
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    report_list = dm.getReportDefinitionList()
+    assert (isinstance(report_list, COPASI.CReportDefinitionVector))
+
+    for i in range(report_list.size()):
+        plot = report_list.get(i)
+        if plot.getObjectName() != name:
+            continue
+
+        report_list.remove(i)
+        return
+
+    logging.warning('no such report {0}'.format(name))
 
 
 def remove_reaction(name, **kwargs):
@@ -3461,3 +3800,53 @@ def _get_named_value(obj, name):
         }.get(name, None)
 
     return value
+
+
+def assign_report(name, task, filename='', append=True, confirm_overwrite=True, **kwargs):
+    """Assigns the named report to the specified task
+
+    :param name: the name of the report definition to assing
+    :type name: str
+
+    :param task: the task to assign the report to
+    :type task: Union[int, str, COPASI.CCopasiTask]
+
+    :param filename: the filename to write the result to or `''`, if it is the empty, it resets the target
+           of the task, and COPASI will not create that report
+    :type filename: str
+
+    :param append: boolean indicating whether output should be appended (defaults to True)
+    :type append: bool
+
+    :param confirm_overwrite: boolean indicating whether the copasi should ask before overwriting a file
+    :type confirm_overwrite: bool
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    if isinstance(task, int) or isinstance(task, str):
+        obj = model.getTask(task)
+        if obj is None:
+            logging.error('No task {0}'.format(task))
+            return
+        task = obj
+
+    report_definition = model.getReportDefinition(name)
+    if not report_definition:
+        logging.error('No report definition: {0}'.format(name))
+
+    assert(isinstance(report_definition, COPASI.CReportDefinition))
+    assert(isinstance(task, COPASI.CCopasiTask))
+
+    r = task.getReport()
+    assert (isinstance(r, COPASI.CReport))
+    r.setAppend(append)
+    r.setConfirmOverwrite(confirm_overwrite)
+    r.setTarget(filename)
+    r.setReportDefinition(report_definition)

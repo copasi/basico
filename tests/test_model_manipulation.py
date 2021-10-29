@@ -142,5 +142,79 @@ class TestBasicoModelManipulation(unittest.TestCase):
         basico.add_reaction('r1 ma keq', scheme='A -> B', function='MA KD', mapping={'vr': 1000, 'Keq': 'K_d'})
 
 
+class TestReportManipulation(unittest.TestCase):
+
+    def setUp(self):
+        self.model = basico.load_example('bruss')
+        self.assertTrue(self.model.getModel().getObjectName() == 'The Brusselator')
+
+    def test_get_report(self):
+        reports = basico.get_reports()
+        self.assertTrue(reports is not None)
+        self.assertEqual(len(reports), 11)
+        reports = basico.get_reports(ignore_automatic=True)
+        self.assertTrue(reports is None)
+        reports = basico.get_reports(name='Steady')
+        self.assertTrue(reports is not None)
+        self.assertEqual(len(reports), 1)
+        reports = basico.get_reports(task=basico.T.STEADY_STATE)
+        self.assertTrue(reports is not None)
+        self.assertEqual(len(reports), 1)
+
+        r = basico.get_report_dict(0)
+        self.assertTrue('task' in r)
+        self.assertEqual(r['task'], basico.T.STEADY_STATE)
+        r = basico.get_report_dict(basico.T.STEADY_STATE)
+        self.assertTrue('task' in r)
+        self.assertEqual(r['task'], basico.T.STEADY_STATE)
+
+    def test_add_report(self):
+        reports = basico.get_reports()
+        self.assertTrue(reports is not None)
+        self.assertEqual(len(reports), 11)
+        basico.add_report('Simple Report', table=['Time', '[X]', '[Y]'], print_headers=True, precision=6, separator='\t')
+
+        r = basico.get_report_dict('Simple Report')
+        self.assertTrue(r is not None)
+        self.assertTrue('table' in r)
+        self.assertTrue('header' not in r)
+        self.assertTrue('body' not in r)
+        self.assertTrue('footer' not in r)
+        self.assertEqual(r['name'], 'Simple Report')
+        self.assertEqual(r['print_headers'], True)
+        self.assertEqual(r['separator'], '\t')
+        self.assertEqual(r['precision'], 6)
+
+        basico.set_report_dict('Simple Report', task=basico.T.STEADY_STATE, footer=['[A]', '[B]'])
+        r = basico.get_report_dict('Simple Report')
+        self.assertTrue(r is not None)
+        self.assertTrue('table' not in r)
+        self.assertTrue('header' in r)
+        self.assertTrue('body' in r)
+        self.assertTrue('footer' in r)
+
+        basico.assign_report('Simple Report', task=basico.T.STEADY_STATE, file_name='out.txt')
+
+        basico.remove_report('Simple Report')
+        r = basico.get_report_dict('Simple Report')
+        self.assertTrue(r is None)
+
+        basico.add_report('PE Report', footer=[
+            'CN=Root,Vector=TaskList[Optimization],Problem=Optimization,Reference=Function Evaluations',
+            'CN=Root,Vector=TaskList[Optimization],Problem=Optimization,Reference=Best Value'
+        ], comment="""Report using CN's only collected at the end""")
+
+        r = basico.get_report_dict('PE Report')
+        self.assertTrue(r is not None)
+
+        basico.add_report('Silly Report', footer=[
+            'String=test',
+            'test2',
+            '\n'
+        ], comment="""report with strings at the end""")
+        r = basico.get_report_dict('Silly Report')
+        self.assertTrue(r is not None)
+
+
 if __name__ == '__main__':
     unittest.main()

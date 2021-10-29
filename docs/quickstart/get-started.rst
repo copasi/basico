@@ -23,7 +23,7 @@ support for PEtab and petab-select, that can be installed using
 
 .. code-block:: bash
 
-    pip install copasi-basico
+    pip install copasi-basico[petab]
 
 or 
 

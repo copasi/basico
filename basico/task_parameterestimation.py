@@ -797,7 +797,7 @@ def run_parameter_estimation(**kwargs):
     - `settings` (dict): a dictionary with settings to use, in the same format as the ones obtained from
                          :func:`.get_task_settings`
 
-    :return: the solution for the fit parameters see :func:`get_get_parameters_solution`.
+    :return: the solution for the fit parameters see :func:`get_parameters_solution`.
     :rtype: pandas.DataFrame
     """
     model = kwargs.get('model', model_io.get_current_model())

@@ -25,6 +25,7 @@ Examples:
 import COPASI
 import pandas as pd
 
+import basico
 from . import model_io
 from . import model_info
 import pandas
@@ -145,7 +146,50 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
     """
     model = kwargs.get('model', model_io.get_current_model())
-    handler = COPASI.CDataHandler()
+    columns, dh = create_data_handler(output_selection, model)
+
+    task, use_initial_values = _setup_timecourse(args, kwargs)
+
+    result = task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_DURING, dh)
+    if not result:
+        logging.error("Error while initializing the simulation: " +
+        COPASI.CCopasiMessage.getLastMessage().getText())
+    else:
+        result = task.processRaw(use_initial_values)
+        if not result:
+            logging.error("Error while running the simulation: " +
+            COPASI.CCopasiMessage.getLastMessage().getText())
+
+    df = get_data_from_data_handler(dh, columns)
+
+    return df
+
+
+def get_data_from_data_handler(dh, columns):
+    data = []
+    for i in range(dh.getNumRowsDuring()):
+        row = dh.getNthRow(i)
+        current_row = []
+        for element in row:
+            current_row.append(element)
+        data.append(current_row)
+    df = pd.DataFrame(data=data, columns=columns)
+    return df
+
+
+def create_data_handler(output_selection, during=None, after=None, before=None, model=None):
+    """Creates an output handler for the given selection
+
+    :param output_selection: list of display names or cns, of elements to capture
+    :param model: the model in which to resolve the display names
+
+    :return: tuple of the data handler from which to retrieve output later, and their columns
+    :rtype: (COPASI.CDataHandler, [])
+
+    """
+    if model is None:
+        model = basico.get_current_model()
+
     dh = COPASI.CDataHandler()
     columns = []
     for name in output_selection:
@@ -168,29 +212,13 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
             cn = obj.getCN().getString()
             columns.append(name)
-        dh.addDuringName(COPASI.CRegisteredCommonName(cn))
-
-    task, use_initial_values = _setup_timecourse(args, kwargs)
-
-    result = task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_DURING, dh)
-    if not result:
-        logging.error("Error while initializing the simulation: " +
-        COPASI.CCopasiMessage.getLastMessage().getText())
-    else:
-        result = task.processRaw(use_initial_values)
-        if not result:
-            logging.error("Error while running the simulation: " +
-            COPASI.CCopasiMessage.getLastMessage().getText())
-
-    data = []
-    for i in range(dh.getNumRowsDuring()):
-        row = dh.getNthRow(i)
-        current_row = []
-        for element in row:
-            current_row.append(element)
-        data.append(current_row)
-
-    return pd.DataFrame(data=data, columns=columns)
+        if not during or name in during:
+            dh.addDuringName(COPASI.CRegisteredCommonName(cn))
+        if after and name in after:
+            dh.addAfterName(COPASI.CRegisteredCommonName(cn))
+        if before and name in before:
+            dh.addAfterName(COPASI.CRegisteredCommonName(cn))
+    return dh, columns
 
 
 def run_time_course(*args, **kwargs):

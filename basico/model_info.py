@@ -50,6 +50,46 @@ class T:
     LNA = "Linear Noise Approximation"
     TIME_COURSE_SENSITIVITIES = "Time-Course Sensitivities"
 
+    @classmethod
+    def from_enum(cls, int_value):
+        names = {
+            COPASI.CTaskEnum.Task_steadyState: T.STEADY_STATE,
+            COPASI.CTaskEnum.Task_timeCourse: T.TIME_COURSE,
+            COPASI.CTaskEnum.Task_scan: T.SCAN,
+            COPASI.CTaskEnum.Task_fluxMode: T.EFM,
+            COPASI.CTaskEnum.Task_optimization: T.OPTIMIZATION,
+            COPASI.CTaskEnum.Task_parameterFitting: T.PARAMETER_ESTIMATION,
+            COPASI.CTaskEnum.Task_mca: T.MCA,
+            COPASI.CTaskEnum.Task_lyap: T.LYAPUNOV_EXPONENTS,
+            COPASI.CTaskEnum.Task_tssAnalysis: T.TIME_SCALE_SEPARATION,
+            COPASI.CTaskEnum.Task_sens: T.SENSITIVITIES,
+            COPASI.CTaskEnum.Task_moieties: T.MOIETIES,
+            COPASI.CTaskEnum.Task_crosssection: T.CROSS_SECTION,
+            COPASI.CTaskEnum.Task_lna: T.LNA,
+            COPASI.CTaskEnum.Task_timeSens: T.TIME_COURSE_SENSITIVITIES,
+        }
+        return names.get(int_value, T.STEADY_STATE)
+
+    @classmethod
+    def to_enum(cls, value):
+        values = {
+            T.STEADY_STATE: COPASI.CTaskEnum.Task_steadyState,
+            T.TIME_COURSE: COPASI.CTaskEnum.Task_timeCourse,
+            T.SCAN: COPASI.CTaskEnum.Task_scan,
+            T.EFM: COPASI.CTaskEnum.Task_fluxMode,
+            T.OPTIMIZATION: COPASI.CTaskEnum.Task_optimization,
+            T.PARAMETER_ESTIMATION: COPASI.CTaskEnum.Task_parameterFitting,
+            T.MCA: COPASI.CTaskEnum.Task_mca,
+            T.LYAPUNOV_EXPONENTS: COPASI.CTaskEnum.Task_lyap,
+            T.TIME_SCALE_SEPARATION: COPASI.CTaskEnum.Task_tssAnalysis,
+            T.SENSITIVITIES: COPASI.CTaskEnum.Task_sens,
+            T.MOIETIES: COPASI.CTaskEnum.Task_moieties,
+            T.CROSS_SECTION: COPASI.CTaskEnum.Task_crosssection,
+            T.LNA: COPASI.CTaskEnum.Task_lna,
+            T.TIME_COURSE_SENSITIVITIES: COPASI.CTaskEnum.Task_timeSens,
+        }
+        return values.get(value, 0)
+
 def __status_to_int(status):
     # type: (str)->int
     codes = {

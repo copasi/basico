@@ -57,19 +57,19 @@ class TestBasicoIO_Brus(unittest.TestCase):
 
     def test_get_plots(self):
         result = basico.model_info.get_plots()
-        self.assertTrue(len(result) == 2)
+        self.assertEqual(len(result), 3)
 
     def test_add_plot(self):
         basico.model_info.add_plot('test', curves=[{'color': '#FF0000', 'channels': ['Time', '[X]']}])
         result = basico.model_info.get_plots()
-        self.assertTrue(len(result) == 3)
+        self.assertEqual(len(result), 4)
         plot = basico.model_info.get_plot_dict('test')
         self.assertTrue(len(plot['curves']) == 1)
         self.assertTrue(len(plot['curves'][0]['channels']) == 2)
         self.assertEqual(plot['curves'][0]['color'], '#FF0000')
         basico.model_info.remove_plot('test')
         result = basico.model_info.get_plots()
-        self.assertTrue(len(result) == 2)
+        self.assertEqual(len(result), 3)
 
     def test_collect_data(self):
         basico.add_parameter('quantity', initial_value=1)

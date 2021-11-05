@@ -1150,3 +1150,40 @@ def prune_simulation_results(simulation_results):
         simulation_results[1][i] = s_df
 
     return simulation_results
+
+
+def get_fit_statistic(**kwargs):
+    """Return information about the last fit.
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: dictionary with the fit statistic
+    :rtype: {}
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getExperimentSet()
+    assert (isinstance(experiments, COPASI.CExperimentSet))
+
+    result = {
+        'obj': problem.getSolutionValue(),
+        'rms': problem.getRMS(),
+        'sd': problem.getStdDeviation(),
+        'f_evals': problem.getFunctionEvaluations(),
+        'failed_evals_exception': problem.getFailedEvaluationsExc(),
+        'failed_evals_nan': problem.getFailedEvaluationsNaN(),
+        'cpu_time': problem.getExecutionTime(),
+        'data_points': experiments.getDataPointCount(),
+        'valid_data_points': experiments.getValidValueCount(),
+    }
+    result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
+    return result

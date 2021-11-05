@@ -103,6 +103,12 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertEqual(old_first['lower'], new_first['lower'])
         self.assertEqual(old_first['upper'], new_first['upper'])
 
+    def test_statistic(self):
+        basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
+        result = basico.get_fit_statistic()
+        self.assertTrue(result is not None)
+        self.assertTrue(result['obj'] < 0.2)
+
 
 class TestMultipleResults(unittest.TestCase):
 

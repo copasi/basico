@@ -3694,8 +3694,14 @@ def set_task_settings(task, settings, **kwargs):
     if 'is_scheduled' in settings:
         task.setScheduled(settings['is_scheduled'])
 
+    if 'scheduled' in settings:
+        task.setScheduled(settings['scheduled'])
+
     if 'is_update_model' in settings:
         task.setUpdateModel(settings['is_update_model'])
+
+    if 'update_model' in settings:
+        task.setUpdateModel(settings['update_model'])
 
     if 'problem' in settings:
         problem = task.getProblem()
@@ -3845,7 +3851,7 @@ def _get_named_value(obj, name):
 def assign_report(name, task, filename='', append=True, confirm_overwrite=True, **kwargs):
     """Assigns the named report to the specified task
 
-    :param name: the name of the report definition to assing
+    :param name: the name of the report definition to assign
     :type name: str
 
     :param task: the task to assign the report to

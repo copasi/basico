@@ -3896,3 +3896,29 @@ def assign_report(name, task, filename='', append=True, confirm_overwrite=True, 
     r.setConfirmOverwrite(confirm_overwrite)
     r.setTarget(filename)
     r.setReportDefinition(report_definition)
+
+
+def remove_report_from_task(task, **kwargs):
+    """Clears the report filename from the specified task
+
+    :param task: the task to assign the report to
+    :type task: Union[int, str, COPASI.CCopasiTask]
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    if isinstance(task, int) or isinstance(task, str):
+        obj = model.getTask(task)
+        if obj is None:
+            logging.error('No task {0}'.format(task))
+            return
+        task = obj
+
+    assert (isinstance(task, COPASI.CCopasiTask))
+    task.getReport().setTarget('')

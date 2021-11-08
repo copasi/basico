@@ -1939,6 +1939,12 @@ def get_functions(name=None, **kwargs):
 
             * `reversible`: to further filter for functions that are only reversible
 
+            * | `suitable_for`: an optional reaction for which to filter the function list. Only functions
+              | suitable for the reaction will be returned
+
+            * | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)
+
            :return: a pandas dataframe with the information about the functions
            :rtype: pandas.DataFrame
            """
@@ -1946,6 +1952,24 @@ def get_functions(name=None, **kwargs):
     assert (isinstance(root, COPASI.CRootContainer))
     functions = root.getFunctionList().loadedFunctions()
     data = []
+
+    suitable_for = None
+    num_substrates = None
+    num_products = None
+    reversibility = False
+
+    if 'suitable_for' in kwargs:
+        dm = kwargs.get('model', model_io.get_current_model())
+        suitable_for = dm.getModel().getReaction(kwargs['suitable_for'])
+        if suitable_for is None:
+            logging.error('No reaction {0} found'.format(kwargs['suitable_for']))
+            return None
+        assert(isinstance(suitable_for, COPASI.CReaction))
+        eqn = suitable_for.getChemEq()
+        num_substrates = eqn.getSubstrates().size()
+        num_products = eqn.getProducts().size()
+        reversibility = suitable_for.isReversible()
+
     for index in range(functions.size()):
         function = functions.get(index)
         assert (isinstance(function, COPASI.CFunction))
@@ -1965,6 +1989,10 @@ def get_functions(name=None, **kwargs):
 
         if name and name not in fun_data['name']:
             continue
+
+        if suitable_for is not None:
+            if not function.isSuitable(num_substrates, num_products, reversibility):
+                continue
 
         data.append(fun_data)
 

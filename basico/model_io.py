@@ -420,11 +420,19 @@ def save_model_and_data(filename, **kwargs):
         # copy experiment files
         for old_name in exp_set.getFileNames():
             new_name = os.path.join(data_dir, os.path.basename(old_name))
+            if new_name == old_name:
+                # same file skipping
+                continue
+
             if not os.path.exists(old_name):
                 logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
-                                " be used for Parameter Estimation")
+                                " be used for Parameter Estimation".format(old_name))
                 continue
-            shutil.copyfile(old_name, new_name)
+
+            if os.path.exists(new_name):
+                logging.warning("Experimental data file {0} does already exist, and will not be overwritten.".format(new_name))
+            else:
+                shutil.copyfile(old_name, new_name)
             old_names[old_name] = new_name
             new_names[new_name] = old_name
             if delete_data_on_exit:

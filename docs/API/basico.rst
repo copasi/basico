@@ -80,3 +80,11 @@ basico.task\_timecourse module
    :members:
    :undoc-members:
    :show-inheritance:
+
+basico.task\_scan module
+------------------------------
+
+.. automodule:: basico.task_scan
+   :members:
+   :undoc-members:
+   :show-inheritance:

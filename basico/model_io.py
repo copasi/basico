@@ -104,6 +104,13 @@ def remove_datamodel(model):
     return None
 
 
+def get_num_loaded_models():
+    """
+    :return: the number of loaded models
+    """
+    return COPASI.CRootContainer.getDatamodelList().size()
+
+
 def new_model(**kwargs):
     """Creates a new model and sets it as current.
     
@@ -363,6 +370,23 @@ def save_model(filename, **kwargs):
                                 format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
         except COPASI.CCopasiException:
             logging.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
+
+
+def save_model_to_string(**kwargs):
+    """Saves the current model to string
+
+    :param kwargs: optional arguments:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: the copasi model as string
+    :rtype: str
+
+    """
+    model = kwargs.get('model', get_current_model())
+    assert (isinstance(model, COPASI.CDataModel))
+    return model.saveModelToString()
 
 
 def save_model_and_data(filename, **kwargs):

@@ -76,6 +76,28 @@ def get_scan_items_frame(**kwargs):
 
 
 def get_scan_items(**kwargs):
+    """Retrieves the scan items specified on the scan task:
+
+       >>> get_scan_items()
+       [
+          {
+            'type': 'scan',
+            'num_steps': 10,
+            'log': False,
+            'min': 0.5,
+            'max': 2.0,
+            'item': '(R1).k1',
+          }
+       ]
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: array of dictionary with the scan items specified
+    :rtype: [{}]
+    """
     model = kwargs.get('model', model_io.get_current_model())
     problem = kwargs.get('problem', model.getTask('Scan').getProblem())
 
@@ -140,14 +162,26 @@ def _scan_item_to_dict(item, model=None):
 
 
 def get_scan_settings(**kwargs):
-    """Returns the scan settings
+    """Returns the scan settings as dictionary
+
+        >>> get_scan_settings()
+        {
+            'update_model': False,
+            'scheduled': False,
+            'subtask': 'Steady-State',
+            'output_during_subtask': False,
+            'continue_from_current_state': False,
+            'continue_on_error': False,
+            'scan_items': [ ... ]
+        }
 
         :param kwargs: optional parameters
 
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
-        :return:
+        :return: dictionary of scan settings
+        :rtype: {}
     """
     model = kwargs.get('model', model_io.get_current_model())
     task = model.getTask('Scan')
@@ -173,8 +207,39 @@ def add_scan_item(**kwargs):
     """Adds the scan item to the model
 
       :param kwargs: optional parameters
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
+
+        - | `type (str)`: the type for the scan item can be one of `scan`,
+          | `repeat` or `random`. If not specified `scan` will be used.
+
+        - | `cn (str)`: the cn of the element to use in the scan item (use when
+          | no suitable display names for the item you are interested in exist)
+          | if you specify cn, don't use the `item` optional paramter
+
+        - | `item (str)`: the display name of the item you want to use, for example
+          | `[Signal]_0` for the initial concentration of species `Signal`, or
+          | `(r1).k` for the local parameter `k` of reaction `r1`.
+
+        - | `values(str or [float])`: if you want to scan over specific values,
+          | rather than a range, specify them here e.g.: `[0.1, 0.5, 1, 2]`. Using
+          | this parameter also sets `use_values` to `True`
+
+        - | `use_values (bool)`: indicates that the values specified should be used
+          | rather than the min / max range
+
+        - | `num_steps (int)`: the number of steps in the range of [min, max] or the
+          | number of repeats.
+
+        - | `min (float)`: minimum value for the range or first distribution parameter
+
+        - | `max (float)`: maximum value for the range, or the 2nd distributon parameter
+
+        - | `log (bool)`: boolean indicating that the range should be used logarithmically.
+
+        - | `distribution (str)`: one of `uniform`, `normal`, `poisson` or `gamma`
+
       :return:
     """
     model = kwargs.get('model', model_io.get_current_model())
@@ -221,14 +286,33 @@ def add_scan_item(**kwargs):
 
 
 def set_scan_items(scan_items, **kwargs):
-    """Changes the scan items
+    """Replaces the scan items in the task, with the scan items passed in
 
-    :param scan_items:
+       If you just wanted to change a specific entry, you could would retrieve
+       the current set of scan items, make the change and then set them again:
+
+       >>> scan_items = get_scan_items()
+
+       the list of scan items is returned as array of dictionary items, and
+       can be freely modified (say change the number of
+       steps of the first item to a new value), or add new entries, remove some
+
+       >>> scan_items[0]['num_steps'] = 20
+
+       Finally a call to scan items, will replace the ones in the model with the
+       ones from the array.
+
+       >>> set_scan_items(scan_items)
+
+    :param scan_items: list of dictionaries as returned by :func:`.get_scan_items`.
+    :type scan_items: [{}]
+
     :param kwargs: optional parameters
+
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
-    :return:
+    :return: None
     """
     model = kwargs.get('model', model_io.get_current_model())
     problem = kwargs.get('problem', model.getTask('Scan').getProblem())
@@ -255,7 +339,7 @@ def set_scan_settings(**kwargs):
                 or not  (True)
         -  continue_on_error: boolean indicating, whether executions should continue, in case one subtask execution failed
            (True) or not.
-        -  scan_items: a list of scan items
+        -  scan_items: a list of scan items see :func:`.set_scan_items`
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
@@ -295,8 +379,20 @@ def set_scan_settings(**kwargs):
 def run_scan(**kwargs):
     """Runs the scan task
 
-    :param kwargs:
-    :return:
+    :param kwargs: optional parameters
+
+        - | settings: optional dictionary with the scan settings
+
+        - | scan_items: a list of scan items see :func:`.set_scan_items`
+
+        - | output ([(str)]): optional list of cns or display names, of elements
+          | to collect in the scan.
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None if output is not specified, otherwise the collected output as dataframe.
+    :rtype: None or pd.DataFrame
     """
     model = kwargs.get('model', model_io.get_current_model())
 

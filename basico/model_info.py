@@ -35,6 +35,18 @@ if sys.version_info[0] < 3:
 
 
 class T:
+    """Constants for Task names
+
+    Convert between task names to enums
+
+        >>> T.from_enum(0)
+        Steady-State
+
+        >>> T.to_enum('Steady-State')
+        0
+
+    """
+
     STEADY_STATE = "Steady-State"
     TIME_COURSE = "Time-Course"
     SCAN = "Scan"
@@ -50,9 +62,12 @@ class T:
     LNA = "Linear Noise Approximation"
     TIME_COURSE_SENSITIVITIES = "Time-Course Sensitivities"
 
+    _names = None
+    _values = None
+
     @classmethod
-    def from_enum(cls, int_value):
-        names = {
+    def _create_name_map(cls):
+        return {
             COPASI.CTaskEnum.Task_steadyState: T.STEADY_STATE,
             COPASI.CTaskEnum.Task_timeCourse: T.TIME_COURSE,
             COPASI.CTaskEnum.Task_scan: T.SCAN,
@@ -68,11 +83,10 @@ class T:
             COPASI.CTaskEnum.Task_lna: T.LNA,
             COPASI.CTaskEnum.Task_timeSens: T.TIME_COURSE_SENSITIVITIES,
         }
-        return names.get(int_value, T.STEADY_STATE)
 
     @classmethod
-    def to_enum(cls, value):
-        values = {
+    def _create_value_map(cls):
+        return {
             T.STEADY_STATE: COPASI.CTaskEnum.Task_steadyState,
             T.TIME_COURSE: COPASI.CTaskEnum.Task_timeCourse,
             T.SCAN: COPASI.CTaskEnum.Task_scan,
@@ -88,7 +102,27 @@ class T:
             T.LNA: COPASI.CTaskEnum.Task_lna,
             T.TIME_COURSE_SENSITIVITIES: COPASI.CTaskEnum.Task_timeSens,
         }
-        return values.get(value, 0)
+
+    @classmethod
+    def from_enum(cls, int_value):
+        if cls._names is None:
+            cls._names = cls._create_name_map()
+
+        return cls._names.get(int_value, T.STEADY_STATE)
+
+    @classmethod
+    def to_enum(cls, value):
+        if cls._values is None:
+            cls._values = cls._create_value_map()
+
+        return cls._values.get(value, 0)
+
+    @classmethod
+    def all_task_names(cls):
+        if cls._names is None:
+            cls._names = cls._create_name_map()
+
+        return list(cls._names.values())
 
 
 def __status_to_int(status):
@@ -3659,6 +3693,16 @@ def get_task_settings(task, basic_only=True, **kwargs):
     result['method'] = _get_group_as_dict(method, basic_only)
     result['method']['name'] = method.getObjectName()
 
+    report = task.getReport()
+    assert (isinstance(report, COPASI.CReport))
+    report_def = report.getReportDefinition()
+    result['report'] = {
+        'filename': report.getTarget(),
+        'report_definition': report_def.getObjectName() if report_def is not None else None,
+        'append': report.getAppend(),
+        'confirm_overwrite': report.confirmOverwrite()
+    }
+
     return result
 
 
@@ -3714,6 +3758,26 @@ def set_task_settings(task, settings, **kwargs):
                 method = task.getMethod()
 
         _set_group_from_dict(method, m_dict)
+
+    if 'report' in settings:
+        r_dict = settings['report']
+        report = task.getReport()
+        assert (isinstance(report, COPASI.CReport))
+        if 'filename' in r_dict:
+            report.setTarget(r_dict['filename'])
+
+        if 'append' in r_dict:
+            report.setAppend(r_dict['append'])
+
+        if 'confirm_overwrite' in r_dict:
+            report.setConfirmOverwrite(r_dict['confirm_overwrite'])
+
+        if 'report_definition' in r_dict:
+            name = r_dict['report_definition']
+            if name is not None:
+                r_def = dm.getReportDefinition(name)
+                if r_def is not None:
+                    report.setReportDefinition(r_def)
 
 
 def _collect_data(names=None, cns=None, **kwargs):
@@ -3919,3 +3983,48 @@ def remove_report_from_task(task, **kwargs):
 
     assert (isinstance(task, COPASI.CCopasiTask))
     task.getReport().setTarget('')
+
+
+def get_scheduled_tasks(**kwargs):
+    """Returns the list of scheduled tasks
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: list of tasks that are scheduled
+    :rtype: [str]
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(model, COPASI.CDataModel))
+    result = []
+    for task in model.getTaskList():
+        if task.isScheduled():
+            result.append(task.getObjectName())
+    return result
+
+
+def set_scheduled_tasks(task_name, **kwargs):
+    """Sets the scheduled tasks
+
+    Only the tasks with the listed names will be set to be scheduled.
+
+    :param task_name: name or list of names of tasks set to be scheduled
+    :type task_name: str or [str]
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+    :return: None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(model, COPASI.CDataModel))
+
+    if isinstance(task_name, str):
+        task_name = [task_name]
+
+    for c_task in model.getTaskList():
+        assert(isinstance(c_task, COPASI.CCopasiTask))
+        c_task.setScheduled(c_task.getObjectName() in task_name)
+

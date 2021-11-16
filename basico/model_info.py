@@ -3682,8 +3682,8 @@ def get_task_settings(task, basic_only=True, **kwargs):
         return {}
 
     result = {
-        'is_scheduled': task.isScheduled(),
-        'is_update_model': task.isUpdateModel(),
+        'scheduled': task.isScheduled(),
+        'update_model': task.isUpdateModel(),
     }
 
     problem = task.getProblem()

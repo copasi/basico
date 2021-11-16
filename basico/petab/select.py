@@ -41,7 +41,7 @@ def default_evaluation():
     * levelberg marquardt
 
 
-    :return: found paramter values
+    :return: found parameter values
     """
     basico.run_parameter_estimation(method='Particle Swarm', update_model=True,
                                     settings={'method': {'Iteration Limit': 600}})

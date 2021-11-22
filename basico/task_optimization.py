@@ -7,6 +7,7 @@ be returned.
 Example:
 
     Create an optimization problem
+
     >>> from bascio import *
     >>> new_model(name='Square')
     >>> add_parameter('x', initial_value=0)
@@ -16,6 +17,7 @@ Example:
 
 
     Setup the optimization
+
     >>> set_opt_settings({
     ...       'expression': 'Values[f].InitialValue',
     ...       'subtask': T.TIME_COURSE,
@@ -23,12 +25,15 @@ Example:
     ... })
 
     Specifiy which paramters to vary:
+
     >>> set_opt_parameters(get_opt_item_template(include_global=True))
 
     Run the optimization
+
     >>> run_optimization()
 
     Get statistic, to see how good the fit was:
+
     >>> get_opt_statistic()
 
 

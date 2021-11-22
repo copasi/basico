@@ -23,6 +23,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Model_manipulation
    notebooks/Parameter_Estimation_Example
    notebooks/Setting_up_Parameter_Estimation
+   notebooks/Optimization
    notebooks/Simple_simulations_and_plotting_with_basico
    notebooks/Simple_simulations_with_basico
    notebooks/CustomTimecourse

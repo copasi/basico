@@ -88,3 +88,12 @@ basico.task\_scan module
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+basico.task\_optimization module
+------------------------------
+
+.. automodule:: basico.task_optimization
+   :members:
+   :undoc-members:
+   :show-inheritance:

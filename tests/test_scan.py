@@ -7,6 +7,12 @@ class TestScan(unittest.TestCase):
         basico.load_example('brusselator')
         self.assertEqual(basico.get_current_model().getModel().getObjectName(), 'The Brusselator')
 
+    def test_simulation(self):
+        result = basico.run_time_course(duration=10)
+        self.assertIsNotNone(result)
+        result2 = basico.run_time_course_with_output(output_selection=['Time', '[X]', 'Y'], duration=10)
+        self.assertIsNotNone(result2)
+
     def test_scan_items(self):
         items = basico.get_scan_items()
         self.assertEqual(len(items), 1)

@@ -146,11 +146,12 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
     """
     model = kwargs.get('model', model_io.get_current_model())
-    columns, dh = create_data_handler(output_selection, model)
+    dh, columns = create_data_handler(output_selection, model=model)
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
 
-    result = task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_DURING, dh)
+    model.addInterface(dh)
+    result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logging.error("Error while initializing the simulation: " +
         COPASI.CCopasiMessage.getLastMessage().getText())
@@ -161,6 +162,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
             COPASI.CCopasiMessage.getLastMessage().getText())
 
     df = get_data_from_data_handler(dh, columns)
+    model.removeInterface(dh)
 
     return df
 
@@ -212,10 +214,13 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
 
             cn = obj.getCN().getString()
             columns.append(name)
-        if not during or name in during:
+
+        if during is None or (during is not None and name in during):
             dh.addDuringName(COPASI.CRegisteredCommonName(cn))
+
         if after and name in after:
             dh.addAfterName(COPASI.CRegisteredCommonName(cn))
+
         if before and name in before:
             dh.addAfterName(COPASI.CRegisteredCommonName(cn))
     return dh, columns

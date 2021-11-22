@@ -228,10 +228,15 @@ def get_opt_settings(model=None):
 
     subtype = problem.getSubtaskType()
     if subtype == 15:
-        problem.initializeSubtaskBeforeOutput()
-        subtype = problem.getSubtaskType()
+        st = model.getObject(problem.getParameter('Subtask').getCNValue())
+        if st:
+            subtask = st.getObjectName()
+        else:
+            subtask = basico.T.STEADY_STATE
+    else:
+        subtask = basico.T.from_enum(subtype)
 
-    settings['subtask'] = basico.T.from_enum(subtype)
+    settings['subtask'] = subtask
 
     return settings
 

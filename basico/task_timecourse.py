@@ -183,6 +183,20 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
     """Creates an output handler for the given selection
 
     :param output_selection: list of display names or cns, of elements to capture
+    :type output_selection: [str]
+
+    :param during: optional list of elements from the output selection, that should be collected
+                   during the run of the task
+    :type during: [str]
+
+    :param after: optional list of elements from the output selection, that should be collected
+                   after the run of the task
+    :type after: [str]
+
+    :param before: optional list of elements from the output selection, that should be collected
+                  before the run of the task
+    :type before: [str]
+
     :param model: the model in which to resolve the display names
 
     :return: tuple of the data handler from which to retrieve output later, and their columns

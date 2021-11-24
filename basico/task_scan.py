@@ -122,18 +122,18 @@ def _scan_item_to_dict(item, model=None):
 
     assert (isinstance(item, COPASI.CCopasiParameter))
     int_type = item.getParameter('Type').getIntValue()
-    type = _scan_type_to_name(int_type)
+    type_name = _scan_type_to_name(int_type)
     cn = item.getParameter('Object').getStringValue() if item.getParameter('Object') else None
     num_steps = item.getParameter('Number of steps').getIntValue() if item.getParameter('Number of steps') else None
-    min = item.getParameter('Minimum').getDblValue() if item.getParameter('Minimum') else None
-    max = item.getParameter('Maximum').getDblValue() if item.getParameter('Maximum') else None
+    min_val = item.getParameter('Minimum').getDblValue() if item.getParameter('Minimum') else None
+    max_val = item.getParameter('Maximum').getDblValue() if item.getParameter('Maximum') else None
     log = item.getParameter('log').getBoolValue() if item.getParameter('log') else None
     current = {
-        'type': type,
+        'type': type_name,
         'num_steps': num_steps,
         'log': log,
-        'min': min,
-        'max': max,
+        'min': min_val,
+        'max': max_val,
     }
 
     if int_type == COPASI.CScanProblem.SCAN_RANDOM:

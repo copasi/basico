@@ -1,11 +1,11 @@
 import logging
+from math import log, isnan
+import os
+import tempfile
 
 from . import core
 import basico
 import petab_select
-from math import log
-import os
-import tempfile
 
 
 def copasi_aic():
@@ -29,7 +29,7 @@ def copasi_aic():
     N = prob.getExperimentSet().getValidValueCount()
     K = prob.getOptItemSize() + 1
     SSR = prob.getSolutionValue()
-    if SSR != SSR or N == 0:
+    if isnan(SSR) or N == 0:
         return float("inf")
     return N * log(SSR / N) + 2 * K
 
@@ -123,7 +123,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     # update estimated parameters
     for param_id in test_model.parameters:
         value = test_model.parameters[param_id]
-        if value == value:  # we only want to include what we estimated
+        if not isnan(value):  # we only want to include what we estimated
             continue
         name = 'Values[{0}]'.format(param_id)
         if name in sol.index:

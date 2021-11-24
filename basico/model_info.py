@@ -1493,25 +1493,25 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
 def _remove_modifications(info):
     num_entries = info.getModifications().size()
-    for i in range(num_entries):
+    for _ in range(num_entries):
         info.removeModification(info.getModifications().get(0))
 
 
 def _remove_descriptions(info):
     num_entries = info.getBiologicalDescriptions().size()
-    for i in range(num_entries):
+    for _ in range(num_entries):
         info.removeBiologicalDescription(info.getBiologicalDescriptions().get(0))
 
 
 def _remove_references(info):
     num_entries = info.getReferences().size()
-    for i in range(num_entries):
+    for _ in range(num_entries):
         info.removeReference(info.getReferences().get(0))
 
 
 def _remove_creators(info):
     num_entries = info.getCreators().size()
-    for i in range(num_entries):
+    for _ in range(num_entries):
         info.removeCreator(info.getCreators().get(0))
 
 
@@ -1581,7 +1581,6 @@ def add_function(name, infix, type='general', mapping=None, **kwargs):
     assert (isinstance(root, COPASI.CRootContainer))
     db = root.getFunctionList()
     assert (isinstance(db, COPASI.CFunctionDB))
-    functions = db.loadedFunctions()
 
     if mapping is None:
         mapping = {}
@@ -2026,9 +2025,8 @@ def get_functions(name=None, **kwargs):
         if name and name not in fun_data['name']:
             continue
 
-        if suitable_for is not None:
-            if not function.isSuitable(num_substrates, num_products, reversibility):
-                continue
+        if suitable_for is not None and (not function.isSuitable(num_substrates, num_products, reversibility)):
+            continue
 
         data.append(fun_data)
 
@@ -2539,7 +2537,7 @@ def set_reaction(name=None, **kwargs):
                             continue
 
                         info.setMapping(j, obj.getObjectName())
-                        pass
+
                     elif p_type == COPASI.CFunctionParameter.Role_VOLUME:
                         obj = model.getCompartment(mapped_to)
                         if obj is None:
@@ -2552,7 +2550,7 @@ def set_reaction(name=None, **kwargs):
                             continue
 
                         info.setMapping(j, obj.getObjectName())
-                        pass
+
             info.writeBackToReaction(reaction)
             reaction.compile()
             changed = True
@@ -3165,7 +3163,7 @@ def _tokenize_eqn(eqn):
     operators = ['/', '*', '+', '-', '^', '(', ')']
     functions = ['exp', 'pow', 'abs', 'floor', 'factorial',
                  'log', 'log10', 'sin', 'cos', 'tan', 'sec',
-                 'csc', 'cot', 'sinh', 'cosh', 'tanh', 'sech'
+                 'csc', 'cot', 'sinh', 'cosh', 'tanh', 'sech',
                  'csch', 'coth', 'asin', 'acos', 'atan', 'arcsec',
                  'arccsc', 'arccot', 'arcsinh', 'arccosh',
                  'arctanh', 'arcsech', 'arccsch', 'arccoth',
@@ -3566,18 +3564,19 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
     name_vector = []
     data = []
 
-    iMax = state_template.getNumIndependent()
+    i_max = state_template.getNumIndependent()
 
-    for i in range(0, iMax):
+    for i in range(0, i_max):
         name_vector.append(state_template.getIndependent(i).getObjectName())
 
-    for i in range(0, iMax):
+    for i in range(0, i_max):
         row = {}
-        for j in range(0, iMax):
+        for j in range(0, i_max):
             row[name_vector[j]] = jacobian.get(i, j)
         data.append(row)
 
     return pd.DataFrame(data, columns=name_vector, index=name_vector)
+
 
 def _get_group_as_dict(group, basic_only=True):
     """Returns the values from the given parameter group as dictionary

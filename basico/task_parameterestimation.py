@@ -276,7 +276,7 @@ def get_data_from_experiment(experiment, **kwargs):
     """
     experiment = get_experiment(experiment, **kwargs)
     experiment_file = _get_experiment_file(experiment)
-    num_lines = sum(1 for line in open(experiment_file))
+    num_lines = sum(1 for _ in open(experiment_file))
     header_row = experiment.getHeaderRow()
     have_headers = header_row < num_lines
     skip_idx = [x-1 for x in range(1, num_lines+1) if
@@ -910,7 +910,6 @@ def get_simulation_results(values_only=False, **kwargs):
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
         df = get_data_from_experiment(experiment, rename_headers=True)
-        have_time = 'Time' in df.columns
         columns = df.columns.to_list()
         mapping = get_experiment_mapping(experiment)
 

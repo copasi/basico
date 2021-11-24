@@ -1046,6 +1046,8 @@ def _set_report_vector(vec, list_of_cns, dm):
 
         obj = dm.findObjectByDisplayName(item)
         if obj:
+            if obj.getObjectType() != 'Reference':
+                obj = obj.getValueReference()
             vec.append(COPASI.CRegisteredCommonName(obj.getCN()))
             continue
 

@@ -184,6 +184,7 @@ class TestReportManipulation(unittest.TestCase):
         self.assertEqual(r['print_headers'], True)
         self.assertEqual(r['separator'], '\t')
         self.assertEqual(r['precision'], 6)
+        self.assertListEqual(r['table'], ['Time', '[X]', '[Y]'])
 
         basico.set_report_dict('Simple Report', task=basico.T.STEADY_STATE, footer=['[A]', '[B]'])
         r = basico.get_report_dict('Simple Report')

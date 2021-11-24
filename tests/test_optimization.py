@@ -43,6 +43,16 @@ class TestOptimization(unittest.TestCase):
         self.assertIsNotNone(stat)
         self.assertLess(stat['obj'], 1e-6)
 
+    def test_custom_output(self):
+        dh, col = basico.create_data_handler([
+            # # int values not supported in COPASI 4.35 and below
+            # 'CN=Root,Vector=TaskList[Optimization],Problem=Optimization,Reference=Function Evaluations',
+            'CN=Root,Vector=TaskList[Optimization],Problem=Optimization,Reference=Best Value'
+        ])
+        c_list = COPASI.ContainerList()
+        c_list.append(self.dm)
+        self.assertTrue(dh.compile(c_list))
+
 
 if __name__ == '__main__':
     unittest.main()

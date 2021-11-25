@@ -131,10 +131,16 @@ def _scan_item_to_dict(item, model=None):
     current = {
         'type': type_name,
         'num_steps': num_steps,
-        'log': log,
-        'min': min_val,
-        'max': max_val,
     }
+
+    if log is not None:
+        current['log'] = log
+
+    if min_val is not None:
+        current['min'] = min_val
+
+    if max_val is not None:
+        current['max'] = max_val
 
     if int_type == COPASI.CScanProblem.SCAN_RANDOM:
         dist = _scan_distribution_type_to_name(item.getParameter('Distribution type').getUIntValue()) \
@@ -203,6 +209,71 @@ def get_scan_settings(**kwargs):
     return s
 
 
+def _set_parameter_from_value(parameter, value):
+    """Utility function that sets the parameter value
+
+    :param parameter: copasi parameter to change
+    :type parameter: COPASI.CCopasiParameter
+
+    :param value: the value to set will be cast to the appropriate type
+    :type value: Union[str, float, int, bool]
+
+    """
+    if parameter is None:
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_DOUBLE:
+        parameter.setDblValue(float(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_INT:
+        parameter.setIntValue(int(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_BOOL:
+        parameter.setBoolValue(bool(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_STRING \
+            or parameter.getType() == COPASI.CCopasiParameter.Type_EXPRESSION:
+        parameter.setStringValue(str(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_CN:
+        parameter.setCNValue(str(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_FILE:
+        parameter.setFileValue(str(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_UDOUBLE:
+        parameter.setUDblValue(float(value))
+        return
+
+    if parameter.getType() == COPASI.CCopasiParameter.Type_UINT:
+        parameter.setUIntValue(int(value))
+        return
+
+
+def _set_parameter_from_dict(parameter, values_dict, key):
+    """Utility function that sets the given copasi parameter
+
+    :param parameter: copasi parameter to change
+    :type parameter: COPASI.CCopasiParameter
+    :param values_dict: dictionary of values
+    :param key: key that might be in the dictionary
+    :return: None
+    """
+    if not parameter:
+        return
+
+    if key not in values_dict:
+        return
+
+    _set_parameter_from_value(parameter, values_dict[key])
+
+
 def add_scan_item(**kwargs):
     """Adds the scan item to the model
 
@@ -265,24 +336,18 @@ def add_scan_item(**kwargs):
         if isinstance(values, list):
             values = [str(v) for v in values]
             values = ' '.join(values)
-        copasi_item.getParameter('Values').setStringValue(values)
-        copasi_item.getParameter('Use Values').setBoolValue(True)
 
-    if 'use_values' in scan_item:
-        copasi_item.getParameter('Use Values').setBoolValue(scan_item['use_values'])
+        _set_parameter_from_value(copasi_item.getParameter('Values'), values)
+        _set_parameter_from_value(copasi_item.getParameter('Use Values'), True)
 
-    if 'min' in scan_item:
-        copasi_item.getParameter('Minimum').setDblValue(scan_item['min'])
-
-    if 'max' in scan_item:
-        copasi_item.getParameter('Maximum').setDblValue(scan_item['max'])
-
-    if 'log' in scan_item:
-        copasi_item.getParameter('log').setBoolValue(scan_item['log'])
+    _set_parameter_from_dict(copasi_item.getParameter('Use Values'), scan_item, 'use_values')
+    _set_parameter_from_dict(copasi_item.getParameter('Minimum'), scan_item, 'min')
+    _set_parameter_from_dict(copasi_item.getParameter('Maximum'), scan_item, 'max')
+    _set_parameter_from_dict(copasi_item.getParameter('log'), scan_item, 'log')
 
     if 'distribution' in scan_item:
-        copasi_item.getParameter('Distribution type').setUIntValue(
-            _name_to_scan_distribution_type(scan_item['distribution']))
+        _set_parameter_from_value(copasi_item.getParameter('Distribution type'),
+                                  _name_to_scan_distribution_type(scan_item['distribution']))
 
 
 def set_scan_items(scan_items, **kwargs):

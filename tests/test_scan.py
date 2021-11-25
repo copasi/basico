@@ -1,4 +1,7 @@
 import unittest
+
+import COPASI
+
 import basico
 
 
@@ -84,6 +87,44 @@ class TestScan(unittest.TestCase):
                                  scan_items=[{'item': '[A]_0', 'values': [0.5, 1, 2, 10]}],
                                  output=['[X]', '[Y]'])
         self.assertTrue(result is not None)
+
+    def test_setting_with_none(self):
+        basico.set_scan_items([{'type': 'repeat', 'num_steps': 500, 'log': None, 'min': None, 'max': None}])
+        items = basico.get_scan_items()
+        self.assertIsNotNone(items)
+        items[0]['num_steps'] = 1000
+        basico.set_scan_items(items)
+        items2 = basico.get_scan_items()
+        self.assertDictEqual(items[0], items2[0])
+
+    def test_set_parameter(self):
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_CN)
+        basico.task_scan._set_parameter_from_value(p, 'test')
+        self.assertTrue(p.getStringValue(), 'test')
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_STRING)
+        basico.task_scan._set_parameter_from_value(p, 'test')
+        self.assertTrue(p.getStringValue(), 'test')
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_FILE)
+        basico.task_scan._set_parameter_from_value(p, 'test')
+        self.assertTrue(p.getFileValue(), 'test')
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_EXPRESSION)
+        basico.task_scan._set_parameter_from_value(p, 'test')
+        self.assertTrue(p.getStringValue(), 'test')
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_UDOUBLE)
+        basico.task_scan._set_parameter_from_value(p, 1)
+        self.assertTrue(p.getUDblValue(), 1)
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_DOUBLE)
+        basico.task_scan._set_parameter_from_value(p, 1)
+        self.assertTrue(p.getDblValue(), 1)
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_UINT)
+        basico.task_scan._set_parameter_from_value(p, 1)
+        self.assertTrue(p.getUIntValue(), 1)
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_INT)
+        basico.task_scan._set_parameter_from_value(p, 1)
+        self.assertTrue(p.getIntValue(), 1)
+        p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_BOOL)
+        basico.task_scan._set_parameter_from_value(p, True)
+        self.assertTrue(p.getBoolValue(), True)
 
 
 if __name__ == '__main__':

@@ -733,6 +733,12 @@ def add_experiment(name, data, **kwargs):
             if obj is None:
                 logging.warning("Can't find model element for {0}".format(current))
             else:
+                assert(isinstance(obj, COPASI.CDataObject))
+                if obj.getObjectType() != 'Reference':
+                    try:
+                        obj = obj.getValueReference()
+                    except AttributeError:
+                        logging.warning("Cannot map the element {0}".format(current))
                 role = _get_role_for_reference(obj.getObjectName())
                 obj_map.setObjectCN(i, obj.getCN())
         obj_map.setRole(i, role)

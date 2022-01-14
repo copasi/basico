@@ -697,7 +697,7 @@ def add_experiment(name, data, **kwargs):
 
     file_name = os.path.abspath(os.path.join(os.path.curdir, name + '.txt'))
     if 'file_name' in kwargs:
-        file_name = kwargs['file_name']
+        file_name = os.path.abspath(kwargs['file_name'])
 
     assert (isinstance(data, pd.DataFrame))
     data.to_csv(file_name, sep='\t', header=True, index=False)

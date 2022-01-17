@@ -418,77 +418,77 @@ def save_model_and_data(filename, **kwargs):
 
     delete_data_on_exit = kwargs.get('delete_data_on_exit', False)
 
+    if has_experiments + has_validations == 0:
+        # we have no experiments, so just save and return
+        model.saveModel(filename, True)
+        return
+
     global __temp_files
 
-    if has_experiments + has_validations > 0:
+    data_dir = os.path.dirname(filename)
+    if not data_dir:
+        data_dir = '.'
 
-        data_dir = os.path.dirname(filename)
-        if not data_dir:
-            data_dir = '.'
+    old_names = {}
+    new_names = {}
 
-        old_names = {}
-        new_names = {}
+    model = kwargs.get('model', get_current_model())
+    assert (isinstance(model, COPASI.CDataModel))
 
-        model = kwargs.get('model', get_current_model())
-        assert (isinstance(model, COPASI.CDataModel))
+    task = model.getTask("Parameter Estimation")
+    assert (isinstance(task, COPASI.CFitTask))
 
-        task = model.getTask("Parameter Estimation")
-        assert (isinstance(task, COPASI.CFitTask))
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
 
-        problem = task.getProblem()
-        assert (isinstance(problem, COPASI.CFitProblem))
+    exp_set = problem.getExperimentSet()
+    assert (isinstance(exp_set, COPASI.CExperimentSet))
 
-        exp_set = problem.getExperimentSet()
-        assert (isinstance(exp_set, COPASI.CExperimentSet))
+    # copy experiment files
+    for old_name in exp_set.getFileNames():
+        new_name = os.path.join(data_dir, os.path.basename(old_name))
+        if new_name == old_name:
+            # same file skipping
+            continue
 
-        # copy experiment files
-        for old_name in exp_set.getFileNames():
-            new_name = os.path.join(data_dir, os.path.basename(old_name))
-            if new_name == old_name:
-                # same file skipping
-                continue
+        if not os.path.exists(old_name):
+            logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
+                            " be used for Parameter Estimation".format(old_name))
+            continue
 
-            if not os.path.exists(old_name):
-                logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
-                                " be used for Parameter Estimation".format(old_name))
-                continue
+        if os.path.exists(new_name):
+            logging.warning("Experimental data file {0} does already exist, and will not be overwritten.".format(new_name))
+        else:
+            shutil.copyfile(old_name, new_name)
+        old_names[old_name] = new_name
+        new_names[new_name] = old_name
+        if delete_data_on_exit:
+            __temp_files.append(new_name)
 
-            if os.path.exists(new_name):
-                logging.warning("Experimental data file {0} does already exist, and will not be overwritten.".format(new_name))
-            else:
-                shutil.copyfile(old_name, new_name)
-            old_names[old_name] = new_name
-            new_names[new_name] = old_name
-            if delete_data_on_exit:
-                __temp_files.append(new_name)
+    # rename experiments
+    for i in range(problem.getExperimentSet().size()):
+        experiment = problem.getExperimentSet().getExperiment(i)
+        assert (isinstance(experiment, COPASI.CExperiment))
 
-        # rename experiments
-        for i in range(problem.getExperimentSet().size()):
-            experiment = problem.getExperimentSet().getExperiment(i)
-            assert (isinstance(experiment, COPASI.CExperiment))
+        new_name = old_names.get(experiment.getFileNameOnly(), '')
+        if not new_name:
+            continue
 
-            new_name = old_names.get(experiment.getFileNameOnly(), '')
-            if not new_name:
-                continue
+        experiment.setFileName(os.path.abspath(new_name))
 
-            experiment.setFileName(new_name)
+    # export model to string
+    model.saveModel(filename, True)
 
-        # export model to string
-        model.saveModel(filename, True)
+    # rename experiments
+    for i in range(problem.getExperimentSet().size()):
+        experiment = problem.getExperimentSet().getExperiment(i)
+        assert (isinstance(experiment, COPASI.CExperiment))
 
-        # rename experiments
-        for i in range(problem.getExperimentSet().size()):
-            experiment = problem.getExperimentSet().getExperiment(i)
-            assert (isinstance(experiment, COPASI.CExperiment))
+        old_name = new_names.get(experiment.getFileNameOnly(), '')
+        if not old_name:
+            continue
 
-            old_name = new_names.get(experiment.getFileNameOnly(), '')
-            if not old_name:
-                continue
-
-            experiment.setFileName(old_name)
-
-    else:
-        model.saveModel(filename, True)
+        experiment.setFileName(os.path.abspath(old_name))
 
 
 def open_copasi(**kwargs):

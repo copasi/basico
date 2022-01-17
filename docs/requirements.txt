@@ -4,6 +4,8 @@ nbsphinx
 numpy
 pandoc
 python-copasi
+cython
+pandas
 sphinx>3
 sphinx_rtd_theme
 pygments>=2.4.1

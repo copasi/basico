@@ -2368,7 +2368,8 @@ def set_reaction_parameters(name=None, **kwargs):
     :param kwargs: optional arguments
 
         - | `reaction_name`: if specified only parameters of the named reaction will be changed
-        - | `value`: the new value of the parameter to set.
+        - | `value`: the new value of the parameter to set. (only one of `value` / `mapped_to` should be defined)
+        - | `mapped_to`: the name of a global parameter to map the local parameter to
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 

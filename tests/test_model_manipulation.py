@@ -216,6 +216,45 @@ class TestReportManipulation(unittest.TestCase):
         r = basico.get_report_dict('Silly Report')
         self.assertTrue(r is not None)
 
+    def test_add_function(self):
+        m = basico.new_model(name='TestModel_With_Inhibition')
+        basico.add_function(name='MassAction_inhibited',
+                            infix='(1-a*I)*k*A*B', type='irreversible',
+                            mapping={'I': 'modifier', 'A': 'substrate', 'B': 'substrate'})
+        f = basico.get_functions('MassAction_inhi')
+        self.assertTrue(len(f) == 1)
+        basico.add_reaction('R1', 'S1 + S2 -> S3; I', function='MassAction_inhibited')
+        r = basico.get_reactions('R1')
+        self.assertTrue(r is not None)
+        self.assertEqual(r['function'][0], 'MassAction_inhibited')
+        basico.remove_datamodel(m)
+
+    def test_parameter_mapping(self):
+        m = 'Test_global_param'
+        dm = basico.new_model(name=m)
+        r = 'R'
+        basico.add_parameter('k_global', 1, unit='1/s')
+        basico.add_reaction(r, 'A -> B', function='Mass action (irreversible)')
+        params = basico.get_parameters()
+        self.assertTrue(len(params) == 1)
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type[0] == 'local')
+        basico.set_reaction(r, mapping={'k1': 'k_global'})
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type[0] == 'global')
+
+        basico.set_reaction(r, mapping={'k1': 1.0})
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type[0] == 'local')
+
+        basico.set_reaction_parameters('(R).k1', mapped_to='k_global')
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type[0] == 'global')
+
 
 if __name__ == '__main__':
     unittest.main()

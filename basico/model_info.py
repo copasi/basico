@@ -278,7 +278,7 @@ def __usage_to_int(usage):
         "variable": 6,
         "temporary": 7,
     }
-    return types.get(usage, 3)
+    return types.get(usage.lower(), 3)
 
 
 def __usage_to_string(usage):
@@ -2076,6 +2076,8 @@ def get_reaction_parameters(name=None, **kwargs):
         fun_params = reaction.getFunctionParameters()
         num_params = fun_params.size()
         param_objects = reaction.getParameterObjects()
+        info = COPASI.CReactionInterface()
+        info.init(reaction)
 
         for j in range(num_params):
             fun_parameter = fun_params.getParameter(j)
@@ -2088,7 +2090,8 @@ def get_reaction_parameters(name=None, **kwargs):
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
             mv = dm.getObject(current_param.getCN()) if cn else None
-            if mv and isinstance(mv, COPASI.CModelValue):
+            is_global = not info.isLocalValue(j)
+            if is_global and mv and isinstance(mv, COPASI.CModelValue):
                 param_type = 'global'
                 mapped_to = mv.getObjectName()
                 value = mv.getInitialValue()
@@ -2422,7 +2425,27 @@ def set_reaction_parameters(name=None, **kwargs):
                 else:
                     param.setDblValue(kwargs['value'])
                     model.updateInitialValues(param)
+
                 changed = True
+
+            if 'mapped_to' in kwargs and current_param is not None:
+                mv = model.getModelValue(kwargs['mapped_to'])
+                if not mv:
+                    logging.warning('No such parameter "{0}" to map to.'.format(kwargs['mapped_to']))
+                    continue
+
+                info = COPASI.CReactionInterface()
+                info.init(reaction)
+                for k in range(info.size()):
+                    p_type = info.getUsage(k)
+                    p_name = info.getParameterName(k)
+                    if p_name == current_param.getObjectName() and p_type == COPASI.CFunctionParameter.Role_PARAMETER:
+                        info.setMapping(k, mv.getObjectName())
+                        info.writeBackToReaction(reaction)
+                        fun_params = reaction.getFunctionParameters()
+                        num_params = fun_params.size()
+                        param_objects = reaction.getParameterObjects()
+                        changed = True
 
         if changed:
             reaction.compile()
@@ -2493,6 +2516,8 @@ def set_reaction(name=None, **kwargs):
             info = COPASI.CReactionInterface()
             info.init(reaction)
             info.setFunctionAndDoMapping(kwargs['function'])
+            if not info.isValid():
+                logging.error('the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(name, kwargs['function']))
             info.writeBackToReaction(reaction)
             reaction.compile()
             changed = True
@@ -2509,7 +2534,12 @@ def set_reaction(name=None, **kwargs):
                     if p_type == COPASI.CFunctionParameter.Role_PARAMETER:
                         try:
                             value = float(mapped_to)
-                            info.setLocalValue(j, value)
+                            # version 4.34 and below cannot change back from global to local
+                            objs = COPASI.DataObjectVector()
+                            objs.push_back(reaction.getParameters().getParameter(p_name))
+                            reaction.setParameterObjects(p_name, objs)
+                            reaction.setParameterValue(p_name, value)
+                            info.init(reaction)
                         except ValueError:
                             obj = model.getModelValue(mapped_to)
                             if obj is None:
@@ -2551,7 +2581,8 @@ def set_reaction(name=None, **kwargs):
 
                         info.setMapping(j, obj.getObjectName())
 
-            info.writeBackToReaction(reaction)
+            if not info.writeBackToReaction(reaction):
+                logging.error("Couldn't change the reaction")
             reaction.compile()
             changed = True
 

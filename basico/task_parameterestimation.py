@@ -34,7 +34,18 @@ TASK_PARAMETER_ESTIMATION = 'Parameter Estimation'
 
 
 class PE:
-    """Constants for Parameter estimation method names"""
+    """Constants for Parameter estimation method names
+
+    Convert between method names to enums
+
+        >>> T.from_enum(0)
+        'Current Solution Statistics'
+
+        >>> T.to_enum('Current Solution Statistics')
+        17
+
+
+    """
     CURRENT_SOLUTION = "Current Solution Statistics"
     RANDOM_SEARCH = "Random Search"
     SIMULATED_ANNEALING = "Simulated Annealing"
@@ -52,6 +63,72 @@ class PE:
     NL2SOL = "NL2SOL"
     PRAXIS = "Praxis"
     TRUNCATED_NEWTON = "Truncated Newton"
+
+    _names = None
+    _values = None
+
+    @classmethod
+    def _create_name_map(cls):
+        return {
+            COPASI.CTaskEnum.Method_Statistics: PE.CURRENT_SOLUTION,
+            COPASI.CTaskEnum.Method_RandomSearch: PE.RANDOM_SEARCH,
+            COPASI.CTaskEnum.Method_SimulatedAnnealing: PE.SIMULATED_ANNEALING,
+            COPASI.CTaskEnum.Method_DifferentialEvolution: PE.DIFFERENTIAL_EVOLUTION,
+            COPASI.CTaskEnum.Method_ScatterSearch: PE.SCATTER_SEARCH,
+            COPASI.CTaskEnum.Method_GeneticAlgorithm: PE.GENETIC_ALGORITHM,
+            COPASI.CTaskEnum.Method_GeneticAlgorithmSR: PE.GENETIC_ALGORITHM_SR,
+            COPASI.CTaskEnum.Method_SRES: PE.EVOLUTIONARY_STRATEGY_SRES,
+            COPASI.CTaskEnum.Method_ParticleSwarm: PE.PARTICLE_SWARM,
+            COPASI.CTaskEnum.Method_LevenbergMarquardt: PE.LEVENBERG_MARQUARDT,
+            COPASI.CTaskEnum.Method_HookeJeeves: PE.HOOKE_JEEVES,
+            COPASI.CTaskEnum.Method_NelderMead: PE.NELDER_MEAD,
+            COPASI.CTaskEnum.Method_SteepestDescent: PE.STEEPEST_DESCENT,
+            COPASI.CTaskEnum.Method_NL2SOL: PE.NL2SOL,
+            COPASI.CTaskEnum.Method_Praxis: PE.PRAXIS,
+            COPASI.CTaskEnum.Method_TruncatedNewton: PE.TRUNCATED_NEWTON,
+        }
+
+    @classmethod
+    def _create_value_map(cls):
+        return {
+            PE.CURRENT_SOLUTION: COPASI.CTaskEnum.Method_Statistics,
+            PE.RANDOM_SEARCH: COPASI.CTaskEnum.Method_RandomSearch,
+            PE.SIMULATED_ANNEALING: COPASI.CTaskEnum.Method_SimulatedAnnealing,
+            PE.DIFFERENTIAL_EVOLUTION: COPASI.CTaskEnum.Method_DifferentialEvolution,
+            PE.SCATTER_SEARCH: COPASI.CTaskEnum.Method_ScatterSearch,
+            PE.GENETIC_ALGORITHM: COPASI.CTaskEnum.Method_GeneticAlgorithm,
+            PE.GENETIC_ALGORITHM_SR: COPASI.CTaskEnum.Method_GeneticAlgorithmSR,
+            PE.EVOLUTIONARY_STRATEGY_SRES: COPASI.CTaskEnum.Method_SRES,
+            PE.PARTICLE_SWARM: COPASI.CTaskEnum.Method_ParticleSwarm,
+            PE.LEVENBERG_MARQUARDT: COPASI.CTaskEnum.Method_LevenbergMarquardt,
+            PE.HOOKE_JEEVES: COPASI.CTaskEnum.Method_HookeJeeves,
+            PE.NELDER_MEAD: COPASI.CTaskEnum.Method_NelderMead,
+            PE.STEEPEST_DESCENT: COPASI.CTaskEnum.Method_SteepestDescent,
+            PE.NL2SOL: COPASI.CTaskEnum.Method_NL2SOL,
+            PE.PRAXIS: COPASI.CTaskEnum.Method_Praxis,
+            PE.TRUNCATED_NEWTON: COPASI.CTaskEnum.Method_TruncatedNewton,
+        }
+
+    @classmethod
+    def from_enum(cls, int_value):
+        if cls._names is None:
+            cls._names = cls._create_name_map()
+
+        return cls._names.get(int_value, PE.CURRENT_SOLUTION)
+
+    @classmethod
+    def to_enum(cls, value):
+        if cls._values is None:
+            cls._values = cls._create_value_map()
+
+        return cls._values.get(value, COPASI.CTaskEnum.Method_Statistics)
+
+    @classmethod
+    def all_method_names(cls):
+        if cls._names is None:
+            cls._names = cls._create_name_map()
+
+        return list(cls._names.values())
 
 
 try:

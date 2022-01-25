@@ -3694,6 +3694,9 @@ def get_task_settings(task, basic_only=True, **kwargs):
     :param task: the task to read the settings of
     :type task: COPASI.CCopasiTask or str
 
+    :param basic_only: boolean flag, indicating that only the basic parameters should be returned
+    :type basic_only: bool
+
     :param kwargs: optional parameters
 
         - | `model`: to specify the data model to be used (if not specified

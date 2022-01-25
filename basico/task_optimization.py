@@ -212,12 +212,14 @@ def set_objective_function(expression, maximize=None, minimize=None, model=None)
         problem.setMaximize(not minimize)
 
 
-def get_opt_settings(model=None):
+def get_opt_settings(model=None, basic_only=True):
     """Returns a dictionary with the optimization setup
 
        The result int dictionary includes the objective function, and the subtask.
 
     :param model: the model or None for the current one
+    :param basic_only: boolean flag indicating whether only basic settings should be returned
+    :type basic_only: bool
     :return: dictionary with settings
     """
     if model is None:
@@ -228,7 +230,7 @@ def get_opt_settings(model=None):
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.COptProblem))
 
-    settings = basico.get_task_settings(basico.T.OPTIMIZATION)
+    settings = basico.get_task_settings(basico.T.OPTIMIZATION, model=model, basic_only=basic_only)
     settings['expression'] = basico.model_info._replace_cns_with_names(problem.getObjectiveFunction(), model=model)
 
     subtype = problem.getSubtaskType()

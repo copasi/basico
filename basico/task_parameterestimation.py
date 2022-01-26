@@ -1269,3 +1269,47 @@ def get_fit_statistic(**kwargs):
     }
     result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
     return result
+
+
+def remove_experiments(**kwargs):
+    """Removes all experiments from the model
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getExperimentSet()
+    assert (isinstance(experiments, COPASI.CExperimentSet))
+
+    for _ in range(experiments.size()):
+        experiments.removeExperiment(0)
+
+
+def remove_fit_parameters(**kwargs):
+    """Removes all fit items
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+
+    pe_task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    problem = pe_task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    while problem.getOptItemSize() > 0:
+        problem.removeOptItem(0)

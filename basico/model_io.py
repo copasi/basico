@@ -49,6 +49,7 @@ def set_current_model(model):
         __model_list.append(model)
 
     if __current_model is not None:
+        __current_model.getModel().applyInitialValues()
         logging.debug(overview(__current_model))
     return __current_model
 
@@ -476,7 +477,7 @@ def save_model_and_data(filename, **kwargs):
 
         experiment.setFileName(os.path.abspath(new_name))
 
-    # export model to string
+    # write out model
     model.saveModel(filename, True)
 
     # rename experiments
@@ -491,25 +492,27 @@ def save_model_and_data(filename, **kwargs):
         experiment.setFileName(os.path.abspath(old_name))
 
 
-def open_copasi(**kwargs):
+def open_copasi(filename='', **kwargs):
     """Saves the model as COPASI file and opens it in COPASI.
 
     The file will be written to a temporary file, and then it will be executed, so that the
     application registered to open it will start.
+
+    :param filename:  the file name to write to, if not given a temp file will be created
+                      that will be deleted at the end of the python session.
+    :type filename: str
 
     :param kwargs: optional arguments:
 
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
-    - | `filename` (str): the file name to write to, if not given a temp file will be created
-      | that will be deleted at the end of the python session.
-
     :return: None
     """
     model = kwargs.get('model', get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
-    name = kwargs.get('filename', '')
+    name = filename
+    delete_data_on_exit = False
 
     if not name:
         global __temp_dirs, __temp_files
@@ -521,7 +524,12 @@ def open_copasi(**kwargs):
 
         logging.info('using temp file: ' + name)
         logging.warning("Created a temporary file to open. This file will be deleted later, so safe your changes.")
-        save_model_and_data(name, delete_data_on_exit=True, **kwargs)
+        delete_data_on_exit = True
+
+    save_model_and_data(name, delete_data_on_exit=delete_data_on_exit, **kwargs)
+
+    if not os.path.exists(name):
+        logging.error('Saving the model failed')
 
     if platform.system() == 'Darwin':
         subprocess.call(('open', name))

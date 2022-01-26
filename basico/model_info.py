@@ -296,7 +296,7 @@ def __usage_to_string(usage):
     return types.get(usage, "parameter")
 
 
-def get_species(name=None, **kwargs):
+def get_species(name=None, exact=False, **kwargs):
     """Returns all information about the species as pandas dataframe.
 
     Example:
@@ -315,6 +315,9 @@ def get_species(name=None, **kwargs):
     :param name: optional filter expression for the species, if it is not included in the species name,
                  the species will not be added to the data set.
     :type name: str
+
+    :param exact: if true, the name has to match precisely the name of the species
+    :type exact: bool
 
     :param kwargs: optional arguments to further filter down the species. recognized are:
 
@@ -372,6 +375,9 @@ def get_species(name=None, **kwargs):
         if 'name' in kwargs and not kwargs['name'] in metab_data['name']:
             continue
 
+        if name and type(name) is str and exact and name != metab_data['name'] and name != display_name:
+            continue
+
         if name and type(name) is str and name not in metab_data['name'] and name not in display_name:
             continue
 
@@ -395,12 +401,15 @@ def get_species(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_events(name=None, **kwargs):
+def get_events(name=None, exact=False, **kwargs):
     """Returns all information about the events as pandas dataframe.
 
     :param name: optional filter expression for the event, if it is not included in the event name,
                  the event will not be added to the data set.
     :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact
+    :type exact: bool
 
     :param kwargs: optional arguments:
 
@@ -446,6 +455,9 @@ def get_events(name=None, **kwargs):
             'key': event.getKey(),
             'sbml_id': event.getSBMLId()
         }
+
+        if name and exact and name != event_data['name']:
+            continue
 
         if 'name' in kwargs and not kwargs['name'] in event_data['name']:
             continue
@@ -1543,7 +1555,7 @@ def add_compartment(name, initial_size=1.0, **kwargs):
     if compartment is None:
         raise ValueError('A compartment named ' + name + ' already exists')
 
-    set_compartment(name, **kwargs)
+    set_compartment(name, exact=True, **kwargs)
 
     return compartment
 
@@ -1704,7 +1716,7 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
     if species is None:
         raise ValueError('A species named ' + name + ' already exists in compartment ' + compartment_name)
 
-    set_species(name, **kwargs)
+    set_species(name, exact=True, **kwargs)
 
     return species
 
@@ -1737,7 +1749,8 @@ def add_parameter(name, initial_value=1.0, **kwargs):
     if parameter is None:
         raise ValueError('A global parameter named ' + name + ' already exists')
 
-    set_parameters(name, **kwargs)
+    if len(kwargs):
+        set_parameters(name, exact=True, **kwargs)
 
     return parameter
 
@@ -1775,19 +1788,138 @@ def add_event(name, trigger, assignments, **kwargs):
         raise ValueError('An Event named ' + name + ' already exists')
     assert (isinstance(event, COPASI.CEvent))
 
-    event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
-    for assignment in assignments:
-        ea = event.createAssignment()
-        assert (isinstance(ea, COPASI.CEventAssignment))
-        target = dm.findObjectByDisplayName(assignment[0])
-        if target is None:
-            logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
+    set_event(name, exact=True, trigger=trigger, assignments=assignments, model=dm)
+
+    return event
+
+
+def set_event(name, exact=False, trigger=None, assignments=None, **kwargs):
+    """Sets properties of the named event
+
+    :param name: the name of the event (or a substring of the name)
+    :type name: str
+
+    :param exact: boolean indicating, that the name has to be exact
+    :type exact: bool
+
+    :param trigger: the trigger expression to be used. The expression can consist of all display names.
+               for example `Time > 10` would make the event trigger at time 10.
+    :type trigger: str or None
+
+    :param assignments: All the assignments that should be made, when the event fires. This should be a
+                list of tuples where the first element is the name of the element to change, and the second element
+                the assignment expression.
+    :type assignments: [(str,str)] or None
+
+
+    :param kwargs: optional parameters, recognized are:
+
+         * | `model`: to specify the data model to be used (if not specified
+           | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    events = model.getEvents()
+    num_events = events.size()
+
+    for i in range(num_events):
+        event = events.get(i)
+        assert (isinstance(event, COPASI.CEvent))
+
+        current_name = event.getObjectName()
+        display_name = event.getObjectDisplayName()
+
+        if name and type(name) is str and exact and name != current_name and name != display_name:
             continue
-        ea.setTargetCN(target.getCN())
-        ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
+
+        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
+            continue
+
+        if name and type(name) is str and name not in current_name and name not in display_name:
+            continue
+
+        if trigger:
+            event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
+
+        if assignments:
+            for assignment in assignments:
+                ea = event.createAssignment()
+                assert (isinstance(ea, COPASI.CEventAssignment))
+                target = dm.findObjectByDisplayName(assignment[0])
+                if target is None:
+                    logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
+                    continue
+                if target.getObjectType() == 'Reference':
+                    target = target.getObjectParent()
+                ea.setTargetCN(target.getCN())
+                ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
 
     model.compileIfNecessary()
-    return event
+
+
+def add_event_assignment(name, assignment, exact=False, **kwargs):
+    """Adds an event assignment to the named event
+
+    :param name: the name (or substring of name) of an event
+    :type name: str
+
+    :param assignment: tuple or list of tuples of event assignments of form (target, expression)
+    :type assignment: [(str,str)] or (str, str)
+
+    :param exact: boolean indicating whether the named expression has to be exact
+    :type exact: bool
+
+    :return: None
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    events = model.getEvents()
+    num_events = events.size()
+
+    for i in range(num_events):
+        event = events.get(i)
+        assert (isinstance(event, COPASI.CEvent))
+
+        current_name = event.getObjectName()
+        display_name = event.getObjectDisplayName()
+
+        if name and type(name) is str and exact and name != current_name and name != display_name:
+            continue
+
+        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
+            continue
+
+        if name and type(name) is str and name not in current_name and name not in display_name:
+            continue
+
+        assignments = assignment
+        if not isinstance(assignments, list):
+            assignments = [assignment]
+
+        if assignments:
+            for assignment in assignments:
+                ea = event.createAssignment()
+                assert (isinstance(ea, COPASI.CEventAssignment))
+                target = dm.findObjectByDisplayName(assignment[0])
+                if target is None:
+                    logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
+                    continue
+                if target.getObjectType() == 'Reference':
+                    target = target.getObjectParent()
+                ea.setTargetCN(target.getCN())
+                ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
+
+    model.compileIfNecessary()
 
 
 def add_reaction(name, scheme, **kwargs):
@@ -1821,7 +1953,7 @@ def add_reaction(name, scheme, **kwargs):
         raise ValueError('A reaction named ' + name + ' already exists')
 
     assert (isinstance(reaction, COPASI.CReaction))
-    set_reaction(name, scheme=scheme, **kwargs)
+    set_reaction(name, exact=True, scheme=scheme, **kwargs)
 
     return reaction
 
@@ -1895,12 +2027,16 @@ def get_compartments(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_parameters(name=None, **kwargs):
+def get_parameters(name=None, exact=False, **kwargs):
     """Returns all information about the global parameters as pandas dataframe.
 
         :param name: optional filter expression for the parameters, if it is not included in the name,
                      the parameter will not be added to the data set.
         :type name: str
+
+        :param exact: boolean indicating that the name has to be exact
+        :type exact: bool
+
         :param kwargs: optional arguments:
 
             * | `model`: to specify the data model to be used (if not specified
@@ -1943,6 +2079,9 @@ def get_parameters(name=None, **kwargs):
         }
 
         display_name = param.getObjectDisplayName()
+
+        if name and exact and name != param_data['name'] and name != display_name:
+            continue
 
         if 'name' in kwargs and (kwargs['name'] not in param_data['name'] and kwargs['name'] != display_name):
             continue
@@ -2197,11 +2336,14 @@ def get_time_unit(**kwargs):
     return time
 
 
-def set_compartment(name=None, **kwargs):
+def set_compartment(name=None, exact=False, **kwargs):
     """Sets properties of the named compartment
 
     :param name: the name of the compartment (or a substring of the name)
     :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact
+    :type exact: bool
 
     :param kwargs: optional arguments
 
@@ -2239,6 +2381,10 @@ def set_compartment(name=None, **kwargs):
         assert (isinstance(compartment, COPASI.CCompartment))
         current_name = compartment.getObjectName()
 
+
+        if name and type(name) is str and exact and name != current_name:
+            continue
+            
         if 'name' in kwargs and kwargs['name'] not in current_name:
             continue
 
@@ -2283,11 +2429,15 @@ def set_compartment(name=None, **kwargs):
     model.compileIfNecessary()
 
 
-def set_parameters(name=None, **kwargs):
+def set_parameters(name=None, exact=False, **kwargs):
     """Sets properties of the named parameter(s).
 
     :param name: the name of the parameter (or a substring of the name)
     :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact or not
+    :type exact: bool
+
     :param kwargs: optional arguments
 
         - | `unit`: the unit expression to be set
@@ -2320,6 +2470,9 @@ def set_parameters(name=None, **kwargs):
         current_name = param.getObjectName()
         display_name = param.getObjectDisplayName()
 
+        if name and type(name) is str and exact and name != current_name and name != display_name:
+            continue
+            
         if 'name' in kwargs and (kwargs['name'] not in current_name and kwargs['name'] != display_name):
             continue
 
@@ -2356,7 +2509,9 @@ def set_parameters(name=None, **kwargs):
         if 'sbml_id' in kwargs:
             param.setSBMLId(kwargs['sbml_id'])
 
-    model.updateInitialValues(change_set)
+    if change_set.size():
+        model.updateInitialValues(change_set)
+
     model.compileIfNecessary()
 
 
@@ -2453,11 +2608,14 @@ def set_reaction_parameters(name=None, **kwargs):
             model.setCompileFlag(True)
 
 
-def set_reaction(name=None, **kwargs):
+def set_reaction(name=None, exact=False, **kwargs):
     """Sets attributes of the named reaction.
 
     :param name: the name of the reaction (or a substring of the name)
     :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact
+    :type exact: bool
 
     :param kwargs: optional arguments
 
@@ -2495,6 +2653,9 @@ def set_reaction(name=None, **kwargs):
         assert(isinstance(reaction, COPASI.CReaction))
 
         current_name = reaction.getObjectName()
+
+        if name and type(name) is str and exact and name != current_name:
+            continue
 
         if 'name' in kwargs and kwargs['name'] not in current_name:
             continue
@@ -2809,11 +2970,15 @@ def remove_reaction(name, **kwargs):
     model.compileIfNecessary()
 
 
-def set_species(name=None, **kwargs):
+def set_species(name=None, exact=False, **kwargs):
     """Sets properties of the named species
 
     :param name: the name of the species (or a substring of the name)
     :type name: str
+
+    :param exact: boolean indicating, that the name has to be exact
+    :type exact: bool
+
     :param kwargs: optional arguments
 
         - | `new_name`: the new name for the species
@@ -2845,6 +3010,9 @@ def set_species(name=None, **kwargs):
 
         current_name = metab.getObjectName()
         display_name = metab.getObjectDisplayName()
+
+        if name and type(name) is str and exact and name != current_name and name != display_name:
+            continue
 
         if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
             continue
@@ -2961,13 +3129,14 @@ def set_element_name(element, new_name, **kwargs):
           | the one from :func:`.get_current_model` will be taken)
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
-    assert (isinstance(dm, COPASI.CDataModel))
-
-    if type(element) is COPASI.CDataObject:
+    if isinstance(element, COPASI.CDataObject):
         if not element.setObjectName(new_name):
             logging.warning("couldn't change name of the element")
         return
+    
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
     if type(element) is str:
         obj = dm.findObjectByDisplayName(element)
         if obj is not None:
@@ -3023,6 +3192,24 @@ def set_model_unit(**kwargs):
         model.setVolumeUnit(kwargs['volume_unit'])
 
     model.updateInitialValues(COPASI.CCore.Framework_Concentration)
+
+
+def set_model_name(new_name, **kwargs):
+    """Renames the model to the provided new name
+
+    :param new_name: the new name of the model
+    :type new_name: str
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: None
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    set_element_name(dm.getModel(), new_name)
 
 
 def add_amount_expressions(**kwargs):
@@ -3943,6 +4130,37 @@ def _get_named_value(obj, name):
         }.get(name, None)
 
     return value
+
+
+def get_value(name_or_reference, **kwargs):
+    """Gets the value of the named element or nones
+
+    :param name_or_reference: display name of model element
+    :type name_or_reference: str or COPASI.CDataObject
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the value if found or None
+    :rtype: float or None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    if isinstance(name_or_reference, COPASI.CDataObject):
+        obj = name_or_reference
+    else:
+        obj = model.findObjectByDisplayName(name_or_reference)
+        if obj is None:
+            return None
+        if obj.getObjectType() != 'Reference':
+            obj = obj.getValueReference()
+
+    if obj is None:
+        return None
+
+    return _get_value_from_reference(obj)
 
 
 def assign_report(name, task, filename='', append=True, confirm_overwrite=True, **kwargs):

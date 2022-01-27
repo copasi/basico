@@ -66,6 +66,7 @@ class TestBasicoIO_Brus(unittest.TestCase):
         self.assertTrue('Multiline' in new_notes)
 
         metab_notes = basico.model_info.get_notes(name='[X]')
+        self.assertTrue(metab_notes.strip() == '')
         basico.model_info.set_notes('Notes on the species X',  name='[X]')
         new_metab_notes = basico.model_info.get_notes(name='[X]')
         self.assertTrue('species X' in new_metab_notes)

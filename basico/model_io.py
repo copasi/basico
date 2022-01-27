@@ -347,7 +347,6 @@ def save_model(filename, **kwargs):
 
     :return: None
     """
-    # type: (str, **kwargs) -> None
     model = kwargs.get('model', get_current_model())
     assert (isinstance(model, COPASI.CDataModel))
     file_type = kwargs.get('type', 'copasi').lower()
@@ -458,7 +457,8 @@ def save_model_and_data(filename, **kwargs):
             continue
 
         if os.path.exists(new_name):
-            logging.warning("Experimental data file {0} does already exist, and will not be overwritten.".format(new_name))
+            logging.warning("Experimental data file {0} does already exist, and will not be overwritten."
+                            .format(new_name))
         else:
             shutil.copyfile(old_name, new_name)
         old_names[old_name] = new_name
@@ -533,7 +533,7 @@ def open_copasi(filename='', **kwargs):
 
     if platform.system() == 'Darwin':
         subprocess.call(('open', name))
-    elif platform.system() == 'Windows': # Windows
+    elif platform.system() == 'Windows':  # Windows
         os.startfile(name)
     else:  # linux
         subprocess.call(('xdg-open', name))

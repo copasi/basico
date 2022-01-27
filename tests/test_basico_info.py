@@ -54,6 +54,69 @@ class TestBasicoIO_Brus(unittest.TestCase):
         result = basico.model_info._split_by_cn('sin(A + B + C)')
         self.assertTrue(len(result) == 8)
 
+    def test_notes(self):
+        notes = basico.model_info.get_notes()
+        self.assertTrue('The famous Brusselator' in notes)
+        basico.model_info.set_notes("""
+        
+        New Multiline Comment
+        
+        """)
+        new_notes = basico.model_info.get_notes()
+        self.assertTrue('Multiline' in new_notes)
+
+        metab_notes = basico.model_info.get_notes(name='[X]')
+        basico.model_info.set_notes('Notes on the species X',  name='[X]')
+        new_metab_notes = basico.model_info.get_notes(name='[X]')
+        self.assertTrue('species X' in new_metab_notes)
+
+    def test_events(self):
+        events = basico.model_info.get_events()
+        self.assertIsNone(events)
+        basico.add_event('e0', trigger='Time > 10', assignments=[('[X]', '10')])
+        events = basico.get_events('e0').reset_index()
+        self.assertIsNotNone(events)
+        d = events.to_dict(orient='record')[0]
+        self.assertEqual(d['name'], 'e0')
+        self.assertEqual(d['trigger'], 'Time > 10')
+        self.assertEqual(d['assignments'][0]['target'], '[X]')
+        self.assertEqual(d['assignments'][0]['expression'], '10')
+        basico.model_info.add_event_assignment('e0', assignment=('[Y]', '2'))
+        events = basico.get_events('e0').reset_index()
+        d = events.to_dict(orient='record')[0]
+        self.assertEqual(len(d['assignments']), 2)
+
+    def test_matrices(self):
+        jac = basico.model_info.get_jacobian_matrix(True)
+        self.assertIsNotNone(jac)
+        red = basico.model_info.get_reduced_jacobian_matrix()
+        self.assertIsNotNone(red)
+        stoich = basico.model_info.get_stoichiometry_matrix()
+        self.assertIsNotNone(stoich)
+        red_s = basico.model_info.get_reduced_stoichiometry_matrix()
+        self.assertIsNotNone(red_s)
+
+    def test_new_getter(self):
+        tasks = basico.model_info.get_scheduled_tasks()
+        self.assertEqual(len(tasks), 0)
+        basico.set_scheduled_tasks(basico.T.TIME_COURSE)
+        tasks = basico.model_info.get_scheduled_tasks()
+        self.assertEqual(len(tasks), 1)
+        cn = basico.model_info.get_cn('[X]')
+        self.assertTrue('Metabolite' in cn)
+        val = basico.model_info.get_value('[X]')
+        self.assertIsNotNone(val)
+
+    def test_amount(self):
+        params = basico.get_parameters(type='assignment')
+        self.assertIsNone(params)
+        basico.add_amount_expressions()
+        params2 = basico.get_parameters(type='assignment')
+        self.assertIsNotNone(params2)
+        basico.remove_amount_expressions()
+        param3 = basico.get_parameters(type='assignment')
+        self.assertIsNone(param3)
+
     def test_get_plots(self):
         result = basico.model_info.get_plots()
         self.assertEqual(len(result), 3)

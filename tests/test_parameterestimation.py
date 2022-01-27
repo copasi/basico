@@ -57,6 +57,14 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertTrue(sol is not None)
         self.assertAlmostEqual(sol.loc['(R1).k2'].sol, 1.0, places=2)
 
+    def test_remove(self):
+        fit_items = basico.get_fit_parameters()
+        self.assertIsNotNone(fit_items)
+        basico.remove_fit_parameters()
+        fit_items_2 = basico.get_fit_parameters()
+        self.assertIsNone(fit_items_2)
+        basico.set_fit_parameters(fit_items)
+
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):
 

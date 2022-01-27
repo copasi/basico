@@ -625,6 +625,7 @@ def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
 
     return result
 
+
 def get_plot_dict(plot_spec, **kwargs):
     """Returns the information for the specified plot
 
@@ -715,8 +716,12 @@ def get_plot_dict(plot_spec, **kwargs):
         for k in range(channels.size()):
             channel_obj = dm.getObject(channels[k])
             if channel_obj is None:
+                curve_data['channels'].append(channels[k].getString())
                 continue
-            curve_data['channels'].append(channel_obj.getObjectDisplayName())
+            name = channel_obj.getObjectDisplayName()
+            if not dm.getObject(COPASI.CCommonName(name)):
+                name = channels[k].getString()
+            curve_data['channels'].append(name)
 
         curves.append(curve_data)
 
@@ -813,7 +818,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
             plot_item.getParameter('Symbol subtype').setValue(symbol)
         activity = curve['activity'] if 'activity' in curve else 'during'
         if plot_item.getParameter('Recording Activity'):
-            plot_item.getParameter('Recording Activity').setValue(activity)
+            plot_item.getParameter('Recording Activity').setStringValue(activity)
 
         if plot_item.getParameter('increment') and 'increment' in curve:
             plot_item.getParameter('increment').setValue(curve['increment'])
@@ -830,6 +835,10 @@ def set_plot_curves(plot_spec, curves, **kwargs):
 
         if 'channels' in curve:
             for channel in curve['channels']:
+                if channel.startswith('CN='):
+                    plot_item.addChannel(COPASI.CPlotDataChannelSpec(COPASI.CCommonName(channel)))
+                    continue
+
                 obj = dm.findObjectByDisplayName(channel)
                 if channel == 'Time':
                     obj = dm.getModel().getValueReference()
@@ -864,6 +873,78 @@ def add_plot(name, **kwargs):
     set_plot_dict(plot_spec, **kwargs)
 
     return plot_spec
+
+
+def add_default_plot(name, **kwargs):
+    """Adds a default plot to the list of plots
+
+    :param name: name of the default plot
+    :type name: str
+    
+
+    :param kwargs: optional arguments
+
+        - | `new_name`: to rename the plot specification
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: none or the name of the plot created
+    :rtype: str or None
+    """
+
+    if name not in get_default_plot_names():
+        logging.warning('No such default plot: {0}'.format(name))
+        return
+
+    item = COPASI.COutputAssistant.getItem(_default_plots[name])
+    assert (isinstance(item, COPASI.CDefaultOutputDescription))
+
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    for task in dm.getTaskList():
+        assert (isinstance(task, COPASI.CCopasiTask))
+        if task.getType() == item.mTaskType:
+            dm.getModel().compileIfNecessary()
+            if isinstance(task, COPASI.CFitTask):
+                task.getProblem().getExperimentSet().compile(task.getMathContainer())
+            task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+            result = COPASI.COutputAssistant.createDefaultOutput(_default_plots[name], task, dm)
+            if result is None:
+                logging.warning('Failed to create default plot for: {0}'.format(name))
+                return None
+            return result.getObjectName()
+
+    logging.warning('No task found for the plot')
+    return None
+
+
+_default_plots = None
+
+
+def get_default_plot_names(filter=None, **kwargs):
+    """Returns a list of default plot names
+    
+    :param filter: optional filter of substring to be in the name
+    :param kwargs: 
+    :return: 
+    """
+    ids = COPASI.COutputAssistant.getListOfDefaultOutputDescriptions()
+    global _default_plots
+    if _default_plots:
+        return _default_plots
+
+    _default_plots={}
+    for index in ids:
+        item = COPASI.COutputAssistant.getItem(index)
+        assert (isinstance(item, COPASI.CDefaultOutputDescription))
+        if not item.isPlot:
+            continue
+        if filter and filter not in item.name:
+            continue
+        _default_plots[item.name] = index
+    return _default_plots
 
 
 def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **kwargs):
@@ -1208,6 +1289,8 @@ def set_notes(notes, **kwargs):
         return
 
     if isinstance(element, COPASI.CDataObject):
+        if element.getObjectType() == 'Reference':
+            element = element.getObjectParent()
         element = COPASI.CAnnotation.castObject(element)
 
     if isinstance(element, COPASI.CAnnotation):
@@ -1247,6 +1330,8 @@ def get_notes(**kwargs):
         return None
 
     if isinstance(element, COPASI.CDataObject):
+        if element.getObjectType() == 'Reference':
+            element = element.getObjectParent()
         element = COPASI.CAnnotation.castObject(element)
 
     if isinstance(element, COPASI.CAnnotation):
@@ -1877,49 +1962,11 @@ def add_event_assignment(name, assignment, exact=False, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
-    assert (isinstance(dm, COPASI.CDataModel))
+    assignments = assignment
+    if not isinstance(assignments, list):
+        assignments = [assignment]
 
-    model = dm.getModel()
-    assert (isinstance(model, COPASI.CModel))
-
-    events = model.getEvents()
-    num_events = events.size()
-
-    for i in range(num_events):
-        event = events.get(i)
-        assert (isinstance(event, COPASI.CEvent))
-
-        current_name = event.getObjectName()
-        display_name = event.getObjectDisplayName()
-
-        if name and type(name) is str and exact and name != current_name and name != display_name:
-            continue
-
-        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
-            continue
-
-        if name and type(name) is str and name not in current_name and name not in display_name:
-            continue
-
-        assignments = assignment
-        if not isinstance(assignments, list):
-            assignments = [assignment]
-
-        if assignments:
-            for assignment in assignments:
-                ea = event.createAssignment()
-                assert (isinstance(ea, COPASI.CEventAssignment))
-                target = dm.findObjectByDisplayName(assignment[0])
-                if target is None:
-                    logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
-                    continue
-                if target.getObjectType() == 'Reference':
-                    target = target.getObjectParent()
-                ea.setTargetCN(target.getCN())
-                ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
-
-    model.compileIfNecessary()
+    set_event(name, exact, assignments=assignments)
 
 
 def add_reaction(name, scheme, **kwargs):
@@ -3360,8 +3407,9 @@ def _is_number(x):
     try:
         float(x)
         return True
-    except:
+    except ValueError:
         return False
+
 
 def _tokenize_eqn(eqn):
     """ Utility function for tokenizing equations into variables and functions
@@ -4132,6 +4180,33 @@ def _get_named_value(obj, name):
     return value
 
 
+def _get_object(name_or_reference, **kwargs):
+    """Returns the reference object for the given name
+
+    :param name_or_reference: display name of model element
+    :type name_or_reference: str or COPASI.CDataObject
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the reference object or None
+    :rtype: COPASI.CDataObject or None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    if isinstance(name_or_reference, COPASI.CDataObject):
+        obj = name_or_reference
+    else:
+        obj = model.findObjectByDisplayName(name_or_reference)
+        if obj is None:
+            return None
+        if obj.getObjectType() != 'Reference':
+            obj = obj.getValueReference()
+    return obj
+
+
 def get_value(name_or_reference, **kwargs):
     """Gets the value of the named element or nones
 
@@ -4148,19 +4223,36 @@ def get_value(name_or_reference, **kwargs):
     """
     model = kwargs.get('model', model_io.get_current_model())
 
-    if isinstance(name_or_reference, COPASI.CDataObject):
-        obj = name_or_reference
-    else:
-        obj = model.findObjectByDisplayName(name_or_reference)
-        if obj is None:
-            return None
-        if obj.getObjectType() != 'Reference':
-            obj = obj.getValueReference()
+    obj = _get_object(name_or_reference, model=model)
 
     if obj is None:
         return None
 
     return _get_value_from_reference(obj)
+
+
+def get_cn(name_or_reference, **kwargs):
+    """Gets the cn of the named element or none
+
+    :param name_or_reference: display name of model element
+    :type name_or_reference: str or COPASI.CDataObject
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the cn if found or None
+    :rtype: str or None
+    """
+    model = kwargs.get('model', model_io.get_current_model())
+
+    obj = _get_object(name_or_reference, model=model)
+
+    if obj is None:
+        return None
+
+    return obj.getCN().getString()
 
 
 def assign_report(name, task, filename='', append=True, confirm_overwrite=True, **kwargs):

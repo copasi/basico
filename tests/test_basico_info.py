@@ -1,3 +1,4 @@
+import sys
 import unittest
 import basico
 import COPASI
@@ -226,6 +227,7 @@ class TestBasicoIO_LM(unittest.TestCase):
         m = basico.get_reaction_mapping('R3')
         self.assertListEqual(m['product'], ['S', 'E', 'F'])
 
+    @unittest.skipIf(sys.version_info < (3, 6, 0), 'This test requires assertLogs which is not available before')
     def test_invalid_expression(self):
         self.assertLogs(
             basico.add_parameter(

@@ -2005,12 +2005,15 @@ def add_reaction(name, scheme, **kwargs):
     return reaction
 
 
-def get_compartments(name=None, **kwargs):
+def get_compartments(name=None, exact=False, **kwargs):
     """Returns all information about the compartments as pandas dataframe.
 
         :param name: optional filter expression for the compartment, if it is not included in the name,
                      the compartment will not be added to the data set.
         :type name: str
+
+        :param exact: boolean indicating, that the name has to be exact
+        :type exact: bool
 
         :param kwargs: optional arguments:
 
@@ -2053,6 +2056,9 @@ def get_compartments(name=None, **kwargs):
             'key': compartment.getKey(),
             'sbml_id': compartment.getSBMLId()
         }
+
+        if name and exact and  name != comp_data['name']:
+            continue
 
         if 'name' in kwargs and kwargs['name'] not in comp_data['name']:
             continue
@@ -2230,6 +2236,7 @@ def get_reaction_parameters(name=None, **kwargs):
        :param name: optional filter expression, if it is not included in the name,
                     the function will not be added to the data set.
        :type name: str
+
        :param kwargs: optional arguments:
 
         * | `reaction_name`: to further filter for local parameters of only certain reactions
@@ -2311,12 +2318,16 @@ def get_reaction_parameters(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def get_reactions(name=None, **kwargs):
+def get_reactions(name=None, exact=False, **kwargs):
     """Returns all reactions as pandas dataframe.
 
        :param name: optional filter expression, if it is not included in the name,
                     the reaction will not be added to the data set.
        :type name: str
+
+       :param exact: boolean indicating, that the name has to be exact
+       :type exact: bool
+
        :param kwargs: optional arguments:
 
         * | `reaction_name`: to further filter for local parameters of only certain reactions
@@ -2353,14 +2364,20 @@ def get_reactions(name=None, **kwargs):
             'sbml_id': reaction.getSBMLId()
         }
 
+        if name and exact and name != reaction_data['name']:
+            continue
+
         if 'name' in kwargs and kwargs['name'] not in reaction_data['name']:
             continue
 
         if name and name not in reaction_data['name']:
             continue
 
-        if 'sbml_id' in kwargs and kwargs['sbml_id']  != reaction_data['sbml_id']:
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != reaction_data['sbml_id']:
             continue
+
+        # add reaction mapping
+        reaction_data['mapping'] = get_reaction_mapping(reaction, model=dm)
 
         data.append(reaction_data)
 
@@ -2567,6 +2584,7 @@ def set_reaction_parameters(name=None, **kwargs):
 
     :param name: the name of the parameter (or a substring of the name)
     :type name: str
+
     :param kwargs: optional arguments
 
         - | `reaction_name`: if specified only parameters of the named reaction will be changed
@@ -2732,68 +2750,7 @@ def set_reaction(name=None, exact=False, **kwargs):
             changed = True
 
         if 'mapping' in kwargs:
-            mapping = kwargs['mapping']
-            info = COPASI.CReactionInterface()
-            info.init(reaction)
-            for j in range(info.size()):
-                p_type = info.getUsage(j)
-                p_name = info.getParameterName(j)
-                if p_name in mapping:
-                    mapped_to = mapping[p_name]
-                    if p_type == COPASI.CFunctionParameter.Role_PARAMETER:
-                        try:
-                            value = float(mapped_to)
-                            # version 4.34 and below cannot change back from global to local
-                            objs = COPASI.DataObjectVector()
-                            objs.push_back(reaction.getParameters().getParameter(p_name))
-                            reaction.setParameterObjects(p_name, objs)
-                            reaction.setParameterValue(p_name, value)
-                            info.init(reaction)
-                        except ValueError:
-                            obj = model.getModelValue(mapped_to)
-                            if obj is None:
-                                obj = dm.findObjectByDisplayName(mapped_to)
-                                if obj is not None and type(obj) != COPASI.CModelValue:
-                                    logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                                    continue
-                            if obj is None:
-                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                                continue
-
-                            info.setMapping(j, obj.getObjectName())
-
-                    elif p_type == COPASI.CFunctionParameter.Role_SUBSTRATE or \
-                         p_type == COPASI.CFunctionParameter.Role_PRODUCT or \
-                         p_type == COPASI.CFunctionParameter.Role_MODIFIER:
-                        obj = model.getMetabolite(mapped_to)
-                        if obj is None:
-                            obj = dm.findObjectByDisplayName(mapped_to)
-                            if obj is not None and type(obj) != COPASI.CMetab:
-                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                                continue
-                        if obj is None:
-                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                            continue
-
-                        info.setMapping(j, obj.getObjectName())
-
-                    elif p_type == COPASI.CFunctionParameter.Role_VOLUME:
-                        obj = model.getCompartment(mapped_to)
-                        if obj is None:
-                            obj = dm.findObjectByDisplayName(mapped_to)
-                            if obj is not None and type(obj) != COPASI.CCompartment:
-                                logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                                continue
-                        if obj is None:
-                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
-                            continue
-
-                        info.setMapping(j, obj.getObjectName())
-
-            if not info.writeBackToReaction(reaction):
-                logging.error("Couldn't change the reaction")
-            reaction.compile()
-            changed = True
+            changed = set_reaction_mapping(reaction, kwargs['mapping'], model=dm)
 
         if 'notes' in kwargs:
             reaction.setNotes(kwargs['notes'])
@@ -2803,6 +2760,198 @@ def set_reaction(name=None, exact=False, **kwargs):
 
     if changed:
         model.forceCompile()
+
+
+def get_reaction_mapping(reaction, **kwargs):
+    """Returns the reaction mapping of the given reaction
+
+    :param reaction: name of a reaction, or the reaction object
+    :type reaction: str or COPASI.CReaction
+
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the dictionary with the reaction mapping
+    :rtype: {}
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if type(reaction) is str:
+        r = model.getReaction(reaction)
+        if r is None:
+            logging.warning('No reaction with name: {0}'.format(reaction))
+            return False
+
+        reaction = r
+
+    result = {}
+
+    info = COPASI.CReactionInterface()
+    info.init(reaction)
+    for j in range(info.size()):
+        p_type = info.getUsage(j)
+        p_name = info.getParameterName(j)
+        if p_type == COPASI.CFunctionParameter.Role_PARAMETER and info.isLocalValue(j):
+            result[p_name] = reaction.getParameterValue(p_name)
+            continue
+
+        objs = info.getMappings(j)
+        if objs.size() == 1:
+            result[p_name] = objs[0]
+            continue
+
+        result[p_name] = list(objs)
+
+    return result
+
+
+def set_reaction_mapping(reaction, mapping, **kwargs):
+    """Sets the reaction mapping of the parameters as specified in the mapping dictionary
+
+    :param reaction: the name of the reaction (or reaction object)
+    :type reaction: str or COPASI.CReaction
+
+    :param mapping: dictionary that maps model elements to the function
+           parameters. (can be any volume, species, modelvalue or in case of
+          local parameters a value)
+    :type mapping: {}
+
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: boolean indicating whether the reaction was changed
+    :rtype: bool
+
+    """
+    dm = kwargs.get('model', model_io.get_current_model())
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    if type(reaction) is str:
+        r = model.getReaction(reaction)
+        if r is None:
+            logging.warning('No reaction with name: {0}'.format(reaction))
+            return False
+
+        reaction = r
+
+    changed = False
+
+    info = COPASI.CReactionInterface()
+    info.init(reaction)
+    for j in range(info.size()):
+        p_type = info.getUsage(j)
+        p_name = info.getParameterName(j)
+        if p_name in mapping:
+            mapped_to = mapping[p_name]
+            if p_type == COPASI.CFunctionParameter.Role_PARAMETER:
+                try:
+                    value = float(mapped_to)
+                    # version 4.34 and below cannot change back from global to local
+                    objs = COPASI.DataObjectVector()
+                    objs.push_back(reaction.getParameters().getParameter(p_name))
+                    reaction.setParameterObjects(p_name, objs)
+                    reaction.setParameterValue(p_name, value)
+                    info.init(reaction)
+                    changed = True
+                except ValueError:
+                    obj = model.getModelValue(mapped_to)
+                    if obj is None:
+                        obj = dm.findObjectByDisplayName(mapped_to)
+                        if obj is not None and type(obj) != COPASI.CModelValue:
+                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            continue
+                    if obj is None:
+                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        continue
+
+                    info.setMapping(j, obj.getObjectName())
+                    changed = True
+
+            elif p_type == COPASI.CFunctionParameter.Role_SUBSTRATE or \
+                    p_type == COPASI.CFunctionParameter.Role_PRODUCT or \
+                    p_type == COPASI.CFunctionParameter.Role_MODIFIER:
+
+                if not info.isVector(j):
+                    obj = model.getMetabolite(mapped_to)
+                    if obj is None:
+                        obj = dm.findObjectByDisplayName(mapped_to)
+                        if obj is not None and type(obj) != COPASI.CMetab:
+                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            continue
+                    if obj is None:
+                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        continue
+                    info.setMapping(j, obj.getObjectName())
+                    changed = True
+                    continue
+
+                mapped_list = mapped_to
+                if type(mapped_list) is str:
+                    mapped_list = [mapped_to]
+
+                info.writeBackToReaction(reaction)
+                current = reaction.getParameterObjects(j)
+                objs = COPASI.DataObjectVector()
+                for obj in current:
+                    objs.append(obj)
+
+                current_length = len(current)
+                mapped_length = len(mapped_list)
+
+                if current_length != mapped_length:
+                    logging.warning('Different length encountered when setting mapping for parameter {0}: {1} != {2}'
+                                    .format(p_name, current_length, mapped_length))
+
+                smallest = min(current_length, mapped_length)
+                for i in range(smallest):
+                    mapped_to = mapped_list[i]
+                    obj = model.getMetabolite(mapped_to)
+                    if obj is None:
+                        obj = dm.findObjectByDisplayName(mapped_to)
+                        if obj is not None and type(obj) != COPASI.CMetab:
+                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            continue
+                    if obj is None:
+                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        continue
+                    objs[i] = obj
+
+                reaction.setParameterObjects(j, objs)
+                info.init(reaction)
+                changed = True
+
+            elif p_type == COPASI.CFunctionParameter.Role_VOLUME:
+                obj = model.getCompartment(mapped_to)
+                if obj is None:
+                    obj = dm.findObjectByDisplayName(mapped_to)
+                    if obj is not None and type(obj) != COPASI.CCompartment:
+                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        continue
+                if obj is None:
+                    logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                    continue
+
+                info.setMapping(j, obj.getObjectName())
+                changed = True
+
+    if not changed:
+        return False
+
+    if not info.writeBackToReaction(reaction):
+        logging.error("Couldn't change the reaction")
+    reaction.compile()
+    return True
 
 
 def remove_species(name, **kwargs):

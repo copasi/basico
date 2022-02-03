@@ -77,14 +77,14 @@ class TestBasicoIO_Brus(unittest.TestCase):
         basico.add_event('e0', trigger='Time > 10', assignments=[('[X]', '10')])
         events = basico.get_events('e0').reset_index()
         self.assertIsNotNone(events)
-        d = events.to_dict(orient='record')[0]
+        d = events.to_dict(orient='records')[0]
         self.assertEqual(d['name'], 'e0')
         self.assertEqual(d['trigger'], 'Time > 10')
         self.assertEqual(d['assignments'][0]['target'], '[X]')
         self.assertEqual(d['assignments'][0]['expression'], '10')
         basico.model_info.add_event_assignment('e0', assignment=('[Y]', '2'))
         events = basico.get_events('e0').reset_index()
-        d = events.to_dict(orient='record')[0]
+        d = events.to_dict(orient='records')[0]
         self.assertEqual(len(d['assignments']), 2)
 
     def test_matrices(self):
@@ -212,6 +212,19 @@ class TestBasicoIO_LM(unittest.TestCase):
         self.assertEqual(params.shape[0], 1)
         value = params.iloc[0].initial_value
         self.assertEqual(value, 3.0)
+
+    def test_mapping(self):
+        m = basico.get_reaction_mapping('R1')
+        self.assertDictEqual(m, {'k1': 130.0, 'substrate': ['S', 'E'], 'k2': 1.0, 'product': 'ES'})
+        basico.set_reaction_mapping('R1', {'k1': 10})
+        m = basico.get_reaction_mapping('R1')
+        self.assertEqual(m['k1'], 10)
+        basico.add_reaction('R3', 'S + E + ES = C + D + F')
+        m = basico.get_reaction_mapping('R3')
+        self.assertListEqual(m['product'], ['C', 'D', 'F'])
+        basico.set_reaction_mapping('R3', {'product': ['S', 'E']})
+        m = basico.get_reaction_mapping('R3')
+        self.assertListEqual(m['product'], ['S', 'E', 'F'])
 
 
 if __name__ == "__main__":

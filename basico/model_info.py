@@ -2467,7 +2467,7 @@ def set_compartment(name=None, exact=False, **kwargs):
             change_set.append(compartment.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
-            compartment.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            _set_initial_expression(compartment, kwargs['initial_expression'])
             model.setCompileFlag(True)
 
         if 'status' in kwargs:
@@ -2477,7 +2477,7 @@ def set_compartment(name=None, exact=False, **kwargs):
             compartment.setStatus(__status_to_int(kwargs['type']))
 
         if 'expression' in kwargs:
-            compartment.setExpression(_replace_names_with_cns(kwargs['expression']))
+            _set_expression(compartment, kwargs['expression'])
             model.setCompileFlag(True)
 
         if 'dimensionality' in kwargs:
@@ -2491,6 +2491,47 @@ def set_compartment(name=None, exact=False, **kwargs):
 
     model.updateInitialValues(change_set)
     model.compileIfNecessary()
+
+
+def _set_initial_expression(element, expression):
+    """Utility function to safely set an initial expression
+
+        :param element: model element
+        :type element: COPASI.CModelEntity
+
+        :param expression: infix expression to set
+        :return: None
+        """
+    if element is None:
+        return
+
+    _set_safe(element.setInitialExpression, expression)
+
+def _set_expression(element, expression):
+    """Utility function to safely set an ODE / assignment expression
+
+    :param element: model element
+    :type element: COPASI.CModelEntity
+
+    :param expression: infix expression to set
+    :return: None
+    """
+    if element is None:
+        return
+    _set_safe(element.setExpression, expression)
+
+def _set_safe(fun, expression):
+    """Calls the given function that is supposed to return a COPASI.CIssue
+
+    :param fun: function to call
+    :param expression: infic expression
+    :return:
+    """
+    result = fun(_replace_names_with_cns(expression))
+    if result.isError():
+        logging.error('Invalid expression: {0}'.format(expression))
+        # set to empty string avoid crash
+        fun('')
 
 
 def set_parameters(name=None, exact=False, **kwargs):
@@ -2554,7 +2595,7 @@ def set_parameters(name=None, exact=False, **kwargs):
             change_set.append(param.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
-            param.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            _set_initial_expression(param, kwargs['initial_expression'])
             model.setCompileFlag(True)
 
         if 'status' in kwargs:
@@ -2564,7 +2605,7 @@ def set_parameters(name=None, exact=False, **kwargs):
             param.setStatus(__status_to_int(kwargs['type']))
 
         if 'expression' in kwargs:
-            param.setExpression(_replace_names_with_cns(kwargs['expression']))
+            _set_expression(param, kwargs['expression'])
             model.setCompileFlag(True)
 
         if 'notes' in kwargs:
@@ -3234,7 +3275,7 @@ def set_species(name=None, exact=False, **kwargs):
             change_set.append(metab.getInitialValueReference())
 
         if 'initial_expression' in kwargs:
-            metab.setInitialExpression(_replace_names_with_cns(kwargs['initial_expression']))
+            _set_initial_expression(metab, kwargs['initial_expression'])
             model.setCompileFlag(True)
 
         if 'status' in kwargs:
@@ -3244,7 +3285,7 @@ def set_species(name=None, exact=False, **kwargs):
             metab.setStatus(__status_to_int(kwargs['type']))
 
         if 'expression' in kwargs:
-            metab.setExpression(_replace_names_with_cns(kwargs['expression']))
+            _set_expression(metab, kwargs['expression'])
             model.setCompileFlag(True)
 
         if 'notes' in kwargs:
@@ -3336,7 +3377,7 @@ def set_element_name(element, new_name, **kwargs):
     if type(element) is str:
         obj = dm.findObjectByDisplayName(element)
         if obj is not None:
-            if not element.setObjectName(new_name):
+            if not obj.setObjectName(new_name):
                 logging.warning("couldn't change name of the element")
             return
 

@@ -226,6 +226,20 @@ class TestBasicoIO_LM(unittest.TestCase):
         m = basico.get_reaction_mapping('R3')
         self.assertListEqual(m['product'], ['S', 'E', 'F'])
 
+    def test_invalid_expression(self):
+        self.assertLogs(
+            basico.add_parameter(
+                'invald', type='assignment',
+                expression='Values[offset] .InitialValue + Values[signal] .InitialValue'))
+
+        self.assertLogs(
+            basico.add_parameter(
+                'invald2',
+                initial_expression='Values[offset] .InitialValue + Values[signal] .InitialValue'))
+
+        # check that the interpreter did not crash
+        self.assertTrue(True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,8 +3,6 @@
 """
 import logging
 
-from dominate.tags import base
-
 import basico
 import COPASI
 

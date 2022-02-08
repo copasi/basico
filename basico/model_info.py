@@ -3882,6 +3882,24 @@ def add_equation(eqn, time_symbol='t', **kwargs):
     model.setCompileFlag(True)
 
 
+def _annotated_matrix_to_df_1d(ann_matrix):
+    assert(isinstance(ann_matrix, COPASI.CDataArray))
+    dim = ann_matrix.dimensionality()
+    if dim != 1:
+        logging.error('only one dimensional matrices are supported by this method')
+        return None
+
+    matrix = ann_matrix.getArray()
+    index = [s for s in ann_matrix.getAnnotationsString(0)]
+    data = []
+    v = COPASI.SizeTStdVector()
+    v.push_back(0)
+    for x in range(len(index)):
+        v[0] = x
+        data.append(matrix.get(v))
+    return pd.DataFrame(data, index=index)
+
+
 def _annotated_matrix_to_df(ann_matrix):
     """Converts the annotated matrix to a pandas dataframe
 
@@ -3891,8 +3909,15 @@ def _annotated_matrix_to_df(ann_matrix):
     :rtype: pd.DataFrame
     """
     assert(isinstance(ann_matrix, COPASI.CDataArray))
-    if ann_matrix.dimensionality() != 2:
-        logging.error('only two dimensional matrices are supported at this time')
+    dim = ann_matrix.dimensionality() 
+    if dim != 2:
+        if dim == 1:
+            return _annotated_matrix_to_df_1d(ann_matrix)
+
+        if dim == 0:
+            return ann_matrix.getArray().get(COPASI.SizeTStdVector())
+
+        logging.error('only 0-two dimensional matrices are supported at this time')
         return None
 
     matrix = ann_matrix.getArray()
@@ -4564,3 +4589,43 @@ def set_scheduled_tasks(task_name, **kwargs):
         assert(isinstance(c_task, COPASI.CCopasiTask))
         c_task.setScheduled(c_task.getObjectName() in task_name)
 
+
+def _invert_dict(d):
+    """Utility function that inverts / reverses the given dictionary
+
+    :param d: the dictionary to invert / revert
+    :type d: dict
+
+    :return: a dictionary that has the values as keys, and keys as values of d
+    :rtype: dict
+    """
+    result = {}
+
+    for k, v in d.items():
+        result[v] = k
+
+    return result
+
+
+def _get_name_for_object(obj, model):
+    """ Tries to get a nice display name for the given object, but falls back to cn, if name cannot be resolved
+
+    :param obj: the copasi object to get the name for
+    :type obj: COPASI.CDataObject
+
+    :param model: the data model in which to resolve the object
+    :type model: COPASI.CDataModel
+
+    :return: name or cn of the object
+    :rtype: str
+    """
+    name = obj.getObjectDisplayName()
+    resolved = model.findObjectByDisplayName(name)
+
+    if resolved is None:
+        return obj.getCN().getString()
+
+    if resolved.getCN().getString() != obj.getCN().getString():
+        return obj.getCN().getString()
+
+    return name

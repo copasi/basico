@@ -119,9 +119,9 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         .format(aic, aicc, bic, aic_copasi, llh, obj, prob.getRMS())
     )
     logging.debug(sol)
-    test_model.set_criterion('AIC', aic)
-    test_model.set_criterion('AICc', aicc)
-    test_model.set_criterion('BIC', bic)
+    test_model.set_criterion(petab_select.criteria.Criterion.AIC, aic)
+    test_model.set_criterion(petab_select.criteria.Criterion.AICC, aicc)
+    test_model.set_criterion(petab_select.criteria.Criterion.BIC, bic)
 
     # update estimated parameters
     for param_id in test_model.parameters:

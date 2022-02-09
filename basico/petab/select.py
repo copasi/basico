@@ -71,12 +71,15 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     :rtype: float
     """
     # create petab problem
-    pp = test_model.to_petab()[0]
+    pp = test_model.to_petab()['petab_problem']
 
     created_temp_dir = False
     if temp_dir is None:
         temp_dir = tempfile.mkdtemp()
         created_temp_dir = True
+
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir, exist_ok=True)
 
     model_id = test_model.model_id
     files = core.write_problem_to(pp, temp_dir, model_id)
@@ -86,7 +89,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     cps_file = os.path.join(temp_dir, out_name + '.cps')
     core.load_petab(files['problem'], temp_dir, out_name)
 
-    files = files.values()
+    files = list(files.values())
     files.append(cps_file)
 
     files = files + basico.get_experiment_filenames()
@@ -123,7 +126,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     # update estimated parameters
     for param_id in test_model.parameters:
         value = test_model.parameters[param_id]
-        if not isnan(value):  # we only want to include what we estimated
+        if str(value) != 'estimate':  # not isnan(value):  # we only want to include what we estimated
             continue
         name = 'Values[{0}]'.format(param_id)
         if name in sol.index:
@@ -171,8 +174,9 @@ def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, d
     for test_model in test_models:
         try:
             evaluate_model(test_model, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
-        except:
+        except Exception as e:
             logging.exception("couldn't evaluate " + test_model.model_id)
+            logging.critical(e, exc_info=True)
 
 
 def evaluate_problem(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
@@ -198,22 +202,11 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     :return: the best model found
     :rtype: petab_select.Model
     """
-    model_space = selection_problem.model_space
-
     if candidate_space is None:
         logging.info('initializing new candidate space with method: {0}'.format(selection_problem.method))
-        if selection_problem.method == 'forward':
-            candidate_space = petab_select.ForwardCandidateSpace(get_initial_virtual_model(selection_problem))
-        elif selection_problem.method == 'brute_force':
-            candidate_space = petab_select.BruteForceCandidateSpace()
-        elif selection_problem.method == 'backward':
-            candidate_space = petab_select.BackwardCandidateSpace(
-                get_initial_virtual_model(selection_problem, initial_value=float('nan')))
-        else:
-            logging.error('unsupported candidate space {0} please initialize first and pass along'
-                          .format(selection_problem.method))
+        candidate_space = petab_select.ui.candidates(problem=selection_problem)
 
-    test_models = model_space.neighbors(candidate_space)
+    test_models = candidate_space.models
 
     if not test_models:
         logging.warning('no models to test, method: {0}'.format(selection_problem.method))
@@ -222,7 +215,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     chosen_model = None
     while test_models:
         basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
-
+        selection_problem.add_calibrated_models(test_models)
         for model in test_models:
             logging.info('{0} = {1}'.format(model.model_id, model.criteria))
 
@@ -231,33 +224,15 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
             logging.warning('found no best model?')
 
         logging.debug('best model is {0}'.format(chosen_model.model_id))
-        candidate_space.reset(chosen_model)
-        test_models = model_space.neighbors(candidate_space)
 
+        petab_select.ui.candidates(
+            problem=selection_problem,
+            candidate_space=candidate_space,
+            predecessor_model=chosen_model,
+        )
+
+        test_models = candidate_space.models
+
+    # pick the best one found overall
+    chosen_model = selection_problem.get_best(selection_problem.calibrated_models)
     return chosen_model
-
-
-def get_initial_virtual_model(selection_problem, initial_value=0.01):
-    """Utility function returning an initial virtual model
-
-    :param selection_problem: the selection problem
-    :type selection_problem: petab_select.Problem
-    :param initial_value: initial value for all parameters to use (defaults to 0.01)
-    :type initial_value: float
-
-    :return: the initial virtual model
-    :rtype: petab_select.Model
-    """
-    model_space = selection_problem.model_space
-    parameters = {
-        k: initial_value
-        for k in model_space.parameter_ids
-    }
-
-    initial_virtual_model = petab_select.Model(
-        model_id='INITIAL_VIRTUAL_MODEL',
-        petab_yaml=model_space.source_path,
-        parameters=parameters,
-    )
-
-    return initial_virtual_model

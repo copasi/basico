@@ -141,6 +141,50 @@ class TestBasicoModelManipulation(unittest.TestCase):
         basico.add_parameter('K_d', initial_value=1)
         basico.add_reaction('r1 ma keq', scheme='A -> B', function='MA KD', mapping={'vr': 1000, 'Keq': 'K_d'})
 
+    def test_expressions(self):
+        basico.new_model(name='Model 4', volume_unit='ml', quantity_unit='mmol')
+
+        basico.add_species('PGME', initial_concentration=20)
+        basico.add_species('7-ADCA', initial_concentration=10)
+        basico.add_species('CEX', initial_concentration=0)
+        basico.add_species('PG', initial_concentration=2)
+
+        params = ['K_s', 'k2',  'K_n', 'k3',  'k4',  'k5',  'k6',   'K_si', 'K_p', 'k_4b',  'e0', 'kd', 'K_p2i']
+        values = [14,25920,290,25020,4416000,29460,99600,20,39,547560,0.000198000000000000,0.0385800000000000,12]
+        for k, v in zip(params, values):
+            basico.add_parameter(k, initial_value=v)
+
+        basico.add_equation('A = k4 * [7-ADCA] / K_n + k5 * [7-ADCA] / K_n + k6 * [PGME] / K_si + k3')
+        basico.add_equation('e = e0 /(1 + [PGME]^2/ (K_s * K_si) + [7-ADCA] / K_n + ( k2 * [PGME] /(K_s * A))*( 1 + [7-ADCA]/K_n + [PGME]/K_si)+[CEX]/K_p+[PG]/K_p2i)*exp(-kd*t)')
+        basico.add_equation('B = (k2 * e * [PGME]/K_s)*(1/A) + (k_4b * e * [CEX]/K_p)*(1/A)')
+
+        dxdt_1 = '-k2 * e * [PGME]/K_s - k6 * B * [PGME]/K_si'
+        dxdt_4 = 'B * (k3 + k5*[7-ADCA]/K_n + k6* [PGME]/K_si)'
+        dxdt_3 = '-({0}) - ({1})'.format(dxdt_1, dxdt_4)
+        dxdt_2 = '-({0})'.format(dxdt_3)
+        basico.add_equation('d[PGME]/dt=' + dxdt_1)
+        basico.add_equation('d[PG]/dt=' + dxdt_4)
+        basico.add_equation('d[CEX]/dt=' + dxdt_3)
+        basico.add_equation('d[7-ADCA]/dt=' + dxdt_2)
+
+        template = basico.get_fit_item_template(include_global=True, default_lb=1e-2, default_ub=1e6)
+        to_remove = None
+        for d in template:
+            # set lower bound for the equilibrium constants
+            if 'Values[K_si' in d['name']:
+                d['upper'] = 50
+                continue
+            if 'Values[K' in d['name']:
+                d['upper'] = 1000
+                continue
+            if 'Values[k_d' in d['name']:
+                d['upper'] = 0.5
+                d['lower'] = 0.3
+
+        basico.set_fit_parameters(template)
+
+        self.assertTrue(True)
+
 
 class TestReportManipulation(unittest.TestCase):
 

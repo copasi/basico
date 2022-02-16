@@ -3676,18 +3676,33 @@ def _tokenize_eqn(eqn):
             if var is None:
                 var = chunk
 
+            if not var:
+                if token:
+                    result['lhs'] = token
+
+                    var = None
+                    var_is_species = False
+                    var_is_initial = False
+                    chunk = ''
+                    result['is_ode'] = is_ode
+                    tokens.remove(token)
+                    token = None
+                i+=1
+                continue
+
             token = {
                 'var': var,
                 'is_species': var_is_species,
                 'is_initial': var_is_initial
             }
-            #tokens.append(token)
-            #tokens.append('=')
+
             result['lhs'] = token
-            if var_is_species and var not in species:
+
+            if var_is_species and var and var not in species:
                 species.append(var)
-            elif not var_is_species and var not in parameters:
+            elif not var_is_species and var and var not in parameters:
                 parameters.append(var)
+
             var = None
             var_is_species = False
             var_is_initial = False
@@ -3791,7 +3806,7 @@ def _tokenize_eqn(eqn):
 
 
 def _store_variable(parameters, species, tokens, var, var_is_initial, var_is_species):
-    if var is not None:
+    if var is not None and var:
         token = {
             'var': var,
             'is_species': var_is_species,

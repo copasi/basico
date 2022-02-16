@@ -122,7 +122,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
      - `output_event` (bool): if true, output will be collected at the time a discrete event occurs.
 
-    -  | `values` ([float]): if given, output will only returned at the output points specified
+     - | `values` ([float]): if given, output will only returned at the output points specified
        |                     for example use `values=[0, 1, 4]` to return output only for those three times
 
      - | `start_time` (float): the output start time. If the model is not at that start time, a simulation
@@ -274,7 +274,7 @@ def run_time_course(*args, **kwargs):
 
      - `output_event` (bool): if true, output will be collected at the time a discrete event occurs.
 
-    -  | `values` ([float]): if given, output will only returned at the output points specified
+     - | `values` ([float]): if given, output will only returned at the output points specified
        |                     for example use `values=[0, 1, 4]` to return output only for those three times
 
      - | `start_time` (float): the output start time. If the model is not at that start time, a simulation

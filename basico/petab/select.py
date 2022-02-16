@@ -3,6 +3,8 @@ from math import log, isnan
 import os
 import tempfile
 
+from petab_select import Criterion
+
 from . import core
 import basico
 import petab_select
@@ -107,21 +109,15 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
 
     # compute metrics
     llh = basico.petab.petab_llh(pp, sim_df)
-    aic = float(petab_select.calculate_aic(pp.parameter_df.estimate.sum(), -llh))
-    aicc = float(petab_select.calculate_aicc(pp.parameter_df.estimate.sum(), -llh, len(pp.measurement_df), 0))
-    bic = float(petab_select.calculate_bic(pp.parameter_df.estimate.sum(), -llh, len(pp.measurement_df), 0))
-    aic_copasi = copasi_aic()
+    test_model.set_criterion(Criterion.LLH, llh)
+
     task = basico.get_current_model().getTask("Parameter Estimation")
     prob = task.getProblem()
     obj = prob.getSolutionValue()
-    logging.debug(
-        'AIC: {0}, AICc: {1}, BIC: {2}, Copasi AIC: {3}, LLH: {4}, OBJ: {5}, RMS: {6}'
-        .format(aic, aicc, bic, aic_copasi, llh, obj, prob.getRMS())
-    )
-    logging.debug(sol)
-    test_model.set_criterion(petab_select.criteria.Criterion.AIC, aic)
-    test_model.set_criterion(petab_select.criteria.Criterion.AICC, aicc)
-    test_model.set_criterion(petab_select.criteria.Criterion.BIC, bic)
+
+    test_model.compute_criterion(Criterion.AIC)
+    test_model.compute_criterion(Criterion.AICC)
+    test_model.compute_criterion(Criterion.BIC)
 
     # update estimated parameters
     for param_id in test_model.parameters:
@@ -229,6 +225,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
             problem=selection_problem,
             candidate_space=candidate_space,
             predecessor_model=chosen_model,
+           # excluded_models=test_models
         )
 
         test_models = candidate_space.models

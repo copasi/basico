@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 import os
 import matplotlib.pyplot
@@ -64,6 +65,13 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         fit_items_2 = basico.get_fit_parameters()
         self.assertIsNone(fit_items_2)
         basico.set_fit_parameters(fit_items)
+
+    def test_save(self):
+        cps_name = tempfile.mktemp()
+        basico.save_model_and_data(cps_name, delete_data_on_exit=True)
+        d2 = basico.load_model(cps_name)
+        self.assertIsNotNone(d2)
+        basico.remove_datamodel(d2)
 
 
 class TestBasicoParamterEstimationPK(unittest.TestCase):

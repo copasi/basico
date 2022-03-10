@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 import basico
 import basico.biomodels
@@ -18,6 +19,26 @@ class TestBasicoIO(unittest.TestCase):
         self.assertTrue(dm is not None)
         self.assertTrue(isinstance(dm, COPASI.CDataModel))
         self.assertTrue('The Brusselator' in basico.model_io.overview())
+
+        # save model to string
+        copasi = basico.save_model_to_string()
+        basico.remove_datamodel(dm)
+
+        # try to load the model from string
+        dm = basico.load_model(copasi)
+        self.assertTrue(dm is not None)
+        self.assertTrue(isinstance(dm, COPASI.CDataModel))
+        self.assertTrue('The Brusselator' in basico.model_io.overview())
+
+        # save model as temp file
+        sbml_name = tempfile.mktemp()
+        basico.save_model(sbml_name, type='sbml')
+        cps_name = tempfile.mktemp()
+        basico.save_model(cps_name, type='copasi')
+
+        # model and data
+        basico.save_model_and_data(cps_name, delete_data_on_exit=True)
+
         basico.remove_datamodel(dm)
 
     def test_load_biomodel(self):

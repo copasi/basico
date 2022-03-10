@@ -70,7 +70,7 @@ def plot_linear_time_course(data, prefix=None, metab_names=None, shading='gourau
     :return: array with tuple of figures and their axis
     """
 
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     if prefix is not None:
@@ -149,7 +149,7 @@ def plot_rectangular_time_course(data, times=None, prefix=None, shading='gouraud
 
     :return: array with tuple of figures and their axis
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     x_range, y_range, prefixes = _split_ranges(names)
@@ -223,7 +223,7 @@ def animate_rectangular_time_course_as_image(data, metabs=None, prefix=None,
 
     :return: FuncAnimation result
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     x_range, y_range, prefixes = _split_ranges(names)
@@ -321,7 +321,7 @@ def animate_rectangular_time_course(data, metab=None, prefix=None, shading='gour
 
     :return: the FuncAnimation constructed
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     mod = dm.getModel()
     names = [c.getObjectName() for c in mod.getCompartments()]
     x_range, y_range, prefixes = _split_ranges(names)
@@ -418,7 +418,7 @@ def delete_compartments(selection, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     mod = dm.getModel()
     assert (isinstance(mod, COPASI.CModel))
     names = [c.getObjectName() for c in mod.getCompartments()]
@@ -507,7 +507,7 @@ def create_linear_array(num_steps, species=None, diffusion_coefficients=None, co
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     _create_array(dm, num_steps, 0, linear=True, species=species,
                   compartment_names=compartment_names,
                   diffusion_coefficients=diffusion_coefficients,
@@ -540,7 +540,7 @@ def create_rectangular_array(num_steps_x, num_steps_y, species=None, diffusion_c
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     _create_array(dm, num_steps_x, num_steps_y, linear=False, species=species,
                   diffusion_coefficients=diffusion_coefficients,
                   compartment_names=compartment_names,

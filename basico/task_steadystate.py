@@ -51,7 +51,7 @@ def run_steadystate(**kwargs):
 
     :rtype: int
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask('Steady-State')

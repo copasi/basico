@@ -328,7 +328,7 @@ def run_optimization(expression=None, output=None, settings=None, **kwargs):
     :param kwargs: optional arguments
     :return: pandas data frame of the specified output, or the resulting solution for the parameters
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     task = model.getTask(basico.T.OPTIMIZATION)
     assert (isinstance(task, COPASI.COptTask))
@@ -383,7 +383,7 @@ def get_opt_statistic(**kwargs):
     :return: dictionary with the statistic
     :rtype: {}
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(basico.T.OPTIMIZATION)
     assert (isinstance(task, COPASI.COptTask))

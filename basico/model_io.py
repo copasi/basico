@@ -9,6 +9,9 @@ methods to load models directly from BioModels or from url.
 """
 import COPASI
 import os
+
+import basico.model_info
+
 try:
     import urllib2
     _use_urllib2 = True
@@ -68,6 +71,24 @@ def get_current_model():
         logging.warning('There is no model, creating a new one')
         new_model()
     return __current_model
+
+
+def get_model_from_dict_or_default(d, key='model'):
+    """Convenience function returning the data model from the dictionary
+
+    :param d: the dictionary optionally containing the data model
+    :param key: the key that the model is under (defaults to 'model')
+    :return: the data model if found, or the one from  :func:`.get_current_model`
+    :rtype: COPASI.CDataModel
+    """
+    model = None
+    if key in d:
+        model = d[key]
+
+    if model is None:
+        model = get_current_model()
+
+    return model
 
 
 def create_datamodel():
@@ -143,20 +164,7 @@ def new_model(**kwargs):
     if 'name' in kwargs:
         model.setObjectName(kwargs['name'])
 
-    if 'quantity_unit' in kwargs:
-        model.setQuantityUnit(kwargs['quantity_unit'])
-
-    if 'area_unit' in kwargs:
-        model.setAreaUnit(kwargs['area_unit'])
-
-    if 'length_unit' in kwargs:
-        model.setLengthUnit(kwargs['length_unit'])
-
-    if 'volume_unit' in kwargs:
-        model.setVolumeUnit(kwargs['volume_unit'])
-
-    if 'time_unit' in kwargs:
-        model.setTimeUnit(kwargs['time_unit'])
+    basico.model_info.set_model_unit(**kwargs, model=dm)
 
     if 'notes' in kwargs:
         model.setNotes(kwargs['notes'])
@@ -347,7 +355,7 @@ def save_model(filename, **kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', get_current_model())
+    model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     file_type = kwargs.get('type', 'copasi').lower()
     overwrite = kwargs.get('overwrite', True)
@@ -384,7 +392,7 @@ def save_model_to_string(**kwargs):
     :rtype: str
 
     """
-    model = kwargs.get('model', get_current_model())
+    model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     return model.saveModelToString()
 
@@ -410,7 +418,7 @@ def save_model_and_data(filename, **kwargs):
     except ImportError:
         import task_parameterestimation
 
-    model = kwargs.get('model', get_current_model())
+    model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     has_validations = task_parameterestimation.num_validations_files(**kwargs)
@@ -431,9 +439,6 @@ def save_model_and_data(filename, **kwargs):
 
     old_names = {}
     new_names = {}
-
-    model = kwargs.get('model', get_current_model())
-    assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask("Parameter Estimation")
     assert (isinstance(task, COPASI.CFitTask))
@@ -509,7 +514,7 @@ def open_copasi(filename='', **kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', get_current_model())
+    model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     name = filename
     delete_data_on_exit = False

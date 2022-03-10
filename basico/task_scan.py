@@ -62,7 +62,7 @@ def get_scan_items_frame(**kwargs):
 
     :return: data frame of scan items
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     task = model.getTask('Scan')
     assert (isinstance(task, COPASI.CScanTask))
@@ -98,7 +98,7 @@ def get_scan_items(**kwargs):
     :return: array of dictionary with the scan items specified
     :rtype: [{}]
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     problem = kwargs.get('problem', model.getTask('Scan').getProblem())
 
     data = []
@@ -189,7 +189,7 @@ def get_scan_settings(**kwargs):
         :return: dictionary of scan settings
         :rtype: {}
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     task = model.getTask('Scan')
     assert (isinstance(task, COPASI.CScanTask))
 
@@ -313,7 +313,7 @@ def add_scan_item(**kwargs):
 
       :return:
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     problem = kwargs.get('problem', model.getTask('Scan').getProblem())
     assert (isinstance(problem, COPASI.CScanProblem))
 
@@ -379,7 +379,7 @@ def set_scan_items(scan_items, **kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     problem = kwargs.get('problem', model.getTask('Scan').getProblem())
     assert (isinstance(problem, COPASI.CScanProblem))
 
@@ -410,7 +410,7 @@ def set_scan_settings(**kwargs):
 
     :return:
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     task = model.getTask('Scan')
     assert (isinstance(task, COPASI.CScanTask))
 
@@ -459,7 +459,7 @@ def run_scan(**kwargs):
     :return: None if output is not specified, otherwise the collected output as dataframe.
     :rtype: None or pd.DataFrame
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     if 'settings' in kwargs:
         set_scan_settings(settings=kwargs['settings'], model=model)

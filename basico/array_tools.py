@@ -8,7 +8,7 @@ import numpy as np
 
 def compartment_names(**kwargs):
     # type: (**kwargs) -> [str]
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     assert (isinstance(dm, COPASI.CDataModel))
@@ -34,7 +34,7 @@ def compartment_names(**kwargs):
 def remove_template(**kwargs):
     """Removes the template model from the array model"""
     names = compartment_names(**kwargs)
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
@@ -57,7 +57,7 @@ def remove_template(**kwargs):
 def remove_arrays(**kwargs):
     """Removes arrays  from the model"""
     names = compartment_names(**kwargs)
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
@@ -76,7 +76,7 @@ def remove_arrays(**kwargs):
 
 def plot_arrays_1d(df, species, **kwargs):
     # type:(pandas.DataFrame, str, **kwargs) -> pandas.DataFrame
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     names = compartment_names(**kwargs)
 

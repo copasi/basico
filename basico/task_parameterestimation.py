@@ -153,7 +153,7 @@ def num_experiment_files(**kwargs):
     :return: number of experiment files
     :rtype: int
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -176,7 +176,7 @@ def get_experiment_names(**kwargs):
     :return: list of experiment names defined
     :rtype: [str]
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -193,7 +193,7 @@ def get_experiment_names(**kwargs):
 
 
 def _get_experiment_keys(**kwargs):
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -220,7 +220,7 @@ def num_validations_files(**kwargs):
     :return: number of cross validation experiment files
     :rtype: int
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -256,7 +256,7 @@ def get_experiment(experiment, **kwargs):
     :return: the experiment or an error if none existent
     """
     if not isinstance(experiment, COPASI.CExperiment):
-        model = kwargs.get('model', model_io.get_current_model())
+        model = model_io.get_model_from_dict_or_default(kwargs)
         assert (isinstance(model, COPASI.CDataModel))
 
         task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -757,7 +757,7 @@ def add_experiment(name, data, **kwargs):
     :return: the filename of the generated data file
     :rtype: str
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -883,7 +883,7 @@ def run_parameter_estimation(**kwargs):
     :return: the solution for the fit parameters see :func:`get_parameters_solution`.
     :rtype: pandas.DataFrame
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
@@ -962,7 +962,7 @@ def get_simulation_results(values_only=False, **kwargs):
     :rtype: ([pandas.DataFrame],[pandas.DataFrame])
     """
     import basico
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -1102,7 +1102,7 @@ def plot_per_experiment(**kwargs):
 
     :return: array of tuples (fig, ax) for the figures created
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -1158,7 +1158,7 @@ def plot_per_dependent_variable(**kwargs):
 
     :return: array of tuples (fig, ax) for each figure created
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -1245,7 +1245,7 @@ def get_fit_statistic(**kwargs):
     :return: dictionary with the fit statistic
     :rtype: {}
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -1281,7 +1281,7 @@ def remove_experiments(**kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
@@ -1306,7 +1306,7 @@ def remove_fit_parameters(**kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     pe_task = dm.getTask(TASK_PARAMETER_ESTIMATION)
     problem = pe_task.getProblem()

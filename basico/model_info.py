@@ -331,7 +331,7 @@ def get_species(name=None, exact=False, **kwargs):
     :return: a pandas dataframe with the information about the species
     :rtype: pandas.DataFrame
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -419,7 +419,7 @@ def get_events(name=None, exact=False, **kwargs):
     :return: a pandas dataframe with the information about the event
     :rtype: pandas.DataFrame
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -491,7 +491,7 @@ def get_plots(name=None, **kwargs):
     :return: a pandas dataframe with the information about the plot see also :func:`.get_plot_dict`
     :rtype: pandas.DataFrame
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     data = []
@@ -530,7 +530,7 @@ def get_reports(name=None, ignore_automatic=False, task=None, **kwargs):
     :return: a data frame with all the report information
     :rtype: pd.DataFrame
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     data = []
@@ -574,7 +574,7 @@ def get_report_dict(report, **kwargs):
     :return: a dictionary with all information about the plot
     :rtype: dict
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if isinstance(report, str) or isinstance(report, int):
@@ -666,7 +666,7 @@ def get_plot_dict(plot_spec, **kwargs):
                 | }
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
@@ -776,7 +776,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
 
         :return: None
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
@@ -863,7 +863,7 @@ def add_plot(name, **kwargs):
 
         :return: the plot
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     plot_spec = dm.getPlotDefinitionList().createPlotSpec(name, COPASI.CPlotItem.plot2d)
 
@@ -900,7 +900,7 @@ def add_default_plot(name, **kwargs):
     item = COPASI.COutputAssistant.getItem(_default_plots[name])
     assert (isinstance(item, COPASI.CDefaultOutputDescription))
 
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     for task in dm.getTaskList():
@@ -977,7 +977,7 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
 
         :return: None
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
@@ -1017,7 +1017,7 @@ def add_report(name, **kwargs):
 
         :return: the report definition
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     spec = dm.getReportDefinitionList().createReportDefinition(name, "")
 
@@ -1074,7 +1074,7 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
 
         :return: None
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if isinstance(spec, str) or isinstance(spec, int):
@@ -1161,7 +1161,7 @@ def _replace_names_with_cns(expression, **kwargs):
     if type(expression) is not str:
         expression = str(expression)
 
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     resulting_expression = ''
     expression = expression.replace('{', ' {')
@@ -1228,7 +1228,7 @@ def _replace_cns_with_names(expression, **kwargs):
     if not expression:
         return expression
 
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
     resulting_expression = ''
     words = _split_by_cn(expression)
@@ -1283,7 +1283,7 @@ def set_notes(notes, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     element = dm.getModel()
@@ -1324,7 +1324,7 @@ def get_notes(**kwargs):
     :return: the notes string (plain text, or xhtml)
     :rtype: str
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     element = dm.getModel()
@@ -1391,7 +1391,7 @@ def get_miriam_annotation(**kwargs):
     :return: the elements annotation as dictionary as described
     :rtype: {}
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     element = dm.getModel()
@@ -1517,7 +1517,7 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     element = dm.getModel()
@@ -1641,7 +1641,7 @@ def add_compartment(name, initial_size=1.0, **kwargs):
 
     :return: the compartment added
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -1796,7 +1796,7 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
 
         :return: the newly created species
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -1835,7 +1835,7 @@ def add_parameter(name, initial_value=1.0, **kwargs):
 
         :return: the newly created parameter
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -1873,7 +1873,7 @@ def add_event(name, trigger, assignments, **kwargs):
 
         :return: the newly created event
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -1915,7 +1915,7 @@ def set_event(name, exact=False, trigger=None, assignments=None, **kwargs):
 
     :return:
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2000,7 +2000,7 @@ def add_reaction(name, scheme, **kwargs):
 
         :return: the newly created reaction
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2034,7 +2034,7 @@ def get_compartments(name=None, exact=False, **kwargs):
         :return: a pandas dataframe with the information about the compartment
         :rtype: pandas.DataFrame
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2109,7 +2109,7 @@ def get_parameters(name=None, exact=False, **kwargs):
         :return: a pandas dataframe with the information about the parameter
         :rtype: pandas.DataFrame
         """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2197,7 +2197,7 @@ def get_functions(name=None, **kwargs):
     reversibility = False
 
     if 'suitable_for' in kwargs:
-        dm = kwargs.get('model', model_io.get_current_model())
+        dm = model_io.get_model_from_dict_or_default(kwargs)
         suitable_for = dm.getModel().getReaction(kwargs['suitable_for'])
         if suitable_for is None:
             logging.error('No reaction {0} found'.format(kwargs['suitable_for']))
@@ -2287,7 +2287,7 @@ def get_reaction_parameters(name=None, **kwargs):
        :return: a pandas dataframe with the information about local parameters
        :rtype: pandas.DataFrame
        """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2378,7 +2378,7 @@ def get_reactions(name=None, exact=False, **kwargs):
        :return: a pandas dataframe with the information about local parameters
        :rtype: pandas.DataFrame
        """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2428,7 +2428,7 @@ def get_reactions(name=None, exact=False, **kwargs):
 
 def get_time_unit(**kwargs):
     """Returns the time unit of the model"""
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2467,7 +2467,7 @@ def set_compartment(name=None, exact=False, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2595,7 +2595,7 @@ def set_parameters(name=None, exact=False, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2675,7 +2675,7 @@ def set_reaction_parameters(name=None, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2782,7 +2782,7 @@ def set_reaction(name=None, exact=False, **kwargs):
     :return: None
     """
 
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2856,7 +2856,7 @@ def get_reaction_mapping(reaction, **kwargs):
     :return: the dictionary with the reaction mapping
     :rtype: {}
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -2911,7 +2911,7 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
     :rtype: bool
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3046,7 +3046,7 @@ def remove_species(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3077,7 +3077,7 @@ def remove_parameter(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3108,7 +3108,7 @@ def remove_compartment(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3139,7 +3139,7 @@ def remove_event(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3169,7 +3169,7 @@ def remove_plot(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     output_list = dm.getPlotDefinitionList()
@@ -3198,7 +3198,7 @@ def remove_report(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     report_list = dm.getReportDefinitionList()
@@ -3227,7 +3227,7 @@ def remove_reaction(name, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3269,7 +3269,7 @@ def set_species(name=None, exact=False, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3348,7 +3348,7 @@ def set_time_unit(unit, **kwargs):
           | the one from :func:`.get_current_model` will be taken)
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3375,7 +3375,7 @@ def get_model_units(**kwargs):
         |    'volume_unit': '',
         | }
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3410,7 +3410,7 @@ def set_element_name(element, new_name, **kwargs):
             logging.warning("couldn't change name of the element")
         return
     
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if type(element) is str:
@@ -3442,9 +3442,7 @@ def set_model_unit(**kwargs):
           | the one from :func:`.get_current_model` will be taken)
 
     """
-
-    dm = kwargs.get('model', model_io.get_current_model())
-    assert (isinstance(dm, COPASI.CDataModel))
+    dm = model_io.get_model_from_dict_or_default(kwargs)
 
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
@@ -3484,7 +3482,7 @@ def set_model_name(new_name, **kwargs):
     :return: None
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     set_element_name(dm.getModel(), new_name)
 
 
@@ -3501,7 +3499,7 @@ def add_amount_expressions(**kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3552,7 +3550,7 @@ def remove_amount_expressions(**kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3879,7 +3877,7 @@ def add_equation(eqn, time_symbol='t', **kwargs):
     :param kwargs:
     :return:
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -3993,7 +3991,7 @@ def get_stoichiometry_matrix(**kwargs):
     :rtype: pd.DataFrame
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -4008,7 +4006,7 @@ def get_reduced_stoichiometry_matrix(**kwargs):
     :rtype: pd.DataFrame
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -4032,7 +4030,7 @@ def get_jacobian_matrix(apply_initial_values=False, **kwargs):
     :rtype: pd.DataFrame
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -4085,7 +4083,7 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
         :rtype: pd.DataFrame
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     model = dm.getModel()
@@ -4210,7 +4208,7 @@ def get_task_settings(task, basic_only=True, **kwargs):
     :rtype: {}
 
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if not isinstance(task, COPASI.CCopasiTask):
@@ -4261,7 +4259,7 @@ def set_task_settings(task, settings, **kwargs):
 
     :return: None
     """
-    dm = kwargs.get('model', model_io.get_current_model())
+    dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
     if not isinstance(task, COPASI.CCopasiTask):
@@ -4330,7 +4328,7 @@ def _collect_data(names=None, cns=None, **kwargs):
     :return: data frame with the results
     :rtype: pd.DataFrame
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     data = []
 
@@ -4463,7 +4461,7 @@ def _get_object(name_or_reference, **kwargs):
     :return: the reference object or None
     :rtype: COPASI.CDataObject or None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     if isinstance(name_or_reference, COPASI.CDataObject):
         obj = name_or_reference
@@ -4490,7 +4488,7 @@ def get_value(name_or_reference, **kwargs):
     :return: the value if found or None
     :rtype: float or None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     obj = _get_object(name_or_reference, model=model)
 
@@ -4514,7 +4512,7 @@ def get_cn(name_or_reference, **kwargs):
     :return: the cn if found or None
     :rtype: str or None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     obj = _get_object(name_or_reference, model=model)
 
@@ -4550,7 +4548,7 @@ def assign_report(name, task, filename='', append=True, confirm_overwrite=True, 
 
     :return: None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     if isinstance(task, int) or isinstance(task, str):
         obj = model.getTask(task)
@@ -4587,7 +4585,7 @@ def remove_report_from_task(task, **kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     if isinstance(task, int) or isinstance(task, str):
         obj = model.getTask(task)
@@ -4611,7 +4609,7 @@ def get_scheduled_tasks(**kwargs):
     :return: list of tasks that are scheduled
     :rtype: [str]
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     result = []
     for task in model.getTaskList():
@@ -4633,7 +4631,7 @@ def set_scheduled_tasks(task_name, **kwargs):
           | the one from :func:`.get_current_model` will be taken)
     :return: None
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     if isinstance(task_name, str):

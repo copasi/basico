@@ -6,6 +6,7 @@ import logging
 import basico
 import COPASI
 
+from . import model_io
 
 class EnumHelper:
     """Utility class for dealing with mapping from names to enums easier
@@ -225,7 +226,7 @@ def get_sensitivity_settings(basic_only=True, **kwargs):
     :return: the settings as dictionary
     :rtype: dict
     """
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     settings = basico.get_task_settings(basico.T.SENSITIVITIES, basic_only, model=model)
@@ -272,7 +273,7 @@ def set_sensitivity_settings(settings, **kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     basico.set_task_settings(basico.T.SENSITIVITIES, settings, model=model)
@@ -365,7 +366,7 @@ def run_sensitivities(**kwargs):
 
     :return: None
     """
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     if 'settings' in kwargs:
@@ -407,7 +408,7 @@ def get_scaled_sensitivities(**kwargs):
     :rtype: pd.DataFrame
     """
 
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     if 'run_first' in kwargs and kwargs['run_first']:
@@ -439,7 +440,7 @@ def get_unscaled_sensitivities(**kwargs):
     :rtype: pd.DataFrame
     """
 
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     if 'run_first' in kwargs and kwargs['run_first']:
@@ -473,7 +474,7 @@ def get_summarized_sensitivities(**kwargs):
     :rtype: pd.DataFrame or None
     """
 
-    model = kwargs.get('model', basico.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
     if 'run_first' in kwargs and kwargs['run_first']:

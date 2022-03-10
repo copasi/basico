@@ -145,7 +145,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
      - | `max_steps` (int): the maximum number of internal steps the integrator is allowed to use.
 
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     dh, columns = create_data_handler(output_selection, model=model)
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
@@ -303,7 +303,7 @@ def run_time_course(*args, **kwargs):
     :return: data frame with simulation results
     :rtype: pandas.DataFrame
     """
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
 
@@ -327,7 +327,7 @@ def run_time_course(*args, **kwargs):
 
 
 def _setup_timecourse(args, kwargs):
-    model = kwargs.get('model', model_io.get_current_model())
+    model = model_io.get_model_from_dict_or_default(kwargs)
     num_args = len(args)
     use_initial_values = kwargs.get('use_initial_values', True)
     task = model.getTask('Time-Course')

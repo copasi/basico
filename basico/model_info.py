@@ -15,7 +15,11 @@ import tempfile
 
 import pandas as pd
 
-from . import model_io
+try:
+    from . import model_io
+except ImportError:
+    import model_io
+
 import pandas
 import COPASI
 import logging

@@ -164,7 +164,7 @@ def new_model(**kwargs):
     if 'name' in kwargs:
         model.setObjectName(kwargs['name'])
 
-    basico.model_info.set_model_unit(**kwargs, model=dm)
+    basico.model_info.set_model_unit(model=dm, **kwargs)
 
     if 'notes' in kwargs:
         model.setNotes(kwargs['notes'])

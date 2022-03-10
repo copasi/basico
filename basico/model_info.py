@@ -1150,6 +1150,17 @@ def _set_report_vector(vec, list_of_cns, dm):
 
 
 def _replace_names_with_cns(expression, **kwargs):
+    """ replaces all names in the given expression with cns
+
+    :param expression: the expression as infix
+    :type expression: str
+    :param kwargs:
+    :return: the expression with names replaced by cns
+    """
+
+    if type(expression) is not str:
+        expression = str(expression)
+
     dm = kwargs.get('model', model_io.get_current_model())
     assert (isinstance(dm, COPASI.CDataModel))
     resulting_expression = ''
@@ -2196,9 +2207,14 @@ def get_functions(name=None, **kwargs):
         num_substrates = eqn.getSubstrates().size()
         num_products = eqn.getProducts().size()
         reversibility = suitable_for.isReversible()
+        functions = COPASI.CRootContainer.getFunctionList().suitableFunctions(num_substrates, num_products, reversibility)
 
     for index in range(functions.size()):
-        function = functions.get(index)
+        try:
+            function = functions.get(index)
+        except AttributeError:
+            function = functions[index]
+
         assert (isinstance(function, COPASI.CFunction))
 
         fun_data = {
@@ -2217,8 +2233,7 @@ def get_functions(name=None, **kwargs):
         if name and name not in fun_data['name']:
             continue
 
-        if suitable_for is not None and (not function.isSuitable(num_substrates, num_products, reversibility)):
-            continue
+        fun_data['mapping'] = _get_function_mapping(function)
 
         data.append(fun_data)
 
@@ -2226,6 +2241,30 @@ def get_functions(name=None, **kwargs):
         return None
 
     return pandas.DataFrame(data=data).set_index('name')
+
+
+def _get_function_mapping(function):
+    """ Returns the mapping for the given function
+
+    :param function: the function to get the mapping for
+    :param function: COPASI.CFunction
+    :return: the mapping as dictionary
+    :rtype: Dict
+    """
+    mapping = {}
+    if function is None:
+        return mapping
+
+    params = function.getVariables()
+    assert (isinstance(params, COPASI.CFunctionParameters))
+    for i in range(params.size()):
+        p = params.getParameter(i)
+        assert (isinstance(p, COPASI.CFunctionParameter))
+        n = p.getObjectName()
+        u = __usage_to_string(p.getUsage())
+        mapping[n] = u
+
+    return mapping
 
 
 def get_reaction_parameters(name=None, **kwargs):
@@ -4644,3 +4683,24 @@ def _get_name_for_object(obj, model):
         return obj.getCN().getString()
 
     return name
+
+
+def as_dict(df):
+    """Convenience function returning the data frame as dictionary
+
+    :param df: the data frame
+    :type df: pd.DataFrame
+    :return: the contents of the dataframe as [{}] if there are multiple ones, otherwise the dictionary if just one, or None
+    :rtype: List[Dict] or Dict or None
+    """
+    if df is None:
+        return None
+
+    res = df.reset_index().to_dict(orient='records')
+    if not res:
+        return None
+
+    if len(res) == 1:
+        return res[0]
+
+    return res

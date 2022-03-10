@@ -243,5 +243,101 @@ class TestBasicoIO_LM(unittest.TestCase):
         self.assertTrue(True)
 
 
+class TestBasicoModelConstruction(unittest.TestCase):
+
+    def setUp(self):
+        dm = basico.new_model(name='Test Model')
+        basico.remove_user_defined_functions()
+
+    def test_units(self):
+        basico.set_model_unit(time_unit='s', quantity_unit='mmol', volume_unit='ml',
+                              area_unit='cm*cm', length_unit='cm')
+        units = basico.get_model_units()
+        self.assertEqual(units['time_unit'], 's')
+        self.assertEqual(basico.get_time_unit(), 's')
+        self.assertEqual(units['quantity_unit'], 'mmol')
+        self.assertEqual(units['volume_unit'], 'ml')
+
+    def test_species(self):
+        basico.add_species('A', initial_concentration=10)
+        a = basico.get_species('A')
+        self.assertIsNotNone(a)
+        basico.set_species('A', exact=True, initial_expression=' 1 / {Time}', expression='{Time}', status='assignment')
+        a = basico.as_dict(basico.get_species('A'))
+        self.assertEqual(a['type'], 'assignment')
+        self.assertEqual(a['expression'], 'Time')
+        self.assertEqual(a['initial_expression'], '')
+
+        basico.set_element_name('A', new_name='A0')
+
+        basico.remove_species('A0')
+        self.assertIsNone(basico.get_species('A0', exact=True))
+
+    def test_compartment(self):
+        basico.add_compartment('v',  initial_size=2)
+        v = basico.get_compartments('v', exact=True)
+        self.assertIsNotNone(v)
+        basico.set_compartment('v', exact=True, initial_expression=' 1 / {Time}', expression='{Time}', status='assignment')
+        v = basico.as_dict(basico.get_compartments('v'))
+        self.assertEqual(v['type'], 'assignment')
+        self.assertEqual(v['expression'], 'Time')
+        self.assertEqual(v['initial_expression'], '')
+        basico.remove_compartment('v')
+        self.assertIsNone(basico.get_compartments('v', exact=True))
+
+    def test_global_parameters(self):
+        basico.add_parameter('p', initial_value=3)
+        v = basico.get_parameters('p', exact=True)
+        self.assertIsNotNone(v)
+        basico.set_parameters('p', exact=True, initial_expression=' 1 / {Time}', expression='{Time}',
+                               status='assignment')
+        v = basico.as_dict(basico.get_parameters('p'))
+        self.assertEqual(v['type'], 'assignment')
+        self.assertEqual(v['expression'], 'Time')
+        self.assertEqual(v['initial_expression'], '')
+        basico.remove_parameter('p')
+        self.assertIsNone(basico.get_parameters('v', exact=True))
+
+    def test_functions(self):
+        basico.add_function('fun', infix='v * S / (k + S)', mapping={'S': 'substrate'})
+        fun = basico.as_dict(basico.get_functions('fun', exact=True))
+        self.assertIsNotNone(fun)
+        self.assertEqual(fun['reversible'], False)
+        self.assertEqual(fun['formula'], 'v * S / (k + S)')
+        self.assertEqual(fun['mapping']['S'], 'substrate')
+        basico.remove_function('fun')
+        fun = basico.as_dict(basico.get_functions('fun', exact=True))
+        self.assertIsNone(fun)
+
+    def test_events(self):
+        basico.add_parameter('p0', initial_value=10)
+        basico.add_event('e0', trigger='Time > 10', assignments=[('Values[p0]', 1)])
+        e = basico.as_dict(basico.get_events('e0', exact=True))
+        self.assertIsNotNone(e)
+        self.assertEqual(e['trigger'], 'Time > 10')
+        self.assertEqual(e['assignments'][0]['target'], 'Values[p0]')
+        self.assertEqual(e['assignments'][0]['expression'], '1')
+        basico.remove_event('e0', exact=True)
+        e = basico.as_dict(basico.get_events('e0', exact=True))
+        self.assertIsNone(e)
+
+    def test_reactions(self):
+        basico.add_reaction('r0', 'A -> B')
+        r0 = basico.as_dict(basico.get_reactions('r0', exact=True))
+        self.assertIsNotNone(r0)
+        self.assertEqual(r0['scheme'], 'A -> B')
+        self.assertEqual(r0['function'], 'Mass action (irreversible)')
+        self.assertEqual(r0['mapping']['substrate'], 'A')
+
+        others = basico.as_dict(basico.get_functions(suitable_for='r0'))
+        self.assertIsNotNone(others)
+        constant = [x for x in others if 'Constant flux' in x['name']]
+        self.assertIsNotNone(constant)
+
+        basico.remove_reaction('r0')
+        r0 = basico.as_dict(basico.get_reactions('r0', exact=True))
+        self.assertIsNone(r0)
+
+
 if __name__ == "__main__":
     unittest.main()

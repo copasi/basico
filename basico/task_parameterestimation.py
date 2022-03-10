@@ -931,12 +931,12 @@ def run_parameter_estimation(**kwargs):
 
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
-        logging.error("Error while initializing the simulation: " +
+        logging.error("Error while initializing parameter estimation: " +
                       COPASI.CCopasiMessage.getLastMessage().getText())
     else:
         result = task.processRaw(use_initial_values)
         if not result:
-            logging.error("Error while running the simulation: " +
+            logging.error("Error while running parameter estimation: " +
                           COPASI.CCopasiMessage.getLastMessage().getText())
 
     problem.setCreateParameterSets(old_create_parameter_sets)

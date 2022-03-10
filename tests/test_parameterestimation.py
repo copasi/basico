@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 import os
-import matplotlib.pyplot
+import numpy as np
 
 import basico
 
@@ -29,8 +29,40 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         set_1 = data[0]
         self.assertEqual(set_1.shape, (100, 3))
 
+        names = basico.get_experiment_names()
+        self.assertIn('Experiment', names)
+
+        files = basico.get_experiment_filenames()
+        self.assertEqual(len(files), len(names))
+
         set_2 = basico.get_data_from_experiment('Experiment')
         self.assertEqual(set_2.shape, (100, 3))
+
+        sol_before = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
+
+        # remove data
+        basico.remove_experiments()
+
+        # add data back
+        for exp, name in zip(data, names):
+            basico.add_experiment(name, exp)
+
+        # since we have affected experiments, reset them
+        basico.set_fit_parameters(basico.get_fit_parameters())
+
+        # save to temp file
+        main_file = tempfile.mktemp()
+        basico.save_model_and_data(main_file, delete_data_on_exit=True)
+
+        # ensure it still works
+        sol_after = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
+        self.assertListEqual(basico.as_dict(sol_before[['sol']]), basico.as_dict(sol_after[['sol']]))
+
+    def test_change_bounds(self):
+        basico.set_fit_parameters([{'name': '(R1).k2', 'lower': 1, 'upper': 0.01}])
+        with self.assertLogs(level='ERROR') as cm:
+            sol = basico.as_dict(basico.run_parameter_estimation())
+        self.assertTrue(np.isnan(sol['sol']))
 
     def test_get_plotting_data(self):
         exp, sim = basico.get_simulation_results()

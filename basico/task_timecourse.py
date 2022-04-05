@@ -223,7 +223,7 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
                 logging.warning('no object for name {0}'.format(name))
                 continue
 
-            if isinstance(obj, COPASI.CModel):
+            if obj.getObjectType() != 'Reference':
                 obj = obj.getValueReference()
 
             cn = obj.getCN().getString()

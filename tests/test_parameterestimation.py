@@ -62,7 +62,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
     @unittest.skipIf(sys.version_info < (3, 6, 0), 'This test requires assertLogs which is not available before')
     def test_change_bounds(self):
         basico.set_fit_parameters([{'name': '(R1).k2', 'lower': 1, 'upper': 0.01}])
-        with self.assertLogs(level='ERROR') as cm:
+        with self.assertLogs(level='ERROR') as _:
             sol = basico.as_dict(basico.run_parameter_estimation())
         self.assertTrue(np.isnan(sol['sol']))
 

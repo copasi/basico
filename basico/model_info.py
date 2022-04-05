@@ -2456,6 +2456,8 @@ def set_compartment(name=None, exact=False, **kwargs):
 
         - | `initial_value` or `initial_size`: to set the initial size of the compartment
 
+        - | `value` or `size`: to set the transient size of the compartment
+
         - | `initial_expression`: the initial expression for the compartment
 
         - | `status` or `type`: the type of the compartment one of `fixed`, `assignment` or `ode`
@@ -2488,7 +2490,6 @@ def set_compartment(name=None, exact=False, **kwargs):
         assert (isinstance(compartment, COPASI.CCompartment))
         current_name = compartment.getObjectName()
 
-
         if name and type(name) is str and exact and name != current_name:
             continue
             
@@ -2501,13 +2502,15 @@ def set_compartment(name=None, exact=False, **kwargs):
         if name and isinstance(name, Iterable) and current_name not in name:
             continue
 
-        if 'initial_value' in kwargs:
-            compartment.setInitialValue(kwargs['initial_value'])
-            change_set.append(compartment.getInitialValueReference())
+        for initial in ['initial_value', 'initial_size']:
+            if initial in kwargs:
+                compartment.setInitialValue(float(kwargs[initial]))
+                change_set.append(compartment.getInitialValueReference())
 
-        if 'initial_size' in kwargs:
-            compartment.setInitialValue(kwargs['initial_size'])
-            change_set.append(compartment.getInitialValueReference())
+        for transient in ['value', 'size']:
+            if transient in kwargs:
+                compartment.setValue(float(kwargs[transient]))
+                change_set.append(compartment.getValueReference())
 
         if 'initial_expression' in kwargs:
             _set_initial_expression(compartment, kwargs['initial_expression'])
@@ -2590,6 +2593,7 @@ def set_parameters(name=None, exact=False, **kwargs):
 
         - | `unit`: the unit expression to be set
         - | `initial_value`: to set the initial value for the parameter
+        - | `value`: set the transient value for the parameter
         - | `initial_expression`: the initial expression
         - | `status` or `type`: the type of the parameter one of `fixed`, `assignment` or `ode`
         - | `expression`: the expression for the parameter (only valid when type is `ode` or `assignment`)
@@ -2634,8 +2638,12 @@ def set_parameters(name=None, exact=False, **kwargs):
             param.setUnitExpression(kwargs['unit'])
 
         if 'initial_value' in kwargs:
-            param.setInitialValue(kwargs['initial_value'])
+            param.setInitialValue(float(kwargs['initial_value']))
             change_set.append(param.getInitialValueReference())
+
+        if 'value' in kwargs:
+            param.setValue(float(kwargs['value']))
+            change_set.append(param.getValueReference())
 
         if 'initial_expression' in kwargs:
             _set_initial_expression(param, kwargs['initial_expression'])
@@ -3265,6 +3273,8 @@ def set_species(name=None, exact=False, **kwargs):
         - | `initial_concentration`: to set the initial concentration for the species
         - | `initial_particle_number`: to set the initial particle number for the species
         - | `initial_expression`: the initial expression for the species
+        - | `concentration`: the new transient concentration for the species
+        - | `particle_number`: the new transient particle number for the species
         - | `status` or `type`: the type of the species one of `fixed`, `assignment` or `ode`
         - | `expression`: the expression for the species (only valid when type is `ode` or `assignment`)
         - | `notes`: sets notes for the species (either plain text, or valid xhtml)
@@ -3310,12 +3320,20 @@ def set_species(name=None, exact=False, **kwargs):
             metab.setUnitExpression(kwargs['unit'])
 
         if 'initial_concentration' in kwargs:
-            metab.setInitialConcentration(kwargs['initial_concentration'])
+            metab.setInitialConcentration(float(kwargs['initial_concentration']))
             change_set.append(metab.getInitialConcentrationReference())
 
         if 'initial_particle_number' in kwargs:
-            metab.setInitialValue(kwargs['initial_particle_number']),
+            metab.setInitialValue(float(kwargs['initial_particle_number']))
             change_set.append(metab.getInitialValueReference())
+
+        if 'concentration' in kwargs:
+            metab.setConcentration(float(kwargs['concentration']))
+            change_set.append(metab.getConcentrationReference())
+
+        if 'particle_number' in kwargs:
+            metab.setValue(float(kwargs['particle_number']))
+            change_set.append(metab.getValueReference())
 
         if 'initial_expression' in kwargs:
             _set_initial_expression(metab, kwargs['initial_expression'])

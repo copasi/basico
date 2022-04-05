@@ -208,11 +208,10 @@ class TestBasicoIO_LM(unittest.TestCase):
         self.assertEqual(params.shape[0], 1)
         value = params.iloc[0].initial_value
         self.assertEqual(value, 2.0)
-        basico.set_parameters('Values[epsilon]', initial_value=3.0)
-        params = basico.get_parameters('Values[epsilon]')
-        self.assertEqual(params.shape[0], 1)
-        value = params.iloc[0].initial_value
-        self.assertEqual(value, 3.0)
+        basico.set_parameters('Values[epsilon]', initial_value=3.0, value=5.0)
+        params = basico.as_dict(basico.get_parameters('Values[epsilon]'))
+        self.assertEqual(params['initial_value'], 3.0)
+        self.assertEqual(params['value'], 5.0)
 
     def test_mapping(self):
         m = basico.get_reaction_mapping('R1')
@@ -260,8 +259,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_species(self):
         basico.add_species('A', initial_concentration=10)
-        a = basico.get_species('A')
+        a = basico.as_dict(basico.get_species('A'))
         self.assertIsNotNone(a)
+        self.assertAlmostEqual(a['initial_concentration'], 10)
+        basico.set_species('A', concentration=5)
+        a = basico.as_dict(basico.get_species('A'))
+        self.assertAlmostEqual(a['concentration'], 5.0)
         basico.set_species('A', exact=True, initial_expression=' 1 / {Time}', expression='{Time}', status='assignment')
         a = basico.as_dict(basico.get_species('A'))
         self.assertEqual(a['type'], 'assignment')
@@ -277,7 +280,11 @@ class TestBasicoModelConstruction(unittest.TestCase):
         basico.add_compartment('v',  initial_size=2)
         v = basico.get_compartments('v', exact=True)
         self.assertIsNotNone(v)
-        basico.set_compartment('v', exact=True, initial_expression=' 1 / {Time}', expression='{Time}', status='assignment')
+        basico.set_compartment('v',  size=3)
+        v = basico.as_dict(basico.get_compartments('v', exact=True))
+        self.assertAlmostEqual(v['size'], 3)
+        basico.set_compartment('v', exact=True, initial_expression=' 1 / {Time}',
+                               expression='{Time}', status='assignment')
         v = basico.as_dict(basico.get_compartments('v'))
         self.assertEqual(v['type'], 'assignment')
         self.assertEqual(v['expression'], 'Time')
@@ -290,7 +297,7 @@ class TestBasicoModelConstruction(unittest.TestCase):
         v = basico.get_parameters('p', exact=True)
         self.assertIsNotNone(v)
         basico.set_parameters('p', exact=True, initial_expression=' 1 / {Time}', expression='{Time}',
-                               status='assignment')
+                              status='assignment')
         v = basico.as_dict(basico.get_parameters('p'))
         self.assertEqual(v['type'], 'assignment')
         self.assertEqual(v['expression'], 'Time')

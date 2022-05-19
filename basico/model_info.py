@@ -3473,19 +3473,19 @@ def set_model_unit(**kwargs):
         model.setTimeUnit(kwargs['time_unit'])
 
     if 'substance_unit' in kwargs:
-        model.setQuantityUnit(kwargs['substance_unit'])
+        model.setQuantityUnit(str(kwargs['substance_unit']))
 
     if 'quantity_unit' in kwargs:
-        model.setQuantityUnit(kwargs['quantity_unit'])
+        model.setQuantityUnit(str(kwargs['quantity_unit']))
 
     if 'length_unit' in kwargs:
-        model.setLengthUnit(kwargs['length_unit'])
+        model.setLengthUnit(str(kwargs['length_unit']))
 
     if 'area_unit' in kwargs:
-        model.setAreaUnit(kwargs['area_unit'])
+        model.setAreaUnit(str(kwargs['area_unit']))
 
     if 'volume_unit' in kwargs:
-        model.setVolumeUnit(kwargs['volume_unit'])
+        model.setVolumeUnit(str(kwargs['volume_unit']))
 
     model.updateInitialValues(COPASI.CCore.Framework_Concentration)
 

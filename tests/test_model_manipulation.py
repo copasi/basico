@@ -106,9 +106,10 @@ class TestBasicoModelManipulation(unittest.TestCase):
             'd[CEX]/dt=(k_2 [E][PGME])/K_s -([E]/((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3))((k_2 [PGME])/K_s   +(k_4b [CEX])/K_p )(k_3+(k_5 [7-ADCA])/K_n )')
         basico.add_equation(
             '[E]=([EA]_0 exp(-k_d t))/(1+([PGME])/K_s + ((k_2 [PGME])/(K_s ((k_4 [7-ADCA])/K_n +(k_5 [7-ADCA])/K_n +(k_6 [PGME])/K_si +k3) ))(1+([7-ADCA])/K_n +([PGME])/K_si )+([CEX])/K_p +([PG])/K_p2i )')
-
+        basico.add_equation('d[S1]/dt=-r_s1*w_1*[B]')
         species = basico.get_species()
         self.assertEqual(species.loc['PG'].type, 'ode')
+        self.assertEqual(species.loc['S1'].type, 'ode')
         self.assertEqual(species.loc['PG'].expression, '[E] / ( Values[k_4] * [7-ADCA] / Values[K_n] + Values[k_5] * [7-ADCA] / Values[K_n] + Values[k_6] * [PGME] / Values[K_si] + Values[k3] ) * ( Values[k_2] * [PGME] / Values[K_s] + Values[k_4b] * [CEX] / Values[K_p] ) * ( Values[k_3] + Values[k_5] * [7-ADCA] / Values[K_n] + Values[k_6] * [PGME] / Values[K_si] )')
         self.assertEqual(species.loc['E'].type, 'assignment')
         self.assertEqual(species.loc['E'].expression, '[EA]_0 * exp ( - Values[k_d] * Time ) / ( 1 + [PGME] / Values[K_s] + Values[k_2] * [PGME] / ( Values[K_s] * ( Values[k_4] * [7-ADCA] / Values[K_n] + Values[k_5] * [7-ADCA] / Values[K_n] + Values[k_6] * [PGME] / Values[K_si] + Values[k3] ) ) * ( 1 + [7-ADCA] / Values[K_n] + [PGME] / Values[K_si] ) + [CEX] / Values[K_p] + [PG] / Values[K_p2i] )')

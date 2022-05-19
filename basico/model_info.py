@@ -3711,7 +3711,7 @@ def _tokenize_eqn(eqn):
                 var = eqn[i + 1:pos]
                 var_is_species = True
                 i = pos + 1
-                c_0 = eqn[i]
+                c_0 = eqn[i] if i  < num_chars else None
                 c_1 = eqn[i + 1] if i + 1 < num_chars else None
 
                 if c_0 == '_' and c_1 == '0':

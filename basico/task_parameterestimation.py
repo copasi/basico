@@ -353,7 +353,8 @@ def get_data_from_experiment(experiment, **kwargs):
     """
     experiment = get_experiment(experiment, **kwargs)
     experiment_file = _get_experiment_file(experiment)
-    num_lines = sum(1 for _ in open(experiment_file))
+    with open(experiment_file) as f:
+        num_lines = sum(1 for _ in f)
     header_row = experiment.getHeaderRow()
     have_headers = header_row < num_lines
     skip_idx = [x-1 for x in range(1, num_lines+1) if

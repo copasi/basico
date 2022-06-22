@@ -9,6 +9,7 @@ methods to load models directly from BioModels or from url.
 """
 import COPASI
 import os
+import zipfile
 
 import basico.model_info
 
@@ -171,21 +172,53 @@ def new_model(**kwargs):
 
     return set_current_model(dm)
 
+def _is_archive(buffer):
+    result = False
+
+    if buffer is None:
+        return result
+
+    length = len(buffer)
+    if length > 3:
+        result = result or (buffer[0] == ord('P') and buffer[1] == ord('K') and buffer[2] == ord('\x03') and buffer[3] == ord('\x04'))
+        result = result or (buffer[0] == ord('P') and buffer[1] == ord('K') and buffer[2] == ord('\x05') and buffer[3] == ord('\x06'))
+        result = result or (buffer[0] == ord('P') and buffer[1] == ord('K') and buffer[2] == ord('\x07') and buffer[3] == ord('\x08'))
+    return result
+
 
 def load_model_from_string(content):
     """Loads either COPASI model / SBML model from the raw string given.
 
     :param content: the copasi / sbml model serialized as string
-    :type content: str
+    :type content: str or bytes
 
     :return: the loaded model
     :rtype: COPASI.CDataModel
     """
     model = create_datamodel()
+
+    if _is_archive(content):
+        global __temp_dirs, __temp_files
+        temp_name = tempfile.mkdtemp()
+        __temp_dirs.append(temp_name)
+
+        name = os.path.join(temp_name, 'model.omex')
+        __temp_files.append(name)
+        with open(name, 'wb') as temp_file:
+            temp_file.write(content)
+        if model.openCombineArchive(name):
+            return set_current_model(model)
+
+    if type(content) is bytes:
+        content = content.decode("utf8")
+
     if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
         return set_current_model(model)
 
     if '<sbml ' in content and model.importSBMLFromString(content):
+        return set_current_model(model)
+
+    if '<sedML '  in content and model.importSEDMLFromString(content):
         return set_current_model(model)
 
     return remove_datamodel(model)
@@ -203,8 +236,7 @@ def load_model_from_url(url):
     if _use_urllib2:
         content = urllib2.urlopen(url).read()
     else:
-        data = urllib.request.urlopen(url).read()
-        content = data.decode("utf8")
+        content = urllib.request.urlopen(url).read()
 
     return load_model_from_string(content)
 
@@ -220,9 +252,14 @@ def load_model(location):
     model = create_datamodel()
 
     if os.path.isfile(location):
+        if zipfile.is_zipfile(location):
+            if model.openCombineArchive(location):
+                return set_current_model(model)
         if model.importSBML(location):
             return set_current_model(model)
         if model.loadModel(location):
+            return set_current_model(model)
+        if model.importSEDML(location):
             return set_current_model(model)
 
     remove_datamodel(model)

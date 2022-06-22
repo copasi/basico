@@ -159,6 +159,16 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertTrue(result is not None)
         self.assertTrue(result['obj'] < 0.2)
 
+    def test_get_data(self):
+        # contains all experimental data
+        data = basico.get_experiment_data_from_model()
+        self.assertTrue(data is not None)
+
+        # to get data only from one experiment, you'd call
+        data = basico.get_data_from_experiment('Experiment_1')
+        self.assertTrue(data is not None)
+
+
 
 class TestMultipleResults(unittest.TestCase):
 

@@ -1,3 +1,4 @@
+import os.path
 import tempfile
 import unittest
 import basico
@@ -75,6 +76,20 @@ class TestBasicoIO(unittest.TestCase):
         self.assertTrue(df.shape == (101, 5))
         basico.remove_datamodel(dm)
 
+    def test_omex_file(self):
+        filename = os.path.join(os.path.dirname(__file__), 'test_data', 'LM.omex')
+        self.assertTrue(os.path.exists(filename))
+        dm = basico.load_model(filename)
+        data = basico.get_experiment_data_from_model(model=dm)
+        self.assertTrue(len(data) > 0)
+        basico.remove_datamodel(dm)
+
+        with open(filename, 'rb') as input_file:
+            raw = input_file.read()
+            dm = basico.load_model_from_string(raw)
+            data = basico.get_experiment_data_from_model(model=dm)
+            self.assertTrue(len(data) > 0)
+            basico.remove_datamodel(dm)
 
 if __name__ == "__main__":
     unittest.main()

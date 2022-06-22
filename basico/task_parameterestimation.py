@@ -990,7 +990,6 @@ def get_simulation_results(values_only=False, **kwargs):
     sim_data = []
 
     for i in range(num_experiments):
-        change_set = COPASI.DataObjectSet()
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
         df = get_data_from_experiment(experiment, rename_headers=True)
@@ -1000,38 +999,23 @@ def get_simulation_results(values_only=False, **kwargs):
         # set independent values for that experiment
         independent = mapping[mapping.type == 'independent']
         num_independent = independent.shape[0]
-        for j in range(num_independent):
-            name = independent.iloc[j].mapping
-            cn = independent.iloc[j].cn
+        is_steady_state = experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState
+        num_independent_points = df.shape[0]
 
-            if name not in columns:
-                # independent value is not found in df
-                continue
+        _apply_nth_change(0, columns, df, dm, exp_name, independent, model, num_independent, solution)
 
-            value = df.iloc[0][name]
-            obj = dm.getObject(COPASI.CCommonName(cn))
-
-            if obj is None:     # not found skip
-                logging.debug('independent object not found for cn: {0}'.format(cn))
-                continue
-
-            if obj.getObjectName() == 'InitialConcentration':
-                obj.getObjectParent().setInitialConcentration(value)
-            else:
-                obj.getObjectParent().setInitialValue(value)
-
-            change_set.append(obj)
-            logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
-
-        if change_set.size() > 0:
-            model.updateInitialValues(change_set)
-
-        _update_fit_parameters_from(dm, solution, exp_name)
-
-        if experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState:
+        if is_steady_state:
             # run steady state
             basico.run_steadystate(model=dm)
             data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
+            
+            for i in range(1, num_independent_points):
+                _apply_nth_change(i, columns, df, dm, exp_name, independent, model, num_independent, solution)
+                basico.run_steadystate(model=dm)
+                new_row = basico.model_info._collect_data(
+                    cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
+                data = pd.concat([data, new_row], ignore_index=True)
+
         else:
             # run time course
             duration = df.iloc[-1].Time
@@ -1044,6 +1028,35 @@ def get_simulation_results(values_only=False, **kwargs):
         sim_data.append(data)
 
     return exp_data, sim_data
+
+
+def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num_independent, solution):
+    change_set = COPASI.DataObjectSet()
+    for j in range(num_independent):
+        name = independent.iloc[j].mapping
+        cn = independent.iloc[j].cn
+
+        if name not in columns:
+            # independent value is not found in df
+            continue
+
+        value = df.iloc[change][name]
+        obj = dm.getObject(COPASI.CCommonName(cn))
+
+        if obj is None:  # not found skip
+            logging.debug('independent object not found for cn: {0}'.format(cn))
+            continue
+
+        if obj.getObjectName() == 'InitialConcentration':
+            obj.getObjectParent().setInitialConcentration(value)
+        else:
+            obj.getObjectParent().setInitialValue(value)
+
+        change_set.append(obj)
+        logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
+    if change_set.size() > 0:
+        model.updateInitialValues(change_set)
+    _update_fit_parameters_from(dm, solution, exp_name)
 
 
 def _update_fit_parameters_from(dm, solution, exp_name=''):

@@ -412,7 +412,7 @@ def get_data_from_experiment(experiment, **kwargs):
         drop_cols.append(all_columns[i])
 
     if any(drop_cols):
-        df.drop(drop_cols, axis=1, inplace=True)
+        df.drop(drop_cols, axis=1, inplace=True, errors='ignore')
 
     df.rename(columns=headers, inplace=True)
 

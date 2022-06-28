@@ -1031,12 +1031,13 @@ def get_simulation_results(values_only=False, **kwargs):
                 data = pd.concat([data, new_row], ignore_index=True)
 
         else:
-            # run time course
+            # run time course (getting only the data from the experiment)
             duration = df.iloc[-1].Time
+            cols = ['Time'] + mapping[mapping.type == 'dependent']['cn'].to_list()
             if values_only:
-                data = basico.run_time_course(values=df.Time.to_list(), start_time=df.iloc[0].Time)
+                data = basico.run_time_course_with_output(output_selection=cols, values=df.Time.to_list(), start_time=df.iloc[0].Time)
             else:
-                data = basico.run_time_course(duration=duration)
+                data = basico.run_time_course_with_output(output_selection=cols,duration=duration)
 
         exp_data.append(df)
         sim_data.append(data)

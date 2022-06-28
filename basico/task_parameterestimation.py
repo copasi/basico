@@ -353,9 +353,16 @@ def get_data_from_experiment(experiment, **kwargs):
     """
     experiment = get_experiment(experiment, **kwargs)
     experiment_file = _get_experiment_file(experiment)
-    with open(experiment_file) as f:
-        num_lines = sum(1 for _ in f)
     header_row = experiment.getHeaderRow()
+    original_headers = None
+    num_lines = 0
+    separator = experiment.getSeparator()
+    with open(experiment_file, encoding='utf-8') as f:
+        for line in f:
+            num_lines +=1
+            if num_lines == header_row:
+                original_headers = line.strip().split(separator)
+                original_headers = dict(enumerate(original_headers))
     have_headers = header_row < num_lines
     skip_idx = [x-1 for x in range(1, num_lines+1) if
                 not (experiment.getFirstRow() <= x <= experiment.getLastRow())]
@@ -395,12 +402,19 @@ def get_data_from_experiment(experiment, **kwargs):
 
     if rename_headers or not have_headers:
         df = pandas.read_csv(experiment_file,
-                             sep=experiment.getSeparator(),
+                             sep=separator,
                              header=None,
                              skiprows=skip_idx)
+    elif original_headers != None and not rename_headers:
+        df = pandas.read_csv(experiment_file,
+                             sep=separator,
+                             header=None,
+                             skiprows=skip_idx)
+        df.rename(columns=original_headers, inplace=True)
+        return df
     else:
         df = pandas.read_csv(experiment_file,
-                             sep=experiment.getSeparator(),
+                             sep=separator,
                              skiprows=skip_idx)
 
     if not rename_headers:

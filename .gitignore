@@ -124,3 +124,18 @@ $RECYCLE.BIN/
 .vscode
 
 /docs/src
+
+/docs/notebooks/*.cps
+/docs/notebooks/*.omex
+/docs/notebooks/*.txt
+/docs/notebooks/*.yaml
+/tests/temp_selection/
+/tests/model_selection/
+/tests/test_private.py
+/tests/test_petab.py
+/tests/test_data/problem*
+/tests/test_data/experi*
+/tests/test_data/measure*
+/tests/test_data/model*
+/tests/test_data/observ*
+/tests/test_data/parameter*

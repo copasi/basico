@@ -252,6 +252,7 @@ def load_model(location):
     model = create_datamodel()
 
     if os.path.isfile(location):
+        location = os.path.abspath(location)
         if zipfile.is_zipfile(location):
             if model.openCombineArchive(location):
                 return set_current_model(model)

@@ -1435,9 +1435,11 @@ def get_experiment_dict(experiment, **kwargs):
     """
     experiment = get_experiment(experiment, **kwargs)
 
+    filename = _get_experiment_file(experiment)
+
     result = {
         'name': experiment.getObjectName(),
-        'filename': experiment.getFileNameOnly(),
+        'filename': filename,
         'type': basico.T.STEADY_STATE if experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState else
                 basico.T.TIME_COURSE,
         'separator': experiment.getSeparator(),
@@ -1471,16 +1473,17 @@ def get_experiment_dict(experiment, **kwargs):
 
     return result
 
-def save_experiments_to_yaml(filename=None, **kwargs):
-    """Saves the experiment to yaml
 
-    :param filename: optional filename to write to
+def save_experiments_to_dict(**kwargs):
+    """Returns a list of dictionaries with the parameter estimation experiments
+
     :param kwargs: optional arguments
 
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
-    :return: the yaml string
+    :return: the parameter estimation experimetns as list of dictionary
+    :rtype: [{}]
     """
     experiments = []
     model = model_io.get_model_from_dict_or_default(kwargs)
@@ -1496,6 +1499,20 @@ def save_experiments_to_yaml(filename=None, **kwargs):
     for i in range (exp_set.size()):
         experiments.append(get_experiment_dict(exp_set.getExperiment(i)))
 
+    return experiments
+
+def save_experiments_to_yaml(filename=None, **kwargs):
+    """Saves the experiment to yaml
+
+    :param filename: optional filename to write to
+    :param kwargs: optional arguments
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: the yaml string
+    """
+    experiments = save_experiments_to_dict(**kwargs)
     yaml_str = yaml.safe_dump(experiments, indent=2, sort_keys=False, default_flow_style=False )
     if not filename:
          return yaml_str

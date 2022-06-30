@@ -2,3 +2,4 @@ python-copasi
 pandas
 numpy
 matplotlib
+PyYAML

@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 import os
 import logging
+import yaml
 
 import basico
 
@@ -239,7 +240,17 @@ def _role_to_string(role):
         COPASI.CExperiment.independent: 'independent',
         COPASI.CExperiment.dependent: 'dependent',
     }
-    return names.get(role, COPASI.CExperiment.ignore)
+    return names.get(role, 'ignored')
+
+
+def _role_to_int(role):
+    values = {
+        'time': COPASI.CExperiment.time,
+        'ignored': COPASI.CExperiment.ignore,
+        'independent': COPASI.CExperiment.independent,
+        'dependent': COPASI.CExperiment.dependent,
+    }
+    return values.get(role, COPASI.CExperiment.ignore)
 
 
 def get_experiment(experiment, **kwargs):
@@ -276,6 +287,56 @@ def get_experiment(experiment, **kwargs):
     return experiment
 
 
+def _get_experiment_mapping_dict(experiment, **kwargs):
+    """ Returns the mapping of the given experiment
+
+    :param experiment: copasi experiment, name or index
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: list of dictionaries with the mapping for the experiment
+    :rtype: [{}]
+    """
+
+    experiment = get_experiment(experiment, **kwargs)
+    experiment.readColumnNames()
+    names = experiment.getColumnNames()
+    obj_map = experiment.getObjectMap()
+    assert (isinstance(obj_map, COPASI.CExperimentObjectMap))
+    rows = []
+
+    last = obj_map.getLastColumn() + 1
+    size = obj_map.size()
+    max_col = min(len(names),max(last, size))
+    for i in range(max_col):
+        role = obj_map.getRole(i)
+        cn = obj_map.getObjectCN(i)
+        obj = ''
+        if cn:
+            obj = experiment.getObjectDataModel().getObject(COPASI.CCommonName(cn))
+            if obj:
+                obj = obj.getObjectDisplayName()
+
+        current = {
+            'column': i,
+            'type': _role_to_string(role),
+            'mapping': obj,
+            'cn': cn,
+            'column_name': names[i],
+        }
+
+        if role == COPASI.CExperiment.dependent:
+            scale = obj_map.getScale(i)
+            default_scale = obj_map.getDefaultScale(i)
+            if scale != default_scale and not np.isnan(scale):
+                current['weight'] = scale
+
+        rows.append(current)
+
+    return rows
+
 def get_experiment_mapping(experiment, **kwargs):
     """Retrieves a data frame of the experiment mapping.
 
@@ -294,26 +355,7 @@ def get_experiment_mapping(experiment, **kwargs):
     :return: data frame with the mapping as described
     :rtype: pandas.DataFrame
     """
-    experiment = get_experiment(experiment, **kwargs)
-
-    obj_map = experiment.getObjectMap()
-    rows = []
-    for i in range(obj_map.getLastColumn() + 1):
-        role = obj_map.getRole(i)
-        cn = obj_map.getObjectCN(i)
-        obj = ''
-        if cn:
-            obj = experiment.getObjectDataModel().getObject(COPASI.CCommonName(cn))
-            if obj:
-                obj = obj.getObjectDisplayName()
-
-        rows.append({
-            'column': i,
-            'type': _role_to_string(role),
-            'mapping': obj,
-            'cn': cn,
-        })
-
+    rows = _get_experiment_mapping_dict(experiment)
     return pandas.DataFrame(data=rows).set_index('column')
 
 
@@ -322,10 +364,14 @@ def _get_experiment_file(experiment):
     model = experiment.getObjectDataModel()
     directory = os.path.dirname(model.getFileName())
 
-    if os.path.exists(os.path.join(directory, file_name_only)):
-        return os.path.join(directory, file_name_only)
+    if not file_name_only:
+        raise ValueError('Invalid Experiment, no filename specified for ' + experiment.getObjectName())
 
-    if os.path.exists(file_name_only):
+    full_path = os.path.join(directory, file_name_only)
+    if os.path.isfile(full_path):
+        return full_path
+
+    if os.path.isfile(file_name_only):
         return file_name_only
 
     file_name = experiment.getFileName()
@@ -460,7 +506,7 @@ def get_experiment_data_from_model(model=None):
 
     for i in range(num_experiments):
         experiment = experiments.getExperiment(i)
-        df = get_data_from_experiment(experiment, rename_headers=True)
+        df = get_data_from_experiment(experiment, rename_headers=True, model=model)
         result.append(df)
 
     return result
@@ -1342,3 +1388,254 @@ def remove_fit_parameters(**kwargs):
     assert (isinstance(problem, COPASI.CFitProblem))
     while problem.getOptItemSize() > 0:
         problem.removeOptItem(0)
+
+def _weight_method_to_string(weight_method):
+    """ Convenience function converting a weight method to string
+
+    :param weight_method: the weight method
+    :type weight_method: int
+    :return: name of the weight method
+    :rtype: str
+    """
+    weight_map = {
+        COPASI.CExperiment.MEAN: 'Mean',
+        COPASI.CExperiment.MEAN_SQUARE: 'Mean Square',
+        COPASI.CExperiment.SD: 'Standard Deviation',
+        COPASI.CExperiment.VALUE_SCALING: 'Value Scaling'
+    }
+    return weight_map.get(weight_method, 'Mean Square')
+
+def _weight_method_to_int(weight_method):
+    """ Convenience function converting a weight method to int
+
+    :param weight_method: the weight method
+    :type weight_method: str
+    :return: type of the weight method
+    :rtype: int
+    """
+    weight_map = {
+        'Mean': COPASI.CExperiment.MEAN,
+        'Mean Square': COPASI.CExperiment.MEAN_SQUARE,
+        'Standard Deviation': COPASI.CExperiment.SD,
+        'Value Scaling': COPASI.CExperiment.VALUE_SCALING
+    }
+    return weight_map.get(weight_method, COPASI.CExperiment.MEAN_SQUARE)
+
+
+def get_experiment_dict(experiment, **kwargs):
+    """ Returns all information about the experiment as dictionary
+
+    :param experiment: copasi experiment, experiment name or index
+    :param kwargs: optional arguments
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: all information about the experiment as dictionary
+    """
+    experiment = get_experiment(experiment, **kwargs)
+
+    result = {
+        'name': experiment.getObjectName(),
+        'filename': experiment.getFileNameOnly(),
+        'type': basico.T.STEADY_STATE if experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState else
+                basico.T.TIME_COURSE,
+        'separator': experiment.getSeparator(),
+        'first_row': experiment.getFirstRow(),
+        'last_row': experiment.getLastRow(),
+        'weight_method': _weight_method_to_string(experiment.getWeightMethod()),
+        'normalize_per_experiment': experiment.getNormalizeWeightsPerExperiment()
+    }
+
+    if experiment.getHeaderRow() < experiment.getLastRow():
+        result['header_row'] = experiment.getHeaderRow()
+
+    mapping = _get_experiment_mapping_dict(experiment, **kwargs)
+
+    # rename / clear up things
+    for entry in mapping:
+        if 'column_name' in entry:
+            if entry['column_name']:
+                entry['column'] = entry['column_name']
+            del entry['column_name']
+        if entry['cn'] == '':
+            del entry['cn']
+        if entry['mapping'] == '':
+            del entry['mapping']
+
+        if 'mapping' in entry:
+            entry['object'] = entry['mapping']
+            del entry['mapping']
+
+    result['mapping'] = mapping
+
+    return result
+
+def save_experiments_to_yaml(filename=None, **kwargs):
+    """Saves the experiment to yaml
+
+    :param filename: optional filename to write to
+    :param kwargs: optional arguments
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: the yaml string
+    """
+    experiments = []
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    exp_set = problem.getExperimentSet()
+
+    for i in range (exp_set.size()):
+        experiments.append(get_experiment_dict(exp_set.getExperiment(i)))
+
+    yaml_str = yaml.safe_dump(experiments, indent=2, sort_keys=False, default_flow_style=False )
+    if not filename:
+         return yaml_str
+
+    with open(filename, 'w', encoding='utf-8') as out_file:
+        out_file.write(yaml_str)
+
+    return yaml_str
+
+
+def load_experiments_from_yaml(experiment_description, **kwargs):
+    """ Loads all experiments from the specified experiment description
+
+    All existing experiments will be replaced with the ones from the specified file.
+
+    :param experiment_description: filename or yamlstring
+    :param kwargs: optional arguments
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+        
+    if os.path.exists(experiment_description):
+        with open(experiment_description, 'r') as stream:
+            experiments = yaml.safe_load(stream)
+    else:
+        experiments = yaml.safe_load(experiment_description)
+
+    return load_experiments_from_dict(experiments, **kwargs)
+
+def load_experiments_from_dict(experiments, **kwargs):
+    """ Loads all experiments from the specified experiment description
+
+    All existing experiments will be replaced with the ones from the specified file.
+
+    :param experiments: list of experiment dictionaries
+    :param kwargs: optional arguments
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    # remove existing experiments
+    remove_experiments(**kwargs)
+
+    if type(experiments) is dict:
+        experiments = [experiments]
+
+    for exp_dict in experiments:
+        add_experiment_from_dict(exp_dict,**kwargs)
+
+def _get_nth_line_from_file(filename, n, max_line=None):
+    with open(filename, 'r') as stream:
+        for i, line in enumerate(stream):
+            if i + 1 == n:
+                return line.strip()
+            if max_line and i == max_line:
+                break
+    return None
+
+
+def _get_first_column(mappings, column):
+    for entry in mappings:
+        if entry['column'] == column:
+            return entry
+    return None
+
+def add_experiment_from_dict(exp_dict, **kwargs):
+    """ Adds an experiment from dictionary
+
+    :param exp_dict:
+    :return:
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    exp_set = problem.getExperimentSet()
+    assert (isinstance(exp_set, COPASI.CExperimentSet))
+
+    experiment = COPASI.CExperiment(model, exp_dict['name'])
+    experiment.setFirstRow(exp_dict['first_row'])
+    experiment.setLastRow(exp_dict['last_row'])
+    if 'header_row' in exp_dict:
+        experiment.setHeaderRow(exp_dict['header_row'])
+    experiment.setFileName(exp_dict['filename'])
+    experiment.setNormalizeWeightsPerExperiment(exp_dict['normalize_per_experiment'])
+    experiment.setExperimentType(basico.T.to_enum(exp_dict['type']))
+    experiment.setSeparator(exp_dict['separator'])
+    experiment.setWeightMethod(_weight_method_to_int(exp_dict['weight_method']))
+    columnNumber = experiment.guessColumnNumber()
+    experiment.setNumColumns(columnNumber)
+
+    obj_map = experiment.getObjectMap()
+    obj_map.setNumCols(columnNumber)
+
+    ## this should not be crashing (needs new COPASI release)
+    #
+    # experiment.readColumnNames()
+    # names = experiment.getColumnNames()
+    #
+    ## instead we use:
+
+    names = None
+    if  'header_row' in exp_dict:
+        names = _get_nth_line_from_file(exp_dict['filename'], int(exp_dict['header_row']), int(exp_dict['last_row']))
+    if names is not None:
+        names = names.split(exp_dict['separator'])
+    else: 
+        names = [i for i in range(columnNumber)]
+
+    max_col = min(len(names), len(exp_dict['mapping']))
+    obj_map.setNumCols(max_col)
+    experiment.setNumColumns(max_col)
+    for i in range(max_col):
+        mapping = _get_first_column(exp_dict['mapping'], names[i])
+        if mapping is None:
+            obj_map.setRole(i, COPASI.CExperiment.ignore)
+            continue
+        role = _role_to_int(mapping['type'])
+        obj_map.setRole(i, role)
+        cn = mapping['cn'] if 'cn' in mapping else \
+                basico.model_info._get_object(mapping['object']) if 'object' in mapping else \
+                None
+        if cn is not None:
+            obj_map.setObjectCN(i, COPASI.CCommonName(cn))
+        if role == COPASI.CExperiment.dependent and 'weight' in mapping:
+            obj_map.setScale(i, float(mapping['weight']))
+
+    exp_set.addExperiment(experiment)
+    #experiment.compile(model.getModel().getMathContainer())
+    #experiment.calculateWeights()
+    #experiment.updateFittedPoints()
+
+

@@ -3,7 +3,6 @@ import unittest
 import os
 import sys
 import numpy as np
-
 import basico
 
 
@@ -13,6 +12,9 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.model = basico.load_example('LM')
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'Kinetics of a  Michaelian enzyme measured spectrophotometrically')
+
+    def tearDown(self):
+        basico.remove_datamodel(self.model)
 
     def test_get_parameters(self):
         params = basico.get_parameters()
@@ -58,6 +60,18 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         # ensure it still works
         sol_after = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         self.assertListEqual(basico.as_dict(sol_before[['sol']]), basico.as_dict(sol_after[['sol']]))
+
+    def test_experiment_dict(self):
+        exp1 = basico.get_experiment_dict(0)
+        self.assertTrue(exp1 is not None)
+        # save to yaml
+        yaml_str = basico.save_experiments_to_yaml()
+        self.assertTrue(yaml_str is not None)
+        # restore from yaml
+        basico.load_experiments_from_yaml(yaml_str)
+        # save again
+        yaml_str2 = basico.save_experiments_to_yaml()
+        self.assertEqual(yaml_str, yaml_str2)
 
     @unittest.skipIf(sys.version_info < (3, 6, 0), 'This test requires assertLogs which is not available before')
     def test_change_bounds(self):
@@ -115,6 +129,9 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'Pritchard2002_glycolysis')
 
+    def tearDown(self):
+        basico.remove_datamodel(self.model)
+
     def test_get_data(self):
 
         # without renaming data should remain as is
@@ -165,10 +182,12 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertTrue(data is not None)
 
         # to get data only from one experiment, you'd call
-        data = basico.get_data_from_experiment('Experiment_1')
-        self.assertTrue(data is not None)
-
-
+        for name in basico.get_experiment_names():
+            data = basico.get_data_from_experiment(name)
+            self.assertTrue(data is not None)
+            # can be renamed
+            data = basico.get_data_from_experiment(name, rename_headers=True)
+            self.assertTrue(data is not None)
 
 class TestMultipleResults(unittest.TestCase):
 
@@ -178,6 +197,9 @@ class TestMultipleResults(unittest.TestCase):
         )
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'multiple_experiments')
+
+    def tearDown(self):
+        basico.remove_datamodel(self.model)
 
     def test_current_solution(self):
         result = basico.get_simulation_results()

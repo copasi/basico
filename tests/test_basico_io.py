@@ -15,6 +15,10 @@ class TestBasicoIO(unittest.TestCase):
         self.assertTrue('New Model' in basico.model_io.overview())
         basico.remove_datamodel(dm)
 
+    def test_loading_nonexistent(self):
+        dm = basico.load_model('does_not_exist.cps')
+        self.assertIsNone(dm)
+
     def test_load_example(self):
         dm = basico.load_example('brusselator')
         self.assertTrue(dm is not None)

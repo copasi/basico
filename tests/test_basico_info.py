@@ -184,11 +184,13 @@ class TestBasicoIO_Brus(unittest.TestCase):
 class TestBasicoIO_LM(unittest.TestCase):
 
     def setUp(self):
-        dm = basico.load_example('LM-test1')
-        self.assertTrue(dm is not None)
-        self.assertTrue(isinstance(dm, COPASI.CDataModel))
+        self.dm = basico.load_example('LM-test1')
+        self.assertTrue(self.dm is not None)
+        self.assertTrue(isinstance(self.dm, COPASI.CDataModel))
         self.assertTrue('Kinetics of a  Michaelian enzyme measured spectrophotometrically' in basico.model_io.overview())
-        print('Running setup')
+
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
 
     def test_get_parameter(self):
         params = basico.get_parameters()
@@ -245,8 +247,11 @@ class TestBasicoIO_LM(unittest.TestCase):
 class TestBasicoModelConstruction(unittest.TestCase):
 
     def setUp(self):
-        dm = basico.new_model(name='Test Model')
+        self.dm = basico.new_model(name='Test Model')
         basico.remove_user_defined_functions()
+
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
 
     def test_units(self):
         basico.set_model_unit(time_unit='s', quantity_unit='mmol', volume_unit='ml',

@@ -372,7 +372,7 @@ def get_data_from_experiment(experiment, **kwargs):
     else:
         rename_headers = True
 
-    if have_headers and rename_headers:
+    if (have_headers and rename_headers) or original_headers != None:
         skip_idx.insert(0, header_row-1)
 
     drop_cols = []

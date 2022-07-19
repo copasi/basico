@@ -1643,7 +1643,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
         role = _role_to_int(mapping['type'])
         obj_map.setRole(i, role)
         cn = mapping['cn'] if 'cn' in mapping else \
-                basico.model_info._get_object(mapping['object']) if 'object' in mapping else \
+                basico.model_info.get_cn(mapping['object']) if 'object' in mapping else \
                 None
         if cn is not None:
             obj_map.setObjectCN(i, COPASI.CCommonName(cn))

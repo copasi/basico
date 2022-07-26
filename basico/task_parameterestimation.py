@@ -1016,14 +1016,14 @@ def run_parameter_estimation(**kwargs):
     return get_parameters_solution(model)
 
 
-def get_simulation_results(values_only=False, update_parameters=False, **kwargs):
+def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
     """Runs the current solution statistics and returns result of simulation and experimental data
 
     :param values_only: if true, only time points at the measurements will be returned
     :type values_only: bool
 
     :param update_parameters: if set true, the model will be updated with the parameters
-           found from the solution. (defaults to False)
+           found from the solution. (defaults to True)
     :type update_parameters: bool
 
     :param kwargs:
@@ -1174,12 +1174,28 @@ def _update_fit_parameters_from(dm, solution, exp_name=''):
     for j in range(solution.shape[0]):
         name = solution.iloc[j].name
         value = solution.iloc[j].sol
+        lower= solution.iloc[j].lower
+        upper = solution.iloc[j].upper
+
         cn = params.iloc[j].cn
         if np.isnan(value):
             continue
         affected = solution.iloc[j].affected
         if any(affected) and exp_name not in affected:
             continue
+
+        # ensure that values is within the constraint
+        if value < lower:
+            try:
+                value = str(lower)
+            except ValueError:
+                value = basico.get_value(lower)
+        if value > upper:
+            try:
+                value = str(upper)
+            except ValueError:
+                value = basico.get_value(upper)
+
 
         obj = dm.getObject(COPASI.CCommonName(cn))
 

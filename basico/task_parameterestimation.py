@@ -29,6 +29,7 @@ import logging
 import yaml
 
 import basico
+from basico.callbacks import get_default_handler
 
 AFFECTED_EXPERIMENTS = 'Affected Experiments'
 TASK_PARAMETER_ESTIMATION = 'Parameter Estimation'
@@ -941,6 +942,8 @@ def run_parameter_estimation(**kwargs):
     - `settings` (dict): a dictionary with settings to use, in the same format as the ones obtained from
                          :func:`.get_task_settings`
 
+    - `write_report` (bool): overrides the writing of a report file of filename is specified. (defaults to True)
+
     :return: the solution for the fit parameters see :func:`get_parameters_solution`.
     :rtype: pandas.DataFrame
     """
@@ -969,6 +972,11 @@ def run_parameter_estimation(**kwargs):
 
     problem.setCreateParameterSets(True)
 
+    write_report = kwargs.get('write_report', True)
+    report_name = task.getReport().getTarget()
+    if not write_report:
+        task.getReport().setTarget('')
+
     if 'method' in kwargs:
         method = kwargs['method']
         if isinstance(method, int):
@@ -990,6 +998,7 @@ def run_parameter_estimation(**kwargs):
     if 'settings' in kwargs:
         basico.set_task_settings(task, kwargs['settings'])
 
+    task.setCallBack(get_default_handler())
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logging.error("Error while initializing parameter estimation: " +
@@ -999,17 +1008,23 @@ def run_parameter_estimation(**kwargs):
         if not result:
             logging.error("Error while running parameter estimation: " +
                           COPASI.CCopasiMessage.getLastMessage().getText())
-
+    task.setCallBack(None)
     problem.setCreateParameterSets(old_create_parameter_sets)
+    if not write_report:
+        task.getReport().setTarget(report_name)
 
     return get_parameters_solution(model)
 
 
-def get_simulation_results(values_only=False, **kwargs):
+def get_simulation_results(values_only=False, update_parameters=False, **kwargs):
     """Runs the current solution statistics and returns result of simulation and experimental data
 
     :param values_only: if true, only time points at the measurements will be returned
     :type values_only: bool
+
+    :param update_parameters: if set true, the model will be updated with the parameters
+           found from the solution. (defaults to False)
+    :type update_parameters: bool
 
     :param kwargs:
 
@@ -1039,10 +1054,13 @@ def get_simulation_results(values_only=False, **kwargs):
     if num_experiments == 0:
         return result
 
-    if 'solution' in kwargs:
-        solution = kwargs['solution']
-    else:
-        solution = run_parameter_estimation(method='Current Solution Statistics')
+    if update_parameters:
+        if 'solution' in kwargs:
+            solution = kwargs['solution']
+            if type(solution) is dict or type(solution) is list:
+                solution = pd.DataFrame(data=solution)
+        else:
+            solution = run_parameter_estimation(method='Current Solution Statistics', write_report=False)
 
     model = dm.getModel()
 
@@ -1061,17 +1079,40 @@ def get_simulation_results(values_only=False, **kwargs):
         num_independent = independent.shape[0]
         is_steady_state = experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState
         num_independent_points = df.shape[0]
+        steady_state_task = dm.getTask(basico.T.STEADY_STATE)
+        container = dm.getModel().getMathContainer()
+        #_apply_nth_change(0, columns, df, dm, exp_name, independent, model, num_independent)
+        if update_parameters:
+            _update_fit_parameters_from(dm, solution, exp_name)
 
-        _apply_nth_change(0, columns, df, dm, exp_name, independent, model, num_independent, solution)
+        container.fetchInitialState()
+        container.updateInitialValues(COPASI.CCore.Framework_ParticleNumbers)
+        container.applyInitialValues()
+        container.updateSimulatedValues(False)
+        container.updateTransientDataValues()
+        experiment.updateModelWithIndependentData(0)
+        container.pushAllTransientValues()
+        container.pushInitialState()
 
         if is_steady_state:
             # run steady state
-            basico.run_steadystate(model=dm)
+            #basico.run_steadystate(model=dm)
+            steady_state_task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+            steady_state_task.processRaw(True)
             data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
             
-            for i in range(1, num_independent_points):
-                _apply_nth_change(i, columns, df, dm, exp_name, independent, model, num_independent, solution)
-                basico.run_steadystate(model=dm)
+            for j in range(1, num_independent_points):
+                container.applyInitialValues()
+                container.updateSimulatedValues(False);
+                container.updateTransientDataValues();
+                experiment.updateModelWithIndependentData(j)
+                container.pushAllTransientValues();
+                container.pushInitialState();
+                #_apply_nth_change(j, columns, df, dm, exp_name, independent, model, num_independent)
+                if update_parameters:
+                    _update_fit_parameters_from(dm, solution, exp_name)
+                steady_state_task.processRaw(True)
+                #basico.run_steadystate(model=dm)
                 new_row = basico.model_info._collect_data(
                     cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
                 data = pd.concat([data, new_row], ignore_index=True)
@@ -1091,7 +1132,7 @@ def get_simulation_results(values_only=False, **kwargs):
     return exp_data, sim_data
 
 
-def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num_independent, solution):
+def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num_independent):
     change_set = COPASI.DataObjectSet()
     for j in range(num_independent):
         name = independent.iloc[j].mapping
@@ -1117,7 +1158,6 @@ def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num
         logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
     if change_set.size() > 0:
         model.updateInitialValues(change_set)
-    _update_fit_parameters_from(dm, solution, exp_name)
 
 
 def _update_fit_parameters_from(dm, solution, exp_name=''):

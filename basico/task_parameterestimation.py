@@ -1159,6 +1159,18 @@ def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num
     if change_set.size() > 0:
         model.updateInitialValues(change_set)
 
+def _get_value_from_bound(bound):
+    """
+
+    :param bound: the bound for the fit item (a float value as string, or name of another reference)
+    :return: the value of the bound
+    :rtype: float
+    """
+    try:
+        value = float(bound)
+    except ValueError:
+        value = basico.get_value(bound)
+    return value
 
 def _update_fit_parameters_from(dm, solution, exp_name=''):
     """ Utility function that updates the models fit parameters for the given solution
@@ -1174,8 +1186,8 @@ def _update_fit_parameters_from(dm, solution, exp_name=''):
     for j in range(solution.shape[0]):
         name = solution.iloc[j].name
         value = solution.iloc[j].sol
-        lower= solution.iloc[j].lower
-        upper = solution.iloc[j].upper
+        lower= _get_value_from_bound(solution.iloc[j].lower)
+        upper = _get_value_from_bound(solution.iloc[j].upper)
 
         cn = params.iloc[j].cn
         if np.isnan(value):
@@ -1186,16 +1198,9 @@ def _update_fit_parameters_from(dm, solution, exp_name=''):
 
         # ensure that values is within the constraint
         if value < lower:
-            try:
-                value = str(lower)
-            except ValueError:
-                value = basico.get_value(lower)
+            value = lower
         if value > upper:
-            try:
-                value = str(upper)
-            except ValueError:
-                value = basico.get_value(upper)
-
+            value = upper
 
         obj = dm.getObject(COPASI.CCommonName(cn))
 

@@ -28,6 +28,8 @@ import pandas as pd
 import basico
 from . import model_io
 from . import model_info
+from .callbacks import get_default_handler
+
 import pandas
 import numpy
 import logging
@@ -152,6 +154,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
     model.addInterface(dh)
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+    task.setCallBack(get_default_handler())
     if not result:
         logging.error("Error while initializing the simulation: " +
         COPASI.CCopasiMessage.getLastMessage().getText())
@@ -160,7 +163,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
         if not result:
             logging.error("Error while running the simulation: " +
             COPASI.CCopasiMessage.getLastMessage().getText())
-
+    task.setCallBack(None)
     df = get_data_from_data_handler(dh, columns)
     model.removeInterface(dh)
 

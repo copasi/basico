@@ -13,6 +13,7 @@ you will find functions to add, get, set, and remove them.
 """
 import tempfile
 
+import basico
 import pandas as pd
 
 try:
@@ -4468,6 +4469,116 @@ def _get_named_value(obj, name):
 
     return value
 
+def _set_value_from_reference(obj, new_value):
+    """ Utility function setting a value from the given reference object
+
+    :param obj: the reference object
+    :type obj: COPASI.CDataObject
+    :param new_value: the new value to set
+    :type new_value: float
+    :return: None
+    """
+    if obj is None:
+        return None
+    parent = obj.getObjectParent()
+    if parent is None:
+        return None
+    name = obj.getObjectName()
+    value = _set_named_value(parent, name, new_value)
+    return value
+
+def _set_named_value(obj, name, new_value):
+    """ Utility function that sets the value of the given copasi object
+
+    :param obj: a copasi object, that could be a compartment, species, parameter, reaction
+    :param name: the reference name to set
+    :param new_value: the new value for the element
+    :return:None
+    """
+    is_metab = isinstance(obj, COPASI.CMetab)
+    is_reaction = isinstance(obj, COPASI.CReaction)
+    is_model = isinstance(obj, COPASI.CModel)
+    is_cparam = isinstance(obj, COPASI.CCopasiParameter)
+
+    p_name = None
+    set_function = None
+
+    if is_reaction:
+        set_function = {
+            'Flux': obj.setFlux,
+            'ParticleFlux': obj.setParticleFlux,
+        }.get(name, None)
+
+    elif is_metab:
+        set_function = {
+            'ParticleNumber': obj.setValue,
+            'InitialParticleNumber': obj.setInitialValue,
+            'InitialConcentration': obj.setInitialConcentration,
+            'Concentration': obj.setConcentration,
+        }.get(name, None)
+
+    elif is_model:
+        set_function = {
+            'Time': obj.setValue,
+        }.get(name, None)
+
+    elif is_cparam:
+        # this will be the case if it is a local parameter
+        parent = obj.getObjectParent().getObjectParent()
+        assert (isinstance(parent, COPASI.CReaction))
+        p_name = obj.getObjectName()
+        set_function = parent.setParameterValue
+
+    if pd.isna(set_function):
+        set_function = {
+            'Time': obj.setValue,
+            'Volume': obj.setValue,
+            'Value': obj.setValue,
+            'InitialValue': obj.setInitialValue,
+            'InitialVolume': obj.setInitialValue,
+            'InitialParticleNumber': obj.setInitialValue,
+        }.get(name, None)
+
+    dm = basico.get_current_model()
+    model = dm.getModel()
+
+    if set_function is not None:
+        if p_name is not None:
+            set_function(p_name, new_value)
+            model.updateInitialValues(obj)
+        else:
+            set_function(new_value)
+            model.updateInitialValues(obj)
+
+    return
+
+
+def set_value(name_or_reference, new_value, initial=False,  **kwargs):
+    """Gets the value of the named element or nones
+
+    :param name_or_reference: display name of model element
+    :type name_or_reference: str or COPASI.CDataObject
+
+    :param initial: if True, an initial value will be set, rather than a transient one. If set to `None`, the
+                    default reference will be returned and not coerced.
+    :type initial: bool or None
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the value if found or None
+    :rtype: float or None
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+
+    obj = _get_object(name_or_reference, initial=initial, model=model)
+
+    if obj is None:
+        return None
+
+    return _set_value_from_reference(obj, new_value)
 
 def _get_object(name_or_reference, initial=False, **kwargs):
     """Returns the reference object for the given name
@@ -4475,8 +4586,9 @@ def _get_object(name_or_reference, initial=False, **kwargs):
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
 
-    :param initial: if True, an initial reference will be returned, rather than a transient one
-    :type initial: bool
+    :param initial: if True, an initial reference will be returned, rather than a transient one. If set to `None`, the
+                    default reference will be returned and not coerced.
+    :type initial: bool or None
 
     :param kwargs: optional parameters
 
@@ -4506,21 +4618,22 @@ def _get_object(name_or_reference, initial=False, **kwargs):
                 obj = obj.getValueReference()
 
         # ensure reference is initial or transient as required
-        if initial:
-            obj_name = obj.getObjectName()
-            if obj_name == 'Concentration':
-                obj = obj.getObjectParent().getInitialConcentrationReference()
-            if obj_name in ['Value', 'Volume', 'ParticleNumber']:
-                parent = obj.getObjectParent()
-                if not isinstance(parent, COPASI.CCopasiParameter):
-                    obj = parent.getInitialValueReference()
-        else:
-            obj_name = obj.getObjectName()
-            if obj_name == 'InitialConcentration':
-                obj = obj.getObjectParent().getConcentrationReference()
-            if obj_name in ['InitialValue', 'InitialVolume', 'InitialParticleNumber']:
-                parent = obj.getObjectParent()
-                obj = parent.getValueReference()
+        if initial is not None:
+            if initial:
+                obj_name = obj.getObjectName()
+                if obj_name == 'Concentration':
+                    obj = obj.getObjectParent().getInitialConcentrationReference()
+                if obj_name in ['Value', 'Volume', 'ParticleNumber']:
+                    parent = obj.getObjectParent()
+                    if not isinstance(parent, COPASI.CCopasiParameter):
+                        obj = parent.getInitialValueReference()
+            else:
+                obj_name = obj.getObjectName()
+                if obj_name == 'InitialConcentration':
+                    obj = obj.getObjectParent().getConcentrationReference()
+                if obj_name in ['InitialValue', 'InitialVolume', 'InitialParticleNumber']:
+                    parent = obj.getObjectParent()
+                    obj = parent.getValueReference()
     return obj
 
 
@@ -4530,8 +4643,9 @@ def get_value(name_or_reference, initial=False, **kwargs):
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
 
-    :param initial: if True, an initial value will be returned, rather than a transient one
-    :type initial: bool
+    :param initial: if True, an initial value will be returned, rather than a transient one. If set to `None`, the
+                    default reference will be returned and not coerced.
+    :type initial: bool or None
 
     :param kwargs: optional parameters
 

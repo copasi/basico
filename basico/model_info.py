@@ -4469,11 +4469,14 @@ def _get_named_value(obj, name):
     return value
 
 
-def _get_object(name_or_reference, **kwargs):
+def _get_object(name_or_reference, initial=False, **kwargs):
     """Returns the reference object for the given name
 
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
+
+    :param initial: if True, an initial reference will be returned, rather than a transient one
+    :type initial: bool
 
     :param kwargs: optional parameters
 
@@ -4491,16 +4494,44 @@ def _get_object(name_or_reference, **kwargs):
         obj = model.findObjectByDisplayName(name_or_reference)
         if obj is None:
             return None
-        if obj.getObjectType() != 'Reference':
-            obj = obj.getValueReference()
+        if obj.getObjectType() == 'Metabolite':
+            if initial:
+                obj = obj.getInitialConcentrationReference()
+            else:
+                obj = obj.getConcentrationReference()
+        elif obj.getObjectType() != 'Reference':
+            if initial and not isinstance(obj, COPASI.CCopasiParameter):
+                obj = obj.getInitialValueReference()
+            else:
+                obj = obj.getValueReference()
+
+        # ensure reference is initial or transient as required
+        if initial:
+            obj_name = obj.getObjectName()
+            if obj_name == 'Concentration':
+                obj = obj.getObjectParent().getInitialConcentrationReference()
+            if obj_name in ['Value', 'Volume', 'ParticleNumber']:
+                parent = obj.getObjectParent()
+                if not isinstance(parent, COPASI.CCopasiParameter):
+                    obj = parent.getInitialValueReference()
+        else:
+            obj_name = obj.getObjectName()
+            if obj_name == 'InitialConcentration':
+                obj = obj.getObjectParent().getConcentrationReference()
+            if obj_name in ['InitialValue', 'InitialVolume', 'InitialParticleNumber']:
+                parent = obj.getObjectParent()
+                obj = parent.getValueReference()
     return obj
 
 
-def get_value(name_or_reference, **kwargs):
+def get_value(name_or_reference, initial=False, **kwargs):
     """Gets the value of the named element or nones
 
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
+
+    :param initial: if True, an initial value will be returned, rather than a transient one
+    :type initial: bool
 
     :param kwargs: optional parameters
 
@@ -4512,7 +4543,7 @@ def get_value(name_or_reference, **kwargs):
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
 
-    obj = _get_object(name_or_reference, model=model)
+    obj = _get_object(name_or_reference, initial=initial, model=model)
 
     if obj is None:
         return None
@@ -4520,11 +4551,14 @@ def get_value(name_or_reference, **kwargs):
     return _get_value_from_reference(obj)
 
 
-def get_cn(name_or_reference, **kwargs):
+def get_cn(name_or_reference, initial=False, **kwargs):
     """Gets the cn of the named element or none
 
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
+
+    :param initial: if True, an initial reference cn will be returned, rather than a transient one
+    :type initial: bool
 
     :param kwargs: optional parameters
 
@@ -4536,7 +4570,7 @@ def get_cn(name_or_reference, **kwargs):
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
 
-    obj = _get_object(name_or_reference, model=model)
+    obj = _get_object(name_or_reference, initial=initial, model=model)
 
     if obj is None:
         return None

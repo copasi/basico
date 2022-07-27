@@ -686,14 +686,12 @@ def set_fit_parameters(fit_parameters, model=None):
         if 'cn' in item:
             cn = COPASI.CCommonName(item.cn)
 
-        if 'name' in item:
+        elif 'name' in item:
             name = item['name']
             if not cn:
-                obj = model.findObjectByDisplayName(name)
+                obj = basico.model_info._get_object(name, initial=True, model=model)
                 if obj:
                     cn = obj.getCN()
-                    if _get_role_for_reference(obj.getObjectName()) == COPASI.CExperiment.ignore:
-                        cn = obj.getValueReference().getCN()
 
         if not cn:
             logging.warning('object {0} not found'.format(name))

@@ -4484,15 +4484,16 @@ def _set_value_from_reference(obj, new_value):
     if parent is None:
         return None
     name = obj.getObjectName()
-    value = _set_named_value(parent, name, new_value)
+    value = _set_named_value(parent, name, new_value, obj)
     return value
 
-def _set_named_value(obj, name, new_value):
+def _set_named_value(obj, name, new_value, ref):
     """ Utility function that sets the value of the given copasi object
 
     :param obj: a copasi object, that could be a compartment, species, parameter, reaction
     :param name: the reference name to set
     :param new_value: the new value for the element
+    :param ref: the reference object
     :return:None
     """
     is_metab = isinstance(obj, COPASI.CMetab)
@@ -4545,10 +4546,10 @@ def _set_named_value(obj, name, new_value):
     if set_function is not None:
         if p_name is not None:
             set_function(p_name, new_value)
-            model.updateInitialValues(obj)
+            model.updateInitialValues(ref)
         else:
             set_function(new_value)
-            model.updateInitialValues(obj)
+            model.updateInitialValues(ref)
 
     return
 

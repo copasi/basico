@@ -1945,6 +1945,10 @@ def set_event(name, exact=False, trigger=None, assignments=None, **kwargs):
         if name and type(name) is str and name not in current_name and name not in display_name:
             continue
 
+        if 'new_name' in kwargs:
+            if not event.setObjectName(kwargs['new_name']):
+                logging.warning('could not rename event')
+
         if trigger:
             event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
 
@@ -2455,6 +2459,9 @@ def set_compartment(name=None, exact=False, **kwargs):
 
     :param kwargs: optional arguments
 
+
+        - | `new_name`: the new name for the compartment
+
         - | `initial_value` or `initial_size`: to set the initial size of the compartment
 
         - | `value` or `size`: to set the transient size of the compartment
@@ -2502,6 +2509,9 @@ def set_compartment(name=None, exact=False, **kwargs):
 
         if name and isinstance(name, Iterable) and current_name not in name:
             continue
+
+        if 'new_name' in kwargs:
+            compartment.setObjectName(kwargs['new_name'])
 
         for initial in ['initial_value', 'initial_size']:
             if initial in kwargs:
@@ -2592,6 +2602,7 @@ def set_parameters(name=None, exact=False, **kwargs):
 
     :param kwargs: optional arguments
 
+        - | `new_name`: the new name for the parameter
         - | `unit`: the unit expression to be set
         - | `initial_value`: to set the initial value for the parameter
         - | `value`: set the transient value for the parameter
@@ -2634,6 +2645,10 @@ def set_parameters(name=None, exact=False, **kwargs):
 
         if name and isinstance(name, Iterable) and (current_name not in name and display_name not in name):
             continue
+
+        if 'new_name' in kwargs:
+            if not param.setObjectName(str(kwargs['new_name'])):
+                logging.warning('could not rename event')
 
         if 'unit' in kwargs:
             param.setUnitExpression(kwargs['unit'])

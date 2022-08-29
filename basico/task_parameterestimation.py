@@ -877,7 +877,7 @@ def add_experiment(name, data, **kwargs):
                     except AttributeError:
                         logging.warning("Cannot map the element {0}".format(current))
                 role = _get_role_for_reference(obj.getObjectName())
-                obj_map.setObjectCN(i, obj.getCN())
+                obj_map.setObjectCN(i, str(obj.getCN()))
         obj_map.setRole(i, role)
 
     exp.calculateWeights()
@@ -1368,8 +1368,20 @@ def prune_simulation_results(simulation_results):
     return simulation_results
 
 
-def get_fit_statistic(**kwargs):
+def get_fit_statistic(include_parameters=False, include_experiments=False, include_fitted=False, **kwargs):
     """Return information about the last fit.
+
+    :param include_parameters: whether to include information about the parameters in a result entry
+                               with key `parameters`
+    :type include_parameters: bool
+
+    :param include_experiments: whether to include information about the experiments in a result entry
+                               with key `experiments`
+    :type include_experiments: bool
+
+    :param include_fitted: whether to include information about the fitted values in a result entry
+                               with key `fitted`
+    :type include_fitted: bool
 
     :param kwargs:
 
@@ -1402,6 +1414,54 @@ def get_fit_statistic(**kwargs):
         'valid_data_points': experiments.getValidValueCount(),
     }
     result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
+
+    items = problem.getOptItemList()
+    sol = problem.getSolutionVariables()
+    grad = problem.getVariableGradients()
+    std = problem.getVariableStdDeviations()
+
+    if include_parameters:
+        parameters = []
+        for i in range(problem.getOptItemSize()):
+            current = problem.getOptItem(i)
+            assert (isinstance(current, COPASI.COptItem))
+            obj = dm.getObject(current.getObjectCN())
+            name = obj.getObjectDisplayName() if obj is not None else 'Not Found'
+            parameters.append({
+                'name':  name,
+                'lower': current.getLowerBound(),
+                'start': current.getLastStartValue(),
+                'value': sol.get(i),
+                'upper': current.getUpperBound(),
+                'std_dev': std.get(i),
+                'coeff_of_variation': abs(100 * std.get(i) / sol.get(i)),
+                'gradient': grad.get(i)
+            })
+        result['parameters'] = parameters
+
+    if include_experiments:
+        raise NotImplementedError()
+
+    if include_fitted:
+        dependent = experiments.getDependentObjects()
+        num_dependent = dependent.size()
+        if problem.getFunctionEvaluations() == 0:
+            num_dependent = 0
+        values = []
+        for i in range(num_dependent):
+            current = dependent.get(i)
+            name = current.getObjectDisplayName() if current is not None else 'Not Found'
+            values.append({
+                'name': name,
+                'data_points': experiments.getDependentDataCount().get(i),
+                'obj': experiments.getDependentObjectiveValues().get(i),
+                'rms': experiments.getDependentRMS().get(i),
+                'error_mean': experiments.getDependentErrorMean().get(i),
+                'error_mean_sd': experiments.getDependentErrorMeanSD().get(i)
+            })
+
+        result['variables'] = values
+
     return result
 
 
@@ -1706,7 +1766,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
                 basico.model_info.get_cn(mapping['object'], initial=need_initial ) if 'object' in mapping else \
                 None
         if cn is not None:
-            obj_map.setObjectCN(i, COPASI.CCommonName(cn))
+            obj_map.setObjectCN(i, str(cn))
         if role == COPASI.CExperiment.dependent and 'weight' in mapping:
             obj_map.setScale(i, float(mapping['weight']))
 

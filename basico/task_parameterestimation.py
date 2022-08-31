@@ -658,6 +658,7 @@ def set_fit_parameters(fit_parameters, model=None):
            * 'lower': the lower bound of the parameter
            * 'upper': the upper bound of the parameter
            * 'start' (float, optional): the start value
+           * 'affected' (list[str], optional): a list of affected experiment names.
            * 'cn' (str, optional): internal identifier
 
     :type fit_parameters: pandas.DataFrame or [{}]
@@ -677,6 +678,9 @@ def set_fit_parameters(fit_parameters, model=None):
     assert (isinstance(problem, COPASI.CFitProblem))
     while problem.getOptItemSize() > 0:
         problem.removeOptItem(0)
+
+    experiment_keys = _get_experiment_keys(model=model)
+    experiment_names = get_experiment_names(model=model)
 
     for i in range(len(fit_parameters)):
         item = fit_parameters.iloc[i]
@@ -705,7 +709,16 @@ def set_fit_parameters(fit_parameters, model=None):
             fit_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
         if 'start' in item:
             fit_item.setStartValue(float(item['start']))
-
+        if 'affected' in item:
+            affected = item['affected']
+            if type(affected) is str:
+                affected = [affected]
+            for name in affected:
+                index = experiment_names.index(name)
+                if index < 0:
+                    logging.warning('Invalid affected experiment name {0}'.format(name))
+                    continue
+                fit_item.addExperiment(experiment_keys[index])
 
 def _get_name_for_key(key):
     factory = COPASI.CRootContainer.getKeyFactory()

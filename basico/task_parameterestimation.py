@@ -714,10 +714,14 @@ def set_fit_parameters(fit_parameters, model=None):
             if type(affected) is str:
                 affected = [affected]
             for name in affected:
-                index = experiment_names.index(name)
-                if index < 0:
+                if not name:
+                    continue
+
+                if name not in experiment_names:
                     logging.warning('Invalid affected experiment name {0}'.format(name))
                     continue
+
+                index = experiment_names.index(name)
                 fit_item.addExperiment(experiment_keys[index])
 
 def _get_name_for_key(key):

@@ -1457,7 +1457,47 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
         result['parameters'] = parameters
 
     if include_experiments:
-        raise NotImplementedError()
+        if COPASI.CVersion.VERSION.getVersionDevel() < 263:
+            raise ValueError("Newer COPASI version required to return experiment statistic")
+
+        experiment_stats = []
+        for i in range(experiments.getExperimentCount()):
+            exp = experiments.getExperiment(i)
+
+            validValueCount = exp.getValidValueCount()
+            totalValueCount = exp.getTotalValueCount()
+            print(f'  datapoints: {validValueCount} of {totalValueCount}')
+
+            item = {
+                'name': exp.getObjectName(),
+                'valid_points': validValueCount,
+                'total_points': totalValueCount,
+                'obj': exp.getObjectiveValue(),
+                'rms': exp.getRMS(),
+                'error_mean': exp.getErrorMean(),
+                'error_mean_sd': exp.getErrorMeanSD(),
+                'dependent_data': []
+            }
+
+            objects = experiments.getDependentObjects()
+
+            for j in range(objects.size()):
+                obj = experiments.getDependentObjects().get(j)
+                count = exp.getColumnValidValueCount(obj)
+                if not count:
+                    continue
+                item['dependent_data'].append(
+                    {
+                        'name': obj.getObjectDisplayName(),
+                        'data_points': count,
+                        'obj': exp.getObjectiveValue(obj),
+                        'rms': exp.getRMS(obj),
+                        'error_mean': exp.getErrorSum(obj) / count,
+                    }
+                )
+            experiment_stats.append(item)
+
+        result['experiments'] = experiment_stats
 
     if include_fitted:
         dependent = experiments.getDependentObjects()

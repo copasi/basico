@@ -126,7 +126,7 @@ class TqmdCallback(COPASI.CProcessReport):
         return self.shouldProceed
 
 
-_DEFAULT_HANDLER = None
+_DEFAULT_HANDLER = COPASI.CProcessReport()
 
 def create_default_handler(delay=1, leave=False, unit='', **kwargs):
     """ Sets the default process report handler

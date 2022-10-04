@@ -43,12 +43,18 @@ class TestBasicoParamterEstimation(unittest.TestCase):
 
         sol_before = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
 
+        # get statstic
+        stat = basico.get_fit_statistic(include_parameters=True, include_fitted=True)
+
         # remove data
         basico.remove_experiments()
 
         # add data back
         for exp, name in zip(data, names):
             basico.add_experiment(name, exp)
+
+        # remove data
+        basico.remove_experiments()
 
         # since we have affected experiments, reset them
         basico.set_fit_parameters(basico.get_fit_parameters())
@@ -60,6 +66,23 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         # ensure it still works
         sol_after = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         self.assertListEqual(basico.as_dict(sol_before[['sol']]), basico.as_dict(sol_after[['sol']]))
+
+
+    def test_mapping(self):
+        mapping = basico.get_experiment_mapping(0)
+        experiments = basico.save_experiments_to_dict()
+        self.assertIsNotNone(experiments)
+        # remove cns
+        for entry in experiments[0]['mapping']:
+            if 'cn' in entry:
+                del entry['cn']
+
+        basico.load_experiments_from_dict(experiments)
+        experiments2 = basico.save_experiments_to_dict()
+        self.assertIsNotNone(experiments)
+        self.assertEqual(experiments[0]['mapping'][0]['object'], experiments2[0]['mapping'][0]['object'])
+        self.assertEqual(experiments[0]['mapping'][2]['object'], experiments2[0]['mapping'][2]['object'])
+
 
     def test_experiment_dict(self):
         exp1 = basico.get_experiment_dict(0)

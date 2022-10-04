@@ -216,10 +216,10 @@ def load_model_from_string(content):
     if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
         return set_current_model(model)
 
-    if '<sbml ' in content and model.importSBMLFromString(content, pImportHandler=get_default_handler()):
+    if '<sbml ' in content and model.importSBMLFromString(content):
         return set_current_model(model)
 
-    if '<sedML '  in content and model.importSEDMLFromString(content, pImportHandler=get_default_handler()):
+    if '<sedML '  in content and model.importSEDMLFromString(content):
         return set_current_model(model)
 
     return remove_datamodel(model)
@@ -255,13 +255,13 @@ def load_model(location):
     if os.path.isfile(location):
         location = os.path.abspath(location)
         if zipfile.is_zipfile(location):
-            if model.openCombineArchive(location, pProgressReport=get_default_handler()):
+            if model.openCombineArchive(location, get_default_handler()):
                 return set_current_model(model)
-        if model.importSBML(location, pImportHandler=get_default_handler()):
+        if model.importSBML(location, get_default_handler()):
             return set_current_model(model)
         if model.loadModel(location):
             return set_current_model(model)
-        if model.importSEDML(location, pImportHandler=get_default_handler()):
+        if model.importSEDML(location, get_default_handler()):
             return set_current_model(model)
 
     remove_datamodel(model)

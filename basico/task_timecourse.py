@@ -163,7 +163,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
         if not result:
             logging.error("Error while running the simulation: " +
             COPASI.CCopasiMessage.getLastMessage().getText())
-    task.setCallBack(None)
+    task.setCallBack(COPASI.CProcessReport())
     df = get_data_from_data_handler(dh, columns)
     model.removeInterface(dh)
 

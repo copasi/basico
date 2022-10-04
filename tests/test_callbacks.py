@@ -4,7 +4,7 @@ from  basico.callbacks import TqmdCallback
 import COPASI
 
 class TestCallbacks(unittest.TestCase):
-    @unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 37, 'Require 4.37 of COPASI')
+    @unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 37 or not TqmdCallback.is_available(), 'Require 4.37 of COPASI')
     def test_something(self):
         dm = basico.load_example('LM')
         self.assertIsNotNone(dm)
@@ -18,7 +18,7 @@ class TestCallbacks(unittest.TestCase):
         t.setCallBack(None)
         basico.remove_datamodel(dm)
 
-    @unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 37, 'Require 4.37 of COPASI')
+    @unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 37  or not TqmdCallback.is_available(), 'Require 4.37 of COPASI')
     def test_default(self):
         basico.callbacks.create_default_handler(delay=0)
         dm = basico.load_example('LM')

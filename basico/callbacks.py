@@ -92,6 +92,10 @@ class TqmdCallback(COPASI.CProcessReport):
             return COPASI.CProcessReport.getStringValue(ptr)
         return default_value
 
+    @staticmethod
+    def is_available():
+        return _TQDM_AVAILABLE
+
     def addItem(self, *args, **kwargs):
         self.count += 1
         self.ptrs[self.count] = { 'type': args[1], 'value': args[2], 'end': args[3] }

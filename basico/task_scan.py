@@ -123,7 +123,7 @@ def _scan_item_to_dict(item, model=None):
     assert (isinstance(item, COPASI.CCopasiParameter))
     int_type = item.getParameter('Type').getIntValue()
     type_name = _scan_type_to_name(int_type)
-    cn = item.getParameter('Object').getStringValue() if item.getParameter('Object') else None
+    cn = item.getParameter('Object').getCNValue().getString() if item.getParameter('Object') else None
     num_steps = item.getParameter('Number of steps').getIntValue() if item.getParameter('Number of steps') else None
     min_val = item.getParameter('Minimum').getDblValue() if item.getParameter('Minimum') else None
     max_val = item.getParameter('Maximum').getDblValue() if item.getParameter('Maximum') else None
@@ -240,7 +240,7 @@ def _set_parameter_from_value(parameter, value):
         return
 
     if parameter.getType() == COPASI.CCopasiParameter.Type_CN:
-        parameter.setCNValue(str(value))
+        parameter.setCNValue(COPASI.CCommonName(str(value)))
         return
 
     if parameter.getType() == COPASI.CCopasiParameter.Type_FILE:

@@ -100,7 +100,7 @@ class TestScan(unittest.TestCase):
     def test_set_parameter(self):
         p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_CN)
         basico.task_scan._set_parameter_from_value(p, 'test')
-        self.assertTrue(p.getStringValue(), 'test')
+        self.assertTrue(p.getCNValue().getString(), 'test')
         p = COPASI.CCopasiParameter('test', COPASI.CCopasiParameter.Type_STRING)
         basico.task_scan._set_parameter_from_value(p, 'test')
         self.assertTrue(p.getStringValue(), 'test')

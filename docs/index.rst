@@ -36,6 +36,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Working_with_SBML_Ids
    notebooks/Working_with_Annotations
    notebooks/Working_with_ipyparallel
+   notebooks/Working_with_PEtab
 
 .. toctree::
    :maxdepth: 2

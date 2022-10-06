@@ -154,7 +154,7 @@ def write_problem_to(problem, output_dir, model_name):
     }
     # write to files
     problem.to_files(
-        sbml_file=model_file,
+        model_file=model_file,
         condition_file=cond_file,
         measurement_file=data_file,
         parameter_file=param_file,

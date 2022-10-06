@@ -209,9 +209,13 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         return None
 
     chosen_model = None
+    # Calibrated and newly calibrated models should be tracked between iterations.
+    calibrated_models = {}
+    newly_calibrated_models = {}
+
     while test_models:
         basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
-        selection_problem.add_calibrated_models(test_models)
+        selection_problem.exclude_models(test_models)
         for model in test_models:
             logging.info('{0} = {1}'.format(model.model_id, model.criteria))
 
@@ -221,15 +225,22 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
 
         logging.debug('best model is {0}'.format(chosen_model.model_id))
 
+        newly_calibrated_models = {
+            model.get_hash(): model for model in test_models
+        }
+
+        calibrated_models.update(newly_calibrated_models)
+
         petab_select.ui.candidates(
             problem=selection_problem,
             candidate_space=candidate_space,
-            predecessor_model=chosen_model,
+            newly_calibrated_models=newly_calibrated_models
+            # predecessor_model=chosen_model,
            # excluded_models=test_models
         )
 
         test_models = candidate_space.models
 
     # pick the best one found overall
-    chosen_model = selection_problem.get_best(selection_problem.calibrated_models)
+    chosen_model = selection_problem.get_best(newly_calibrated_models.values())
     return chosen_model

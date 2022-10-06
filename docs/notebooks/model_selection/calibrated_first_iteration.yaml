@@ -1,0 +1,29 @@
+- criteria:
+    AIC: 180
+  model_id: M1_0
+  parameters:
+    k1: 0.0
+    k2: 0.0
+    k3: 0.0
+  estimated_parameters: null
+  petab_yaml: ../model_selection/petab_problem.yaml
+- criteria:
+    AIC: 100
+  model_id: M1_1
+  parameters:
+    k1: 0.2
+    k2: 0.1
+    k3: estimate
+  estimated_parameters:
+    k3: 0.0
+  petab_yaml: ../model_selection/petab_problem.yaml
+- criteria:
+    AIC: 50
+  model_id: M1_2
+  parameters:
+    k1: 0.2
+    k2: estimate
+    k3: 0.0
+  estimated_parameters:
+    k2: 0.05
+  petab_yaml: ../model_selection/petab_problem.yaml

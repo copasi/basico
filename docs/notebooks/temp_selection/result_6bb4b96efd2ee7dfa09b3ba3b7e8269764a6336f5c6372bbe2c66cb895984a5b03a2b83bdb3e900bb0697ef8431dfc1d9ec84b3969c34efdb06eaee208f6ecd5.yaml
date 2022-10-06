@@ -1,0 +1,46 @@
+criteria:
+  AIC: !!python/object/apply:numpy.core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - f8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    pIoO0UfjBsA=
+  AICc: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    V128Cy5HIkA=
+  BIC: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    oFrP2bXiC8A=
+  LLH: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    qaJD9NG4EUA=
+estimated_parameters:
+  k1: 0.20924776444181292
+  k2: 0.08590619764727553
+model_hash: 6bb4b96efd2ee7dfa09b3ba3b7e8269764a6336f5c6372bbe2c66cb895984a5b03a2b83bdb3e900bb0697ef8431dfc1d9ec84b3969c34efdb06eaee208f6ecd5
+model_id: 6bb4b96efd2ee7dfa09b3ba3b7e8269764a6336f5c6372bbe2c66cb895984a5b03a2b83bdb3e900bb0697ef8431dfc1d9ec84b3969c34efdb06eaee208f6ecd5
+model_subspace_id: M1_6
+model_subspace_indices:
+- 0
+- 0
+- 0
+parameters:
+  k1: estimate
+  k2: estimate
+  k3: 0
+petab_yaml: C:\Development\basico\docs\notebooks\model_selection\petab_problem.yaml
+predecessor_model_hash: 2f591f46f4a455bfb159ddae7e47532b61196f44b08347684826e86f7d2620ccb5e3d3facdee4ce57ff434fed8feb4d440a57fd26580bd6908ceb199451d895f

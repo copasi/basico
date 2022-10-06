@@ -139,3 +139,4 @@ $RECYCLE.BIN/
 /tests/test_data/model*
 /tests/test_data/observ*
 /tests/test_data/parameter*
+temp_dir

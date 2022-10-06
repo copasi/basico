@@ -1,0 +1,46 @@
+criteria:
+  AIC: !!python/object/apply:numpy.core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - f8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    EEFdLdKhAMA=
+  AICc: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    vK+odIvXI0A=
+  BIC: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    DBEeNkChBcA=
+  LLH: !!python/object/apply:numpy.core.multiarray.scalar
+  - *id001
+  - !!binary |
+    RFBXi3QoEEA=
+estimated_parameters:
+  k1: 0.20160878190595133
+  k3: 0.0
+model_hash: c93a94894cd374093ca975a65488754aae48acd355cf387059878eaa3f956fb967ed3014c2087fcda647c616e076754d37582e53444e6bced08272ab4a2a5c87
+model_id: c93a94894cd374093ca975a65488754aae48acd355cf387059878eaa3f956fb967ed3014c2087fcda647c616e076754d37582e53444e6bced08272ab4a2a5c87
+model_subspace_id: M1_5
+model_subspace_indices:
+- 0
+- 0
+- 0
+parameters:
+  k1: estimate
+  k2: 0.1
+  k3: estimate
+petab_yaml: C:\Development\basico\docs\notebooks\model_selection\petab_problem.yaml
+predecessor_model_hash: 2f591f46f4a455bfb159ddae7e47532b61196f44b08347684826e86f7d2620ccb5e3d3facdee4ce57ff434fed8feb4d440a57fd26580bd6908ceb199451d895f

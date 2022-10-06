@@ -1,0 +1,82 @@
+Parameter Estimation Task
+
+Problem Description:
+Subtask: 
+Time-Course Task
+
+Problem Description:
+    AutomaticStepSize: 0
+    StepNumber: 100
+    StepSize: 0.01
+    Duration: 1
+    TimeSeriesRequested: 1
+    OutputStartTime: 0
+    Output Event: 0
+    Start in Steady State: 0
+    Use Values: 0
+    Values: 
+
+Method: Deterministic (LSODA)
+    Integrate Reduced Model: 0
+    Relative Tolerance: 1e-06
+    Absolute Tolerance: 1e-12
+    Max Internal Steps: 100000
+    Max Internal Step Size: 0
+
+
+List of Fitting Items:
+    0.0 <= Values[k3].InitialValue <= 1000.0; Start Value = 0
+    Affected Experiments:
+      all    Affected Validation Experiments:
+      all
+    1e-05 <= Values[sigma_x2].InitialValue <= 1000.0; Start Value = 0.15
+    Affected Experiments:
+      all    Affected Validation Experiments:
+      all
+
+List of Constraint Items:
+
+Method: Levenberg - Marquardt
+    Log Verbosity: 0
+    Iteration Limit: 2000
+    Tolerance: 1e-06
+    Modulation: 1e-06
+    Stop after # stalled iterations: 0
+    Initial Lambda: 1
+    Lambda Decrease: 2
+    Lambda Increase: 4
+
+[Function Evaluations]	[Best Value]	[Best Parameters]
+1	0.0899334	(	0	0.15	)
+
+Parameter Estimation Result:
+
+Objective Function Value:	0.0899334
+Standard Deviation:	0.149945
+Function Evaluations:	139
+CPU Time [s]:	0.015
+Evaluations/Second [1/s]:	9266.67
+
+	Parameter	Value	Gradient	Standard Deviation
+	Values[k3].InitialValue:	0	nan	nan
+	Values[sigma_x2].InitialValue:	0.15	nan	nan
+
+File Name:	C:/Development/basico/docs/notebooks/temp_selection/cps_7304406d77ebf4d20c8eee3a28b0238e53b144666084fbbbba377ca0fd50d59b420a6dbb994a4668437ad96d4030792dc24b056f91cefdb58d4c582f6ea41d06.txt
+Experiment:	model1_data1
+Mean:	0.00135473
+Objective Value:	0.0899334
+Root Mean Square:	0.122429
+Row	Time	Values[obs_x2](Data)	Values[obs_x2](Fit)	Values[obs_x2](Weighted Error)	Objective Value	Root Mean Square
+
+1.	0	0	0	0	0	0
+2.	1	0.194218	0.00967484	-0.184543	0.034056	0.184543
+3.	5	0.0484032	0.213061	0.164658	0.0271123	0.164658
+4.	10	0.61288	0.735759	0.122879	0.0150992	0.122879
+5.	30	4.07931	4.09957	0.0202657	0.000410697	0.0202657
+6.	60	10.1201	10.005	-0.115131	0.0132552	0.115131
+Objective Value				0.0899334
+Root Mean Square				0.122429
+Weight				1
+
+
+

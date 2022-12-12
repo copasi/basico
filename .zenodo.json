@@ -11,7 +11,8 @@
    "contributors": [
      {
       "name": "Aprupe-Wehling, Lilija",
-      "affiliation": "Heidelberg University, BioQUANT/COS, Heidelberg, Germany"
+      "affiliation": "Heidelberg University, BioQUANT/COS, Heidelberg, Germany",
+      "type": "Researcher"
      }
    ],
   "description": "<p><code>basico</code> is a collection of python utilities to create simplified python interface to <a href=\"http://copasi.org\">COPASI</a>. While all functionality from COPASI is exposed via automatically generated SWIG wrappers, this package aims to add a layer on top of that, to hide most of the complexity away when calling COPASI functions.</p>\n <p> Features include among others<ul> <li>model creation</li> <li>time course simulation</li> <li>parameter fitting</li> <li>optimization</li> <li>parameter scan</li></ul></p>\n<p>The documentation is available on <a href=\"https://basico.readthedocs.io\">basico.readthedocs.io</a></p>\n<p>If you have any questions or issues please <a href=\"https://github.com/copasi/basico/issues\">open an issue</a></p>\n<h2>Funding</h2><p>Frank Bergmann is supported by the Federal Ministry of Education and Research (BMBF, Germany) within the de.NBI research network (grant number 031L0104A).</p>",

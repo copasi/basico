@@ -16,6 +16,27 @@ class TestBasicoIO_Brus(unittest.TestCase):
         species = basico.get_species('X')
         self.assertTrue(species.shape[0] == 1)
 
+    def test_species_modification(self):
+        basico.add_species('speciesB');
+        basico.set_species('speciesB', exact=True, initial_concentration=0.4, status='fixed');
+        species = basico.as_dict(basico.get_species('speciesB', exact=True))
+        self.assertIsNotNone(species)
+        self.assertAlmostEqual(species['initial_concentration'], 0.4)
+        self.assertEqual(species['type'], 'fixed')
+
+        basico.add_species('speciesC', initial_concentration=0.3, status='fixed');
+        species = basico.as_dict(basico.get_species('speciesC', exact=True))
+        self.assertIsNotNone(species)
+        self.assertAlmostEqual(species['initial_concentration'], 0.3)
+        self.assertEqual(species['type'], 'fixed')
+
+        basico.add_species('speciesD', initial_particle_number=200, status='fixed');
+        species = basico.as_dict(basico.get_species('speciesD', exact=True))
+        self.assertIsNotNone(species)
+        self.assertAlmostEqual(species['initial_particle_number'], 200)
+        self.assertEqual(species['type'], 'fixed')
+
+
     def test_get_reaction_parameters(self):
         parameters = basico.get_reaction_parameters('k1')
         self.assertTrue(parameters.shape[0] == 4)

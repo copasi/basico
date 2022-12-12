@@ -3305,7 +3305,7 @@ def set_species(name=None, exact=False, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    metabs = model.getMetabolitesX()
+    metabs = model.getMetabolites()
     num_metabs = metabs.size()
 
     change_set = COPASI.ObjectStdVector()
@@ -3337,11 +3337,11 @@ def set_species(name=None, exact=False, **kwargs):
 
         if 'initial_concentration' in kwargs:
             metab.setInitialConcentration(float(kwargs['initial_concentration']))
-            change_set.append(metab.getInitialConcentrationReference())
+            model.updateInitialValues(metab.getInitialConcentrationReference())
 
         if 'initial_particle_number' in kwargs:
             metab.setInitialValue(float(kwargs['initial_particle_number']))
-            change_set.append(metab.getInitialValueReference())
+            model.updateInitialValues(metab.getInitialValueReference())
 
         if 'concentration' in kwargs:
             metab.setConcentration(float(kwargs['concentration']))
@@ -3371,7 +3371,6 @@ def set_species(name=None, exact=False, **kwargs):
         if 'sbml_id' in kwargs:
             metab.setSBMLId(kwargs['sbml_id'])
 
-    model.updateInitialValues(change_set)
     model.compileIfNecessary()
 
 

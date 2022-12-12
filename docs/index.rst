@@ -21,6 +21,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Accessing_Models_from_Databases
    notebooks/Creating_a_simple_model
    notebooks/Model_manipulation
+   notebooks/Editing_Kinetics
    notebooks/Parameter_Estimation_Example
    notebooks/Setting_up_Parameter_Estimation
    notebooks/ParameterEstimation_Export

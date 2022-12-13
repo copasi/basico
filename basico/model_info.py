@@ -2175,7 +2175,6 @@ def get_parameters(name=None, exact=False, **kwargs):
 
     return pandas.DataFrame(data=data).set_index('name')
 
-
 def get_functions(name=None, **kwargs):
     """Returns all available functions as pandas dataframe.
 
@@ -2252,11 +2251,32 @@ def get_functions(name=None, **kwargs):
     return pandas.DataFrame(data=data).set_index('name')
 
 
-def _get_function_mapping(function):
+def _get_function(name):
+    """ Resolves the function from name
+
+    :param name: name of a function in the function database
+    :type name: str
+    :return: the function or None
+    :rtype: COPASI.CFunction
+    """
+    root = COPASI.CRootContainer.getRoot()
+    assert (isinstance(root, COPASI.CRootContainer))
+    functions = root.getFunctionList().loadedFunctions()
+
+    for i in range(functions.size()):
+        fun = functions.get(i)
+        if fun.getObjectName() == name:
+            return fun
+
+    return None
+
+def _get_function_mapping(function, filter=None):
     """ Returns the mapping for the given function
 
     :param function: the function to get the mapping for
-    :param function: COPASI.CFunction
+    :type function: COPASI.CFunction
+    :param filter: usage to filter for (e.g. `modifier`)
+    :type filter: str
     :return: the mapping as dictionary
     :rtype: Dict
     """
@@ -2271,6 +2291,8 @@ def _get_function_mapping(function):
         assert (isinstance(p, COPASI.CFunctionParameter))
         n = p.getObjectName()
         u = __usage_to_string(p.getUsage())
+        if filter and filter != u:
+            continue
         mapping[n] = u
 
     return mapping
@@ -2852,7 +2874,9 @@ def set_reaction(name=None, exact=False, **kwargs):
             info.init(reaction)
             info.setFunctionAndDoMapping(kwargs['function'])
             if not info.isValid():
-                logging.error('the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(name, kwargs['function']))
+                # not valid yet, try and see if it were valid when adding modifiers
+                if 'mapping' not in kwargs or not _valid_with_added_modifiers(reaction, info, kwargs['function'], kwargs['mapping'], dm):
+                    logging.error('the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(name, kwargs['function']))
             info.writeBackToReaction(reaction)
             reaction.compile()
             changed = True
@@ -2868,6 +2892,46 @@ def set_reaction(name=None, exact=False, **kwargs):
 
     if changed:
         model.forceCompile()
+
+def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
+    if not reaction or not info or not dm:
+        return False
+    function = _get_function(function_name)
+    modifiers = list(_get_function_mapping(function, 'modifier').keys())
+    if not modifiers:
+        return False
+
+    # ensure that the modifiers are mapped
+    for modifier in modifiers:
+        if modifier not in mapping:
+            return False
+
+    current_scheme = reaction.getReactionScheme()
+    modifier_index = current_scheme.rfind(';')
+
+    old_modfiers = '' if modifier_index < 0 else  current_scheme[modifier_index+1:].strip()
+    old_scheme = current_scheme if modifier_index < 0 else current_scheme[:modifier_index].strip()
+
+    new_modifiers = old_modfiers
+    for modifier in modifiers:
+        if mapping[modifier] not in new_modifiers:
+            new_modifiers += ' ' + mapping[modifier]
+
+    new_scheme = old_scheme + '; ' + new_modifiers.strip()
+
+    # now apply and see if it works
+    reaction.setReactionScheme(new_scheme)
+    reaction.compile()
+    info.init(reaction)
+    info.setFunctionAndDoMapping(function_name)
+    if not info.isValid():
+        # set back to old
+        reaction.setReactionScheme(current_scheme)
+        reaction.compile()
+        info.init(reaction)
+        return False
+
+    return True
 
 
 def get_reaction_mapping(reaction, **kwargs):

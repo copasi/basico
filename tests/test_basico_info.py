@@ -47,7 +47,7 @@ class TestBasicoIO_Brus(unittest.TestCase):
         basico.set_reaction('mod_r', function='Allosteric inhibition (MWC)', mapping={'non_existing': 'species_A'})
         reaction = basico.as_dict(basico.get_reactions('mod_r', exact=True))
         self.assertIsNotNone(reaction)
-        self.assertIsNotEqual(reaction['function'], 'Allosteric inhibition (MWC)')
+        self.assertNotEqual(reaction['function'], 'Allosteric inhibition (MWC)')
 
         # now again with inhibitor, this time it should work
         basico.set_reaction('mod_r', function='Allosteric inhibition (MWC)', mapping={'Inhibitor': 'species_A'})

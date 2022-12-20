@@ -54,6 +54,8 @@ def run_steadystate(**kwargs):
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
+    model.getModel().compileIfNecessary()
+
     task = model.getTask('Steady-State')
     assert (isinstance(task, COPASI.CSteadyStateTask))
 

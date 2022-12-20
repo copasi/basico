@@ -965,6 +965,8 @@ def run_parameter_estimation(**kwargs):
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
+    model.getModel().compileIfNecessary()
+
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
 

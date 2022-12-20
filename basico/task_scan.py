@@ -461,6 +461,8 @@ def run_scan(**kwargs):
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
 
+    model.getModel().compileIfNecessary()
+
     if 'settings' in kwargs:
         set_scan_settings(settings=kwargs['settings'], model=model)
 

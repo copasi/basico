@@ -148,6 +148,9 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
 
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
+
+    model.getModel().compileIfNecessary()
+
     dh, columns = create_data_handler(output_selection, model=model)
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
@@ -307,6 +310,8 @@ def run_time_course(*args, **kwargs):
     :rtype: pandas.DataFrame
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
+
+    model.getModel().compileIfNecessary()
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
 

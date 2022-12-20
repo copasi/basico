@@ -344,7 +344,7 @@ def get_species(name=None, exact=False, **kwargs):
 
     model.compileIfNecessary()
 
-    metabs = model.getMetabolitesX()
+    metabs = model.getMetabolites()
     assert(isinstance(metabs, COPASI.MetabVector))
 
     num_metabs = metabs.size()
@@ -1656,7 +1656,7 @@ def add_compartment(name, initial_size=1.0, **kwargs):
     if compartment is None:
         raise ValueError('A compartment named ' + name + ' already exists')
 
-    set_compartment(name, exact=True, **kwargs)
+    _set_compartment(compartment, model, **kwargs)
 
     return compartment
 
@@ -1817,7 +1817,7 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
     if species is None:
         raise ValueError('A species named ' + name + ' already exists in compartment ' + compartment_name)
 
-    set_species(name, exact=True, **kwargs)
+    _set_species(species, model, **kwargs)
 
     return species
 
@@ -1850,8 +1850,8 @@ def add_parameter(name, initial_value=1.0, **kwargs):
     if parameter is None:
         raise ValueError('A global parameter named ' + name + ' already exists')
 
-    if len(kwargs):
-        set_parameters(name, exact=True, **kwargs)
+    if len(kwargs) and parameter:
+        _set_parameter(parameter, model, **kwargs)
 
     return parameter
 
@@ -1889,7 +1889,7 @@ def add_event(name, trigger, assignments, **kwargs):
         raise ValueError('An Event named ' + name + ' already exists')
     assert (isinstance(event, COPASI.CEvent))
 
-    set_event(name, exact=True, trigger=trigger, assignments=assignments, model=dm)
+    _set_event(event, dm, trigger=trigger, assignments=assignments)
 
     return event
 
@@ -1945,28 +1945,53 @@ def set_event(name, exact=False, trigger=None, assignments=None, **kwargs):
         if name and type(name) is str and name not in current_name and name not in display_name:
             continue
 
-        if 'new_name' in kwargs:
-            if not event.setObjectName(kwargs['new_name']):
-                logging.warning('could not rename event')
+        _set_event(event, dm, assignments, trigger, **kwargs)
 
-        if trigger:
-            event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
 
-        if assignments:
-            for assignment in assignments:
-                ea = event.createAssignment()
-                assert (isinstance(ea, COPASI.CEventAssignment))
-                target = dm.findObjectByDisplayName(assignment[0])
-                if target is None:
-                    logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
-                    continue
-                if target.getObjectType() == 'Reference':
-                    target = target.getObjectParent()
-                ea.setTargetCN(target.getCN())
-                ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
+def _set_event(event, dm, assignments, trigger, **kwargs):
+    """Sets the event attributes
 
-    model.compileIfNecessary()
+    :param event: the event to change
+    :type event: COPASI.CEvent
+    :param dm: the datamodel
+    :type dm: COPASI.CDataModel
+    :param assignments: dictionary of event assignments
+    :param trigger: trigger expression
+    :param kwargs: other attributes
+    :return:
+    """
 
+    if not event or not dm:
+        return
+
+    if 'new_name' in kwargs:
+        if not event.setObjectName(kwargs['new_name']):
+            logging.warning('could not rename event')
+
+    if trigger:
+        event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
+        l = COPASI.ContainerList()
+        l.push_back(dm)
+        event.compile(l)
+
+    if assignments:
+        for assignment in assignments:
+            ea = event.createAssignment()
+            assert (isinstance(ea, COPASI.CEventAssignment))
+            target = dm.findObjectByDisplayName(assignment[0])
+            if target is None:
+                logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
+                continue
+            if target.getObjectType() == 'Reference':
+                target = target.getObjectParent()
+            ea.setTargetCN(target.getCN())
+            ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
+
+        l = COPASI.ContainerList()
+        l.push_back(dm)
+        event.compile(l)
+
+    dm.getModel().compileIfNecessary()
 
 def add_event_assignment(name, assignment, exact=False, **kwargs):
     """Adds an event assignment to the named event
@@ -2020,7 +2045,7 @@ def add_reaction(name, scheme, **kwargs):
         raise ValueError('A reaction named ' + name + ' already exists')
 
     assert (isinstance(reaction, COPASI.CReaction))
-    set_reaction(name, exact=True, scheme=scheme, **kwargs)
+    _set_reaction(reaction, dm, scheme=scheme, **kwargs)
 
     return reaction
 
@@ -2513,8 +2538,6 @@ def set_compartment(name=None, exact=False, **kwargs):
 
     num_compartments = compartments.size()
 
-    change_set = COPASI.ObjectStdVector()
-
     for i in range(num_compartments):
         compartment = compartments.get(i)
         assert (isinstance(compartment, COPASI.CCompartment))
@@ -2532,44 +2555,47 @@ def set_compartment(name=None, exact=False, **kwargs):
         if name and isinstance(name, Iterable) and current_name not in name:
             continue
 
-        if 'new_name' in kwargs:
-            compartment.setObjectName(kwargs['new_name'])
+        _set_compartment(compartment, model, **kwargs)
 
-        for initial in ['initial_value', 'initial_size']:
-            if initial in kwargs:
-                compartment.setInitialValue(float(kwargs[initial]))
-                change_set.append(compartment.getInitialValueReference())
+def _set_compartment(compartment, model, **kwargs):
+    """Changes all compartment properties
 
-        for transient in ['value', 'size']:
-            if transient in kwargs:
-                compartment.setValue(float(kwargs[transient]))
-                change_set.append(compartment.getValueReference())
+    :param compartment: the compartment object to change
+    :type compartment: COPASI.CCompartment
+    :param model: the copasi model
+    :type model: COPASI.CModel
+    :param kwargs: all attributes to change
+    :return: None
+    """
+    if not compartment or not model:
+        return
 
-        if 'initial_expression' in kwargs:
-            _set_initial_expression(compartment, kwargs['initial_expression'])
-            model.setCompileFlag(True)
-
-        if 'status' in kwargs:
-            compartment.setStatus(__status_to_int(kwargs['status']))
-
-        if 'type' in kwargs:
-            compartment.setStatus(__status_to_int(kwargs['type']))
-
-        if 'expression' in kwargs:
-            _set_expression(compartment, kwargs['expression'])
-            model.setCompileFlag(True)
-
-        if 'dimensionality' in kwargs:
-            compartment.setDimensionality(kwargs['dimensionality'])
-
-        if 'notes' in kwargs:
-            compartment.setNotes(kwargs['notes'])
-
-        if 'sbml_id' in kwargs:
-            compartment.setSBMLId(kwargs['sbml_id'])
-
-    model.updateInitialValues(change_set)
-    model.compileIfNecessary()
+    if 'new_name' in kwargs:
+        compartment.setObjectName(kwargs['new_name'])
+    for initial in ['initial_value', 'initial_size']:
+        if initial in kwargs:
+            model.updateInitialValues(compartment.getInitialValueReference())
+            compartment.setInitialValue(float(kwargs[initial]))
+            model.updateInitialValues(compartment.getInitialValueReference())
+    for transient in ['value', 'size']:
+        if transient in kwargs:
+            compartment.setValue(float(kwargs[transient]))
+    if 'initial_expression' in kwargs:
+        _set_initial_expression(compartment, kwargs['initial_expression'])
+        model.setCompileFlag(True)
+    if 'status' in kwargs:
+        compartment.setStatus(__status_to_int(kwargs['status']))
+    if 'type' in kwargs:
+        compartment.setStatus(__status_to_int(kwargs['type']))
+    if 'expression' in kwargs:
+        _set_expression(compartment, kwargs['expression'])
+        model.setCompileFlag(True)
+    if 'dimensionality' in kwargs:
+        compartment.setDimensionality(kwargs['dimensionality'])
+    if 'notes' in kwargs:
+        compartment.setNotes(kwargs['notes'])
+    if 'sbml_id' in kwargs:
+        compartment.setSBMLId(kwargs['sbml_id'])
 
 
 def _set_initial_expression(element, expression):
@@ -2668,45 +2694,57 @@ def set_parameters(name=None, exact=False, **kwargs):
         if name and isinstance(name, Iterable) and (current_name not in name and display_name not in name):
             continue
 
-        if 'new_name' in kwargs:
-            if not param.setObjectName(str(kwargs['new_name'])):
-                logging.warning('could not rename event')
+        _set_parameter(param, model, **kwargs)
 
-        if 'unit' in kwargs:
-            param.setUnitExpression(kwargs['unit'])
 
-        if 'initial_value' in kwargs:
-            param.setInitialValue(float(kwargs['initial_value']))
-            change_set.append(param.getInitialValueReference())
+def _set_parameter(param, model, **kwargs):
+    """Changes the parameter attributes
 
-        if 'value' in kwargs:
-            param.setValue(float(kwargs['value']))
-            change_set.append(param.getValueReference())
+    :param param: the parameter to change
+    :type param: COPASI.CModelValue
+    :param model: the model to change
+    :type model: COPASI.CModel
+    :param kwargs: the attributes to change
+    :return:
+    """
+    if not param or not model:
+        return
 
-        if 'initial_expression' in kwargs:
-            _set_initial_expression(param, kwargs['initial_expression'])
-            model.setCompileFlag(True)
+    if 'new_name' in kwargs:
+        if not param.setObjectName(str(kwargs['new_name'])):
+            logging.warning('could not rename the parameter')
 
-        if 'status' in kwargs:
-            param.setStatus(__status_to_int(kwargs['status']))
+    if 'unit' in kwargs:
+        param.setUnitExpression(kwargs['unit'])
 
-        if 'type' in kwargs:
-            param.setStatus(__status_to_int(kwargs['type']))
+    if 'initial_value' in kwargs:
+        param.setInitialValue(float(kwargs['initial_value']))
+        model.updateInitialValues(param.getInitialValueReference())
 
-        if 'expression' in kwargs:
-            _set_expression(param, kwargs['expression'])
-            model.setCompileFlag(True)
+    if 'value' in kwargs:
+        param.setValue(float(kwargs['value']))
 
-        if 'notes' in kwargs:
-            param.setNotes(kwargs['notes'])
+    if 'initial_expression' in kwargs:
+        _set_initial_expression(param, kwargs['initial_expression'])
+        model.setCompileFlag(True)
 
-        if 'sbml_id' in kwargs:
-            param.setSBMLId(kwargs['sbml_id'])
+    if 'status' in kwargs:
+        param.setStatus(__status_to_int(kwargs['status']))
+        model.setCompileFlag(True)
 
-    if change_set.size():
-        model.updateInitialValues(change_set)
+    if 'type' in kwargs:
+        param.setStatus(__status_to_int(kwargs['type']))
+        model.setCompileFlag(True)
 
-    model.compileIfNecessary()
+    if 'expression' in kwargs:
+        _set_expression(param, kwargs['expression'])
+        model.setCompileFlag(True)
+
+    if 'notes' in kwargs:
+        param.setNotes(kwargs['notes'])
+
+    if 'sbml_id' in kwargs:
+        param.setSBMLId(kwargs['sbml_id'])
 
 
 def set_reaction_parameters(name=None, **kwargs):
@@ -2861,37 +2899,63 @@ def set_reaction(name=None, exact=False, **kwargs):
         if name and isinstance(name, Iterable) and current_name not in name:
             continue
 
-        if 'new_name' in kwargs:
-            reaction.setObjectName(kwargs['new_name'])
-
-        if 'scheme' in kwargs:
-            reaction.setReactionScheme(kwargs['scheme'])
-            reaction.compile()
-            changed = True
-
-        if 'function' in kwargs:
-            info = COPASI.CReactionInterface()
-            info.init(reaction)
-            info.setFunctionAndDoMapping(kwargs['function'])
-            if not info.isValid():
-                # not valid yet, try and see if it were valid when adding modifiers
-                if 'mapping' not in kwargs or not _valid_with_added_modifiers(reaction, info, kwargs['function'], kwargs['mapping'], dm):
-                    logging.error('the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(name, kwargs['function']))
-            info.writeBackToReaction(reaction)
-            reaction.compile()
-            changed = True
-
-        if 'mapping' in kwargs:
-            changed = set_reaction_mapping(reaction, kwargs['mapping'], model=dm)
-
-        if 'notes' in kwargs:
-            reaction.setNotes(kwargs['notes'])
-
-        if 'sbml_id' in kwargs:
-            reaction.setSBMLId(kwargs['sbml_id'])
+        changed = _set_reaction(reaction, dm, **kwargs)
 
     if changed:
-        model.forceCompile()
+        model.setCompileFlag(True)
+
+
+def _set_reaction(reaction, dm, **kwargs):
+    """Changes all reaction properties
+
+    :param reaction: the reaction to modify
+    :type reaction: COPASI.CReaction
+    :param dm: the datamodel
+    :type dm: COPASI.CDataModel
+    :param kwargs: the attributes to change
+    :return: boolean indicating, whether compilation is necessary
+    """
+    changed = False
+
+    if 'new_name' in kwargs:
+        reaction.setObjectName(kwargs['new_name'])
+
+    if 'scheme' in kwargs:
+        info = COPASI.CReactionInterface()
+        info.init(reaction)
+        info.setChemEqString(kwargs['scheme'], '');
+        info.createMetabolites();
+        info.createOtherObjects();
+        info.writeBackToReaction(reaction)
+        reaction.compile()
+        changed = True
+
+    if 'function' in kwargs:
+        info = COPASI.CReactionInterface()
+        info.init(reaction)
+        info.setFunctionAndDoMapping(kwargs['function'])
+        if not info.isValid():
+            # not valid yet, try and see if it were valid when adding modifiers
+            if 'mapping' not in kwargs or not _valid_with_added_modifiers(reaction, info, kwargs['function'],
+                                                                          kwargs['mapping'], dm):
+                logging.error(
+                    'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(
+                        reaction.getObjectName(), kwargs['function']))
+        info.writeBackToReaction(reaction)
+        reaction.compile()
+        changed = True
+
+    if 'mapping' in kwargs:
+        changed = set_reaction_mapping(reaction, kwargs['mapping'], model=dm)
+
+    if 'notes' in kwargs:
+        reaction.setNotes(kwargs['notes'])
+
+    if 'sbml_id' in kwargs:
+        reaction.setSBMLId(kwargs['sbml_id'])
+
+    return changed
+
 
 def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     if not reaction or not info or not dm:
@@ -2920,15 +2984,18 @@ def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     new_scheme = old_scheme + '; ' + new_modifiers.strip()
 
     # now apply and see if it works
-    reaction.setReactionScheme(new_scheme)
-    reaction.compile()
-    info.init(reaction)
-    info.setFunctionAndDoMapping(function_name)
+    # reaction.setReactionScheme(new_scheme)
+    # reaction.compile()
+    # info.init(reaction)
+    info.setChemEqString(new_scheme, function_name)
+    #info.setFunctionAndDoMapping(function_name)
     if not info.isValid():
         # set back to old
-        reaction.setReactionScheme(current_scheme)
-        reaction.compile()
-        info.init(reaction)
+        #reaction.setReactionScheme(current_scheme)
+        #reaction.compile()
+        #info.init(reaction)
+        info.setChemEqString(current_scheme, function_name)
+        #info.setFunctionAndDoMapping(function_name)
         return False
 
     return True
@@ -3372,8 +3439,6 @@ def set_species(name=None, exact=False, **kwargs):
     metabs = model.getMetabolites()
     num_metabs = metabs.size()
 
-    change_set = COPASI.ObjectStdVector()
-
     for i in range(num_metabs):
         metab = metabs.get(i)
         assert (isinstance(metab, COPASI.CMetab))
@@ -3393,49 +3458,52 @@ def set_species(name=None, exact=False, **kwargs):
         if name and isinstance(name, Iterable) and current_name not in name and display_name not in name:
             continue
 
-        if 'new_name' in kwargs:
-            metab.setObjectName(kwargs['new_name'])
+        _set_species(metab, model, **kwargs)
 
-        if 'unit' in kwargs:
-            metab.setUnitExpression(kwargs['unit'])
 
-        if 'initial_concentration' in kwargs:
-            metab.setInitialConcentration(float(kwargs['initial_concentration']))
-            model.updateInitialValues(metab.getInitialConcentrationReference())
+def _set_species(metab, model, **kwargs):
+    """Changes all species properties
 
-        if 'initial_particle_number' in kwargs:
-            metab.setInitialValue(float(kwargs['initial_particle_number']))
-            model.updateInitialValues(metab.getInitialValueReference())
+    :param metab: the species to edit
+    :type metab: COPASI.CMetab
+    :param model: the model to update
+    :type model: COPASI.CModel
+    :param kwargs: the attributes to change
+    :return:
+    """
+    if not metab or not model:
+        return
 
-        if 'concentration' in kwargs:
-            metab.setConcentration(float(kwargs['concentration']))
-            change_set.append(metab.getConcentrationReference())
-
-        if 'particle_number' in kwargs:
-            metab.setValue(float(kwargs['particle_number']))
-            change_set.append(metab.getValueReference())
-
-        if 'initial_expression' in kwargs:
-            _set_initial_expression(metab, kwargs['initial_expression'])
-            model.setCompileFlag(True)
-
-        if 'status' in kwargs:
-            metab.setStatus(__status_to_int(kwargs['status']))
-
-        if 'type' in kwargs:
-            metab.setStatus(__status_to_int(kwargs['type']))
-
-        if 'expression' in kwargs:
-            _set_expression(metab, kwargs['expression'])
-            model.setCompileFlag(True)
-
-        if 'notes' in kwargs:
-            metab.setNotes(kwargs['notes'])
-
-        if 'sbml_id' in kwargs:
-            metab.setSBMLId(kwargs['sbml_id'])
-
-    model.compileIfNecessary()
+    if 'new_name' in kwargs:
+        metab.setObjectName(kwargs['new_name'])
+    if 'unit' in kwargs:
+        metab.setUnitExpression(kwargs['unit'])
+    if 'initial_concentration' in kwargs:
+        model.updateInitialValues(metab.getInitialConcentrationReference())
+        metab.setInitialConcentration(float(kwargs['initial_concentration']))
+        model.updateInitialValues(metab.getInitialConcentrationReference())
+    if 'initial_particle_number' in kwargs:
+        model.updateInitialValues(metab.getInitialValueReference())
+        metab.setInitialValue(float(kwargs['initial_particle_number']))
+        model.updateInitialValues(metab.getInitialValueReference())
+    if 'concentration' in kwargs:
+        metab.setConcentration(float(kwargs['concentration']))
+    if 'particle_number' in kwargs:
+        metab.setValue(float(kwargs['particle_number']))
+    if 'initial_expression' in kwargs:
+        _set_initial_expression(metab, kwargs['initial_expression'])
+        model.setCompileFlag(True)
+    if 'status' in kwargs:
+        metab.setStatus(__status_to_int(kwargs['status']))
+    if 'type' in kwargs:
+        metab.setStatus(__status_to_int(kwargs['type']))
+    if 'expression' in kwargs:
+        _set_expression(metab, kwargs['expression'])
+        model.setCompileFlag(True)
+    if 'notes' in kwargs:
+        metab.setNotes(kwargs['notes'])
+    if 'sbml_id' in kwargs:
+        metab.setSBMLId(kwargs['sbml_id'])
 
 
 def set_time_unit(unit, **kwargs):

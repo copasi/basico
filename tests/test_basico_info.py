@@ -7,9 +7,9 @@ import COPASI
 class TestBasicoIO_Brus(unittest.TestCase):
 
     def setUp(self):
-        dm = basico.load_example('brusselator')
-        self.assertTrue(dm is not None)
-        self.assertTrue(isinstance(dm, COPASI.CDataModel))
+        self.dm = basico.load_example('brusselator')
+        self.assertTrue(self.dm is not None)
+        self.assertTrue(isinstance(self.dm, COPASI.CDataModel))
         self.assertTrue('The Brusselator' in basico.model_io.overview())
 
     def test_get_species(self):

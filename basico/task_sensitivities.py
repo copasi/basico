@@ -369,6 +369,8 @@ def run_sensitivities(**kwargs):
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
+    model.getModel().compileIfNecessary()
+
     if 'settings' in kwargs:
         basico.set_sensitivity_settings(kwargs['settings'], model=model)
 

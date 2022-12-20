@@ -330,6 +330,8 @@ def run_optimization(expression=None, output=None, settings=None, **kwargs):
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
 
+    model.getModel().compileIfNecessary()
+
     task = model.getTask(basico.T.OPTIMIZATION)
     assert (isinstance(task, COPASI.COptTask))
     problem = task.getProblem()

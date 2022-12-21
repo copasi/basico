@@ -9,14 +9,37 @@ def basico_testsuite():
     test_suite = test_loader.discover('tests', pattern='test_*.py')
     return test_suite
 
+def read(fname):
+    """Read a file."""
+    return open(fname).read()
+
+
+def absolute_links(txt):
+    """Replace relative petab github links by absolute links."""
+
+    raw_base = \
+        "(https://raw.githubusercontent.com/copasi/basico/master/"
+    embedded_base = \
+        "(https://github.com/copasi/basico/tree/master/"
+    # iterate over links
+    for var in re.findall(r"\[.*?\]\((?!http).*?\)", txt):
+        if re.match(r".*?.(png|svg|jpg)\)", var):
+            # link to raw file
+            rep = var.replace("(", raw_base)
+        else:
+            # link to github embedded file
+            rep = var.replace("(", embedded_base)
+        txt = txt.replace(var, rep)
+    return txt
+
+
 
 setup(name='copasi_basico',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
       description='Simplified COPASI interface for python',
-      long_description="""Basico provides utility functions around the SWIG generated COPASI bindings, it 
-      simplifies tasks, by relying on pandas, and numpy.
-      """,
+      long_description=absolute_links(read("README.md")),
+      long_description_content_type="text/markdown",
       author='COPASI Team',
       author_email='developers@copasi.org',
       url='https://github.com/copasi/basico',

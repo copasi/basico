@@ -2,7 +2,7 @@
 import unittest
 from setuptools import setup
 import versioneer
-
+import re
 
 def basico_testsuite():
     test_loader = unittest.TestLoader()

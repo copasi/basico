@@ -158,6 +158,8 @@ def set_default_handler(handler):
     """
     global _DEFAULT_HANDLER
     _DEFAULT_HANDLER = handler
+    if handler is None:
+        reset_default_handler()
 
 def get_default_handler():
     """Returns the default handler this will be used for all taks executions
@@ -166,3 +168,11 @@ def get_default_handler():
     :rtype: COPASI.CProcessReport
     """
     return _DEFAULT_HANDLER
+
+def reset_default_handler():
+    """Convenience function to reset the handler back to the default
+
+    :return: None
+    """
+    global _DEFAULT_HANDLER
+    _DEFAULT_HANDLER = COPASI.CProcessReport()

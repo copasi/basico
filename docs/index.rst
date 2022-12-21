@@ -32,6 +32,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Parameter_Scans
    notebooks/Sensitivity_Analysis
    notebooks/Arrays_of_Compartments
+   notebooks/Using_callbacks
    notebooks/Working_with_Plots
    notebooks/Working_with_Reports
    notebooks/Working_with_SBML_Ids

@@ -16,10 +16,8 @@ import matplotlib.pyplot as plt
 import subprocess
 from multiprocessing import Pool, Lock
 import logging
-
-
-import COPASI
 from . import model_io
+import COPASI
 
 COPASI_SE = 'CopasiSE'
 logger = logging.getLogger(__name__)
@@ -75,14 +73,21 @@ def plot_data(data_dir):
     plots = []
     for entry in file_map:
         df = None
+        val = 0
+        min_val = 0
         for filename in file_map[entry]:
             if df is None:
                 df = _get_data_from_file(filename)
+                val = df.index[0]
+                min_val = df.values[0][0]
             else:
                 df = pd.concat([df, _get_data_from_file(filename)])
         df.sort_index(inplace=True, axis=0)
         ax = df.plot(legend=False)
         ax.set_ylabel('obj')
+        v_line = ax.axvline(val, color='silver', ls='dotted')
+        h_line = ax.axhline(min_val, color='silver', ls='dotted')
+        title = ax.set_title(f'{df.index.name} obj={val}, value={min_val}')
         plots.append(ax)
 
     return plots
@@ -126,10 +131,6 @@ def _get_data_from_file(filename):
         df = df.drop(labels=['Time'], axis=1, errors='ignore')
     df = df.set_index(df.columns[0])
     return df
-
-import COPASI
-import os 
-import sys
 
 _Problem = None 
 _Task = None
@@ -233,19 +234,23 @@ def _generate_scan_for_item(item, index, data_dir, updateModel = False, lower = 
   problem2.addScanItem(1, Arguments["scan_interval"])
   scanItem = problem2.getScanItem(0)
   scanItem.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
- 
+
+  start_value = item["start_value"]
+  lower_value = _adjust_value(start_value, Arguments["lower_multiplier"])
+  upper_value = _adjust_value(start_value, Arguments["upper_multiplier"])
+
   if not updateModel:
     middle = "_noupdate"
-    scanItem.getParameter("Maximum").setDblValue(item["start_value"] * Arguments["upper_multiplier"])
-    scanItem.getParameter("Minimum").setDblValue(item["start_value"] * Arguments["lower_multiplier"])
+    scanItem.getParameter("Maximum").setDblValue(upper_value)
+    scanItem.getParameter("Minimum").setDblValue(lower_value)
   elif lower:
     middle = "_update_low"
-    scanItem.getParameter("Minimum").setDblValue(item["start_value"])
-    scanItem.getParameter("Maximum").setDblValue(item["start_value"] * Arguments["lower_multiplier"])
+    scanItem.getParameter("Minimum").setDblValue(start_value)
+    scanItem.getParameter("Maximum").setDblValue(lower_value)
   else:
     middle = "_update_high"
-    scanItem.getParameter("Maximum").setDblValue(item["start_value"] * Arguments["upper_multiplier"])
-    scanItem.getParameter("Minimum").setDblValue(item["start_value"])
+    scanItem.getParameter("Maximum").setDblValue(upper_value)
+    scanItem.getParameter("Minimum").setDblValue(start_value)
   
   scanTask.updateMatrices()
   logger.debug("... Generate Report")
@@ -262,16 +267,30 @@ def _generate_scan_for_item(item, index, data_dir, updateModel = False, lower = 
   logger.debug(f"Writing '{out_file}'.")
   _DataModel.saveModel(out_file, True)
 
-def prepare_files(filename, data_dir, lower_multiplier=0.5,
-      upper_multiplier=2.0,
-      modulation=0.01,
-      tolerance=1e-06,
-      iterations=50,
-      scan_interval=40,
-      disable_plots=True,
-      disable_tasks=True,
-      use_hooke=False,
-      prefix="out_"):
+
+def _adjust_value(value, mulitiplier):
+    if type(mulitiplier) is str:
+        is_additive = mulitiplier.startswith('+')
+        if '%' in mulitiplier:
+          mulitiplier = float(mulitiplier.rstrip('%')) / 100.0
+          if mulitiplier < 0 or is_additive:
+            return value + value * mulitiplier
+        else:
+            mulitiplier = float(mulitiplier)
+    return value * mulitiplier
+
+def prepare_files(filename,
+                  data_dir,
+                  lower_multiplier='-50%',
+                  upper_multiplier='+50%',
+                  modulation=0.01,
+                  tolerance=1e-06,
+                  iterations=50,
+                  scan_interval=40,
+                  disable_plots=True,
+                  disable_tasks=True,
+                  use_hooke=False,
+                  prefix="out_"):
       """
       """
       # remove old warnigns
@@ -290,26 +309,23 @@ def prepare_files(filename, data_dir, lower_multiplier=0.5,
       global _Task
       _Task = _get_fit_task()
       if _Task == None:
-      
         logger.error("No Fit Task.")
-        sys.exit(1)
-      
-      else:
-        if not data_dir:
-            data_dir = os.path.abspath( os.path.dirname(Arguments['prefix']))
-        if not os.path.exists(data_dir):
-          os.makedirs(data_dir, exist_ok=True)
-        logger.info(f"Copy Experimental Data to: {data_dir}")
-        _DataModel.copyExperimentalDataTo(data_dir)
+        return
 
-        global _Problem
-        _Problem = _Task.getProblem()
-        optItemList = _convert_opt_items(_Problem.getOptItemList())
-        logger.debug(f"Have: {len(optItemList)} optItems")
-        for index in range (len(optItemList)):
-        
+      if not data_dir:
+          data_dir = os.path.abspath(os.path.dirname(Arguments['prefix']))
+      if not os.path.exists(data_dir):
+          os.makedirs(data_dir, exist_ok=True)
+      logger.info(f"Copy Experimental Data to: {data_dir}")
+      _DataModel.copyExperimentalDataTo(data_dir)
+
+      global _Problem
+      _Problem = _Task.getProblem()
+      optItemList = _convert_opt_items(_Problem.getOptItemList())
+      logger.debug(f"Have: {len(optItemList)} optItems")
+      for index in range(len(optItemList)):
           logger.debug(f"Handling: {optItemList[index]['cn']}")
-          _generate_scan_for_item(optItemList[index], index, data_dir)
+          # _generate_scan_for_item(optItemList[index], index, data_dir)
           _generate_scan_for_item(optItemList[index], index, data_dir, True, True)
           _generate_scan_for_item(optItemList[index], index, data_dir, True)
 

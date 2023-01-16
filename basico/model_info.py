@@ -2557,39 +2557,39 @@ def set_compartment(name=None, exact=False, **kwargs):
 
         _set_compartment(compartment, model, **kwargs)
 
-def _set_compartment(compartment, model, **kwargs):
+def _set_compartment(compartment, c_model, **kwargs):
     """Changes all compartment properties
 
     :param compartment: the compartment object to change
     :type compartment: COPASI.CCompartment
-    :param model: the copasi model
-    :type model: COPASI.CModel
+    :param c_model: the copasi model
+    :type c_model: COPASI.CModel
     :param kwargs: all attributes to change
     :return: None
     """
-    if not compartment or not model:
+    if not compartment or not c_model:
         return
 
     if 'new_name' in kwargs:
         compartment.setObjectName(kwargs['new_name'])
     for initial in ['initial_value', 'initial_size']:
         if initial in kwargs:
-            model.updateInitialValues(compartment.getInitialValueReference())
+            c_model.updateInitialValues(compartment.getInitialValueReference())
             compartment.setInitialValue(float(kwargs[initial]))
-            model.updateInitialValues(compartment.getInitialValueReference())
+            c_model.updateInitialValues(compartment.getInitialValueReference())
     for transient in ['value', 'size']:
         if transient in kwargs:
             compartment.setValue(float(kwargs[transient]))
     if 'initial_expression' in kwargs:
         _set_initial_expression(compartment, kwargs['initial_expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
     if 'status' in kwargs:
         compartment.setStatus(__status_to_int(kwargs['status']))
     if 'type' in kwargs:
         compartment.setStatus(__status_to_int(kwargs['type']))
     if 'expression' in kwargs:
         _set_expression(compartment, kwargs['expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
     if 'dimensionality' in kwargs:
         compartment.setDimensionality(kwargs['dimensionality'])
     if 'notes' in kwargs:
@@ -2697,17 +2697,17 @@ def set_parameters(name=None, exact=False, **kwargs):
         _set_parameter(param, model, **kwargs)
 
 
-def _set_parameter(param, model, **kwargs):
+def _set_parameter(param, c_model, **kwargs):
     """Changes the parameter attributes
 
     :param param: the parameter to change
     :type param: COPASI.CModelValue
-    :param model: the model to change
-    :type model: COPASI.CModel
+    :param c_model: the model to change
+    :type c_model: COPASI.CModel
     :param kwargs: the attributes to change
     :return:
     """
-    if not param or not model:
+    if not param or not c_model:
         return
 
     if 'new_name' in kwargs:
@@ -2719,26 +2719,26 @@ def _set_parameter(param, model, **kwargs):
 
     if 'initial_value' in kwargs:
         param.setInitialValue(float(kwargs['initial_value']))
-        model.updateInitialValues(param.getInitialValueReference())
+        c_model.updateInitialValues(param.getInitialValueReference())
 
     if 'value' in kwargs:
         param.setValue(float(kwargs['value']))
 
     if 'initial_expression' in kwargs:
         _set_initial_expression(param, kwargs['initial_expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
 
     if 'status' in kwargs:
         param.setStatus(__status_to_int(kwargs['status']))
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
 
     if 'type' in kwargs:
         param.setStatus(__status_to_int(kwargs['type']))
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
 
     if 'expression' in kwargs:
         _set_expression(param, kwargs['expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
 
     if 'notes' in kwargs:
         param.setNotes(kwargs['notes'])
@@ -3461,17 +3461,17 @@ def set_species(name=None, exact=False, **kwargs):
         _set_species(metab, model, **kwargs)
 
 
-def _set_species(metab, model, **kwargs):
+def _set_species(metab, c_model, **kwargs):
     """Changes all species properties
 
     :param metab: the species to edit
     :type metab: COPASI.CMetab
-    :param model: the model to update
-    :type model: COPASI.CModel
+    :param c_model: the model to update
+    :type c_model: COPASI.CModel
     :param kwargs: the attributes to change
     :return:
     """
-    if not metab or not model:
+    if not metab or not c_model:
         return
 
     if 'new_name' in kwargs:
@@ -3479,27 +3479,27 @@ def _set_species(metab, model, **kwargs):
     if 'unit' in kwargs:
         metab.setUnitExpression(kwargs['unit'])
     if 'initial_concentration' in kwargs:
-        model.updateInitialValues(metab.getInitialConcentrationReference())
+        c_model.updateInitialValues(metab.getInitialConcentrationReference())
         metab.setInitialConcentration(float(kwargs['initial_concentration']))
-        model.updateInitialValues(metab.getInitialConcentrationReference())
+        c_model.updateInitialValues(metab.getInitialConcentrationReference())
     if 'initial_particle_number' in kwargs:
-        model.updateInitialValues(metab.getInitialValueReference())
+        c_model.updateInitialValues(metab.getInitialValueReference())
         metab.setInitialValue(float(kwargs['initial_particle_number']))
-        model.updateInitialValues(metab.getInitialValueReference())
+        c_model.updateInitialValues(metab.getInitialValueReference())
     if 'concentration' in kwargs:
         metab.setConcentration(float(kwargs['concentration']))
     if 'particle_number' in kwargs:
         metab.setValue(float(kwargs['particle_number']))
     if 'initial_expression' in kwargs:
         _set_initial_expression(metab, kwargs['initial_expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
     if 'status' in kwargs:
         metab.setStatus(__status_to_int(kwargs['status']))
     if 'type' in kwargs:
         metab.setStatus(__status_to_int(kwargs['type']))
     if 'expression' in kwargs:
         _set_expression(metab, kwargs['expression'])
-        model.setCompileFlag(True)
+        c_model.setCompileFlag(True)
     if 'notes' in kwargs:
         metab.setNotes(kwargs['notes'])
     if 'sbml_id' in kwargs:

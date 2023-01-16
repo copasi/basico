@@ -4,6 +4,6 @@ authors:
   - family-names: Bergmann
     given-names: Frank T.
     orcid: https://orcid.org/0000-0001-5553-4702
-title: copasi/basico: Release 0.36
-version: v0.36
-date-released: 2022-10-06
+title: "copasi/basico: Release 0.41"
+version: v0.41
+date-released: 2023-01-16

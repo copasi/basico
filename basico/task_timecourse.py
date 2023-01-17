@@ -320,6 +320,7 @@ def run_time_course(*args, **kwargs):
         logging.error("Error while initializing the simulation: " +
         COPASI.CCopasiMessage.getLastMessage().getText())
     else:
+        task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
             logging.error("Error while running the simulation: " +

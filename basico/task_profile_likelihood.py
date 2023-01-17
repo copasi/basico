@@ -8,20 +8,22 @@
    Biosystems 110:183–185 http://dx.doi.org/10.1016/j.biosystems.2012.09.003
 
 """
-
+import basico
 import pandas as pd
 import sys
 import os
 import matplotlib.pyplot as plt
 import subprocess
 from multiprocessing import Pool, Lock
+import tempfile
 import logging
+import shutil
+import COPASI
+
 try:
     from . import model_io
 except ImportError:
     from basico import model_io
-
-import COPASI
 
 COPASI_SE = 'CopasiSE'
 logger = logging.getLogger(__name__)
@@ -298,6 +300,30 @@ def _adjust_value(value, mulitiplier):
         else:
             mulitiplier = float(mulitiplier)
     return value * mulitiplier
+
+def get_profiles_for_model(data_dir=None, **kwargs):
+    """ Convenience function, combining the steps of preparing, running, and plotting
+
+    :param data_dir: optional data directory to use, if not specified a temp directory will be used,
+                     and deleted afterwards
+    :param kwargs: optional parameters to use, all options from :func:`.prepare_files` can be specified.
+    :return: the plot axis
+    """
+    delete_files = False
+
+    if data_dir == None:
+        delete_files = True
+        data_dir = tempfile.mkdtemp()
+
+    filename = os.path.join(data_dir, 'model.cps')
+    basico.save_model_and_data(filename)
+
+    prepare_files(filename, data_dir, **kwargs)
+    process_dir(data_dir, kwargs.get('pool_size', 4))
+    result = plot_data(data_dir)
+    if delete_files:
+        shutil.rmtree(data_dir, ignore_errors=True)
+    return result
 
 
 def prepare_files(filename,

@@ -9,6 +9,7 @@
 
 """
 import basico
+import numpy as np
 import pandas as pd
 import sys
 import os
@@ -77,7 +78,7 @@ def process_files(files, pool_size=4):
     logging.debug(f'Processing complete')
 
 
-def plot_data(data_dir):
+def plot_data(data_dir, problem_size=None):
     """Plots all files from the given data directory
 
     :param data_dir: data directory containing the report files
@@ -87,25 +88,34 @@ def plot_data(data_dir):
     file_map = _get_report_filemap(data_dir)
     plots = []
     for entry in file_map:
-        df = None
-        val = 0
-        min_val = 0
-        for filename in file_map[entry]:
-            if df is None:
-                df = _get_data_from_file(filename)
-                val = df.index[0]
-                min_val = df.values[0][0]
-            else:
-                df = pd.concat([df, _get_data_from_file(filename)])
-        df.sort_index(inplace=True, axis=0)
+        df, obj_val, param_val = _combine_files(file_map[entry])
         ax = df.plot(legend=False)
         ax.set_ylabel('obj')
-        v_line = ax.axvline(val, color='silver', ls='dotted')
-        h_line = ax.axhline(min_val, color='silver', ls='dotted')
-        title = ax.set_title(f'{df.index.name} obj={val}, value={min_val}')
+        v_line = ax.axvline(param_val, color='silver', ls='dotted')
+        h_line = ax.axhline(obj_val, color='silver', ls='dotted')
+        if problem_size:
+            m, n = problem_size
+            threshold = obj_val+np.sqrt(obj_val/(n-m))
+            h_line = ax.axhline(threshold, color='blue', ls='dashed')
+            ax.set_ylim(top=np.abs(threshold)*1.1)
+        title = ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
         plots.append(ax)
 
     return plots
+
+def _combine_files(report_files):
+    df = None
+    param_val = 0
+    obj_val = 0
+    for filename in report_files:
+        if df is None:
+            df = _get_data_from_file(filename)
+            param_val = df.index[0]
+            obj_val = df.values[0][0]
+        else:
+            df = pd.concat([df, _get_data_from_file(filename)])
+    df.sort_index(inplace=True, axis=0)
+    return df, obj_val, param_val
 
 
 def _get_report_filemap(data_dir):
@@ -317,10 +327,17 @@ def get_profiles_for_model(data_dir=None, **kwargs):
 
     filename = os.path.join(data_dir, 'model.cps')
     basico.save_model_and_data(filename)
-
+    model = basico.get_current_model()
+    task = model.getTask(basico.T.PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    num_params = problem.getOptItemSize()
+    experiments = problem.getExperimentSet()
+    num_data = experiments.getDataPointCount()
     prepare_files(filename, data_dir, **kwargs)
     process_dir(data_dir, kwargs.get('pool_size', 4))
-    result = plot_data(data_dir)
+    result = plot_data(data_dir, problem_size=(num_params, num_data))
     if delete_files:
         shutil.rmtree(data_dir, ignore_errors=True)
     return result

@@ -2934,6 +2934,17 @@ def _set_reaction(reaction, dm, **kwargs):
         info = COPASI.CReactionInterface()
         info.init(reaction)
         info.setFunctionAndDoMapping(kwargs['function'])
+
+        if not info.isValid() and 'mapping' in kwargs:
+            # try and apply mapping directly if we have one
+            mapping = kwargs['mapping']
+            for i in range(info.size()):
+                if info.isVector(i):
+                    continue
+                param_name = info.getParameterName(i)
+                if param_name in mapping:
+                    info.setMapping(i, mapping[param_name])
+        
         if not info.isValid():
             # not valid yet, try and see if it were valid when adding modifiers
             if 'mapping' not in kwargs or not _valid_with_added_modifiers(reaction, info, kwargs['function'],
@@ -2941,6 +2952,7 @@ def _set_reaction(reaction, dm, **kwargs):
                 logging.error(
                     'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(
                         reaction.getObjectName(), kwargs['function']))
+        
         info.writeBackToReaction(reaction)
         reaction.compile()
         changed = True

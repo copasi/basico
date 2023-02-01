@@ -389,6 +389,28 @@ class TestBasicoModelConstruction(unittest.TestCase):
         r0 = basico.as_dict(basico.get_reactions('r0', exact=True))
         self.assertIsNone(r0)
 
+    def test_mapping_volumes(self):
+        basico.add_function(name='Uni-molecular transport', type='irreversible',
+                     infix='Vol*k1*S',
+                     mapping={'Vol': 'volume', 'k1': 'parameter', 'S':
+                         'substrate'})
+
+        i = 0
+        j = 0
+        compname = 'cell[{},{}]'.format(i, j)
+        basico.add_compartment(name=compname)
+        app = '_{},{}'.format(i, j)
+        #vol1 = 'Compartments[cell[{},{}]].Volume'.format(i, j)
+        vol1 = compname
+        ngb = app
+        basico.add_parameter('T0.r_MxferWG')
+        basico.add_reaction(name=f'R31_1{app}', scheme=f'EWG1{app} -> EWG4{ngb}', function='Uni-molecular transport',
+                     mapping={'Vol': vol1, 'k1':
+                         'T0.r_MxferWG'})
+        data = basico.as_dict(basico.get_reactions(name=f'R31_1{app}'))
+        self.assertEqual(data['function'], 'Uni-molecular transport')
+        self.assertDictEqual(data['mapping'], {'Vol': 'cell[0,0]', 'k1': 'T0.r_MxferWG', 'S': 'EWG1_0,0'})
+
 
 if __name__ == "__main__":
     unittest.main()

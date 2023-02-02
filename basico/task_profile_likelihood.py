@@ -253,6 +253,7 @@ def _generate_scan_for_item(item, index, data_dir, updateModel=False, lower=Fals
         fitTask.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
 
     problem1 = fitTask.getProblem()
+    problem1.setCalculateStatistics(False)
     logger.debug("... Remove OptItem")
     problem1.removeOptItem(item["index"])
     logger.debug("... Generate Scan")
@@ -294,7 +295,8 @@ def _generate_scan_for_item(item, index, data_dir, updateModel=False, lower=Fals
     report.setAppend(False)
     report.setConfirmOverwrite(False)
     logger.debug("... Generate Plot")
-    COPASI.COutputAssistant.createDefaultOutput(251, scanTask, _DataModel)
+    plot = COPASI.COutputAssistant.createDefaultOutput(251, scanTask, _DataModel)
+    plot.setObjectName('{0} = {1}'.format('opt', start_value))
     out_file = os.path.abspath("{0}/{1}_{2:05d}_{3}.cps".format(data_dir, Arguments['prefix'], index, middle))
     logger.debug(f"Writing '{out_file}'.")
     _DataModel.saveModel(out_file, True)

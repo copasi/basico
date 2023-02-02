@@ -400,7 +400,6 @@ class TestBasicoModelConstruction(unittest.TestCase):
         compname = 'cell[{},{}]'.format(i, j)
         basico.add_compartment(name=compname)
         app = '_{},{}'.format(i, j)
-        #vol1 = 'Compartments[cell[{},{}]].Volume'.format(i, j)
         vol1 = compname
         ngb = app
         basico.add_parameter('T0.r_MxferWG')
@@ -410,6 +409,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
         data = basico.as_dict(basico.get_reactions(name=f'R31_1{app}'))
         self.assertEqual(data['function'], 'Uni-molecular transport')
         self.assertDictEqual(data['mapping'], {'Vol': 'cell[0,0]', 'k1': 'T0.r_MxferWG', 'S': 'EWG1_0,0'})
+
+        # ensure this does not crash
+        vol1 = 'Compartments[cell[{},{}]].Volume'.format(i, j)
+        basico.add_reaction(name=f'R32_1{app}', scheme=f'EWG1{app} -> EWG4{ngb}', function='Uni-molecular transport',
+                            mapping={'Vol': vol1, 'k1':
+                                'T0.r_MxferWG'})
 
 
 if __name__ == "__main__":

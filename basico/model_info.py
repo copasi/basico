@@ -2917,6 +2917,8 @@ def _set_reaction(reaction, dm, **kwargs):
     """
     changed = False
 
+    c_model = reaction.getObjectDataModel().getModel()
+
     if 'new_name' in kwargs:
         reaction.setObjectName(kwargs['new_name'])
 
@@ -2935,23 +2937,27 @@ def _set_reaction(reaction, dm, **kwargs):
         info.init(reaction)
         info.setFunctionAndDoMapping(kwargs['function'])
 
-        if not info.isValid() and 'mapping' in kwargs:
+        missing = _get_parameter_mapping(info, missing_only=True)
+
+        if missing and 'mapping' in kwargs:
             # try and apply mapping directly if we have one
             mapping = kwargs['mapping']
-            for i in range(info.size()):
-                if info.isVector(i):
+            for entry in missing:
+                if entry['is_vector']:
                     continue
-                param_name = info.getParameterName(i)
-                if param_name in mapping:
-                    info.setMapping(i, mapping[param_name])
-        
-        if not info.isValid():
+                param_name = entry['name']
+                if param_name in mapping and _validate_mapping(entry['usage'], param_name, mapping[param_name], c_model):
+                    info.setMapping(entry['index'], mapping[param_name])
+
+        missing = _get_parameter_mapping(info, missing_only=True)
+        if missing and ('mapping' not in kwargs or
+                        not _valid_with_added_modifiers(
+                            reaction, info, kwargs['function'],
+                            kwargs['mapping'], dm)):
             # not valid yet, try and see if it were valid when adding modifiers
-            if 'mapping' not in kwargs or not _valid_with_added_modifiers(reaction, info, kwargs['function'],
-                                                                          kwargs['mapping'], dm):
-                logging.error(
-                    'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied.'.format(
-                        reaction.getObjectName(), kwargs['function']))
+            logging.error(
+                'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied. (missing mapping(s) for {2})'.format(
+                    reaction.getObjectName(), kwargs['function'], [ entry['usage']  + ': ' + entry['name'] for entry in missing ]))
         
         info.writeBackToReaction(reaction)
         reaction.compile()
@@ -2968,6 +2974,61 @@ def _set_reaction(reaction, dm, **kwargs):
 
     return changed
 
+def _get_parameter_mapping(info, missing_only=False):
+    """ Returns mapping from the info object
+
+    :param info: the reaction information
+    :type info: COPASI.CReactionInterface
+    :return: array of mapping entries
+    """
+    result = []
+    for i in range(info.size()):
+        name = info.getParameterName(i)
+        usage = __usage_to_string(info.getUsage(i))
+        is_vector = info.isVector(i)
+        mapping = info.getMapping(i)
+
+        if missing_only and mapping != 'unknown':
+            continue
+
+        mappings = [ s for s in info.getMappings(i)]
+
+        result.append({
+            'name': name,
+            'usage': usage,
+            'is_vector': is_vector,
+            'mapping': mapping,
+            'mappings': mappings,
+            'index': i
+        })
+    return result
+
+def _validate_mapping(usage, param_name, mapped_value, c_model):
+    """Validates whether the mapped value is correct for the function parameter
+
+    :param usage: str (or int) of the usage type of the function paramater
+    :param param_name: name of the parameter
+    :param mapped_value: the value it should be mapped to
+    :param c_model: the model to look in.
+    :type c_model: COPASI.CModel
+    :return: True, if the value is ok, False otherwise
+    """
+    if type(usage) is int:
+        usage = __usage_to_string(usage)
+
+    if usage == "volume":
+        result = c_model.getCompartment(mapped_value) is not None
+
+    if usage == "parameter":
+        result = type(mapped_value) is str and c_model.getModelValue(mapped_value) is not None
+
+    result =  c_model.getMetabolite(mapped_value) is not None
+
+    if not result:
+        logging.error('Invalid mapping provilded for {0} of type {1} (invalid value {2})'
+                      .format(param_name, usage, mapped_value))
+
+    return result
 
 def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     if not reaction or not info or not dm:

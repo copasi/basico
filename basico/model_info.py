@@ -619,8 +619,12 @@ def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
         cn = get_nth_function(i)
         obj = dm.getObject(cn)
         if obj is None:
+            obj = dm.getObjectFromCN(COPASI.CCommonName(cn))
+
+        if obj is None:
             logging.warning('report item cannot be resolved: {0}'.format(cn.getString()))
             continue
+
         reverse = dm.findObjectByDisplayName(obj.getObjectDisplayName())
         if reverse is None:
             # item that cannot be resolved by name so use cn
@@ -1047,7 +1051,7 @@ def add_report(name, **kwargs):
 
 
 def set_report_dict(spec, precision=None, separator=None, table=None,
-                    print_headers=True, header=None, body=None, footer=None, task=None, comment=None, **kwargs):
+                    print_headers=True, header=None, body=None, footer=None, task=None, comment=None, add_separator=None, **kwargs):
     """Sets properties of the named report definition.
     
         Examples:
@@ -1097,6 +1101,10 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
 
         :param comment: a documentation string for the report (can bei either string, or xhtml string)
         :type comment: Optional[str]
+        
+        :param add_separator: an optional boolean flag, to automatically add seprators between header, body and footer entries
+               since this is not necessary for table entries. 
+        :type add_separator: Optional[bool]
 
         :param kwargs: optional arguments
 
@@ -1140,24 +1148,29 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
         spec.setTitle(print_headers)
         _set_report_vector(spec.getTableAddr(), table, dm)
     else:
+        seprator = 'Separator=' + spec.getSeparator().getStaticString()
         if header:
-            _set_report_vector(spec.getHeaderAddr(), header, dm)
+            _set_report_vector(spec.getHeaderAddr(), header, dm, seprator)
             spec.setIsTable(False)
         if body:
-            _set_report_vector(spec.getBodyAddr(), body, dm)
+            _set_report_vector(spec.getBodyAddr(), body, dm, seprator)
             spec.setIsTable(False)
         if footer:
-            _set_report_vector(spec.getFooterAddr(), footer, dm)
+            _set_report_vector(spec.getFooterAddr(), footer, dm, seprator)
             spec.setIsTable(False)
 
 
-def _set_report_vector(vec, list_of_cns, dm):
+def _set_report_vector(vec, list_of_cns, dm, separator=None):
     """ Sets the given vector to the elements of the list
 
     :param vec: the vector to change
     :type vec: COPASI.ReportItemVector
     :param list_of_cns: list of cns or display names to add
     :type list_of_cns: [str]
+    :param dm: the data model to resolve elements in
+    :type dm: COPASI.CDataModel
+    :param separator: optional sepratator string to add between entries
+    :type separator: Optional[str]
     :return: None
     """
     vec.clear()
@@ -1168,6 +1181,8 @@ def _set_report_vector(vec, list_of_cns, dm):
     for item in list_of_cns:
         if item.startswith('CN'):
             vec.append(COPASI.CRegisteredCommonName(item))
+            if separator:
+                vec.append(COPASI.CRegisteredCommonName(separator))
             continue
 
         obj = dm.findObjectByDisplayName(item)
@@ -1175,11 +1190,18 @@ def _set_report_vector(vec, list_of_cns, dm):
             if obj.getObjectType() != 'Reference':
                 obj = obj.getValueReference()
             vec.append(COPASI.CRegisteredCommonName(obj.getCN()))
+            if separator:
+                vec.append(COPASI.CRegisteredCommonName(separator))
             continue
 
         if not item.startswith('String=') and not item.startswith('Separator='):
             item = wrap_copasi_string(item)
         vec.append(COPASI.CRegisteredCommonName(item))
+        if separator:
+            vec.append(COPASI.CRegisteredCommonName(separator))
+
+    if separator:
+       vec.pop()
 
 
 def wrap_copasi_string(text):
@@ -3054,11 +3076,10 @@ def _validate_mapping(usage, param_name, mapped_value, c_model):
 
     if usage == "volume":
         result = c_model.getCompartment(mapped_value) is not None
-
-    if usage == "parameter":
+    elif usage == "parameter":
         result = type(mapped_value) is str and c_model.getModelValue(mapped_value) is not None
-
-    result =  c_model.getMetabolite(mapped_value) is not None
+    else:
+        result =  c_model.getMetabolite(mapped_value) is not None
 
     if not result:
         logging.error('Invalid mapping provilded for {0} of type {1} (invalid value {2})'

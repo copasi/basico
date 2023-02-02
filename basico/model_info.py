@@ -1010,6 +1010,18 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
 def add_report(name, **kwargs):
     """Adds a new report specification to the model.
 
+     Examples:
+
+        The following would adds a report definition 'Time Course' to include Time and the concentration
+        of S, in a report that is separated by tabs.
+
+        >>> add_report('Time Course', body=['Time', '[S]']
+
+        The following defines a report for the Steady State concentration of S. To disambiguate, that the
+         string '[S]' in the header should be used literally, we call the function wrap_copasi_string.
+
+        >>> add_report('Steady State', task=T.STEADY_STATE, header=[wrap_copasi_string('[S]')], footer=['[S]'])
+
         :param name: the name for the new plot specification
         :type name: str
 
@@ -1037,6 +1049,19 @@ def add_report(name, **kwargs):
 def set_report_dict(spec, precision=None, separator=None, table=None,
                     print_headers=True, header=None, body=None, footer=None, task=None, comment=None, **kwargs):
     """Sets properties of the named report definition.
+    
+        Examples:
+        
+        The following would set a report definition 'Time Course' to include Time and the concentration
+        of S, in a report that is separated by tabs. 
+        
+        >>> set_report_dict('Time Course', body=['Time', '[S]']
+
+        The following defines a report for the Steady State concentration of S. To disambiguate, that the
+         string '[S]' in the header should be used literally, we call the function wrap_copasi_string.
+
+        >>> set_report_dict('Steady State', task=T.STEADY_STATE, header=[wrap_copasi_string('[S]')], footer=['[S]'])
+
 
         :param spec: the name, index or report definition object
         :type spec: Union[str,int,COPASI.CReportDefinition]
@@ -1048,7 +1073,10 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
         :type separator: Optional[str]
 
         :param table: a list of CNs or display names of elements to collect in a table. If `table` is specified
-              the header, body, footer argument will be ignored
+              the header, body, footer argument will be ignored. Note that setting table elements is only 
+              useful for tasks that generate output *during* the task. If that is not the case, you will have
+              to specify the footer and header element directly.
+        
         :type table: [str]
 
         :param print_headers: optional arguments, indicating whether table headers will be printed (only applies
@@ -1149,10 +1177,18 @@ def _set_report_vector(vec, list_of_cns, dm):
             vec.append(COPASI.CRegisteredCommonName(obj.getCN()))
             continue
 
-        if not item.startswith('String='):
-            item = 'String=' + item
+        if not item.startswith('String=') and not item.startswith('Separator='):
+            item = wrap_copasi_string(item)
         vec.append(COPASI.CRegisteredCommonName(item))
 
+
+def wrap_copasi_string(text):
+    """ Utility function wrapping the given text into a COPASI string
+
+    :param text: the text to wrap
+    :return: an escaped COPASI string, that can be used in reports
+    """
+    return 'String=' + COPASI.CCommonName.escape(text)
 
 def _replace_names_with_cns(expression, **kwargs):
     """ replaces all names in the given expression with cns

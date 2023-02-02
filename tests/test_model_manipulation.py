@@ -256,7 +256,11 @@ class TestReportManipulation(unittest.TestCase):
         basico.add_report('Silly Report', footer=[
             'String=test',
             'test2',
-            '\n'
+            '\n',
+            'String=\\[0\\,1\\]',
+            '[0,1]',
+            basico.wrap_copasi_string('[S]'),
+            'Separator=\t'
         ], comment="""report with strings at the end""")
         r = basico.get_report_dict('Silly Report')
         self.assertTrue(r is not None)

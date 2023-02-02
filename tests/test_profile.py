@@ -21,6 +21,9 @@ class TestProfile(unittest.TestCase):
             os.path.join(dir_name, 'out__00000__update_low.txt'),
         ]
 
+        first = pl._get_data_from_file(report_files[0])
+        second = pl._get_data_from_file(report_files[1])
+
         combined, obj_val, param_val = pl._combine_files(report_files)
         self.assertIsNotNone(combined)
         self.assertAlmostEqual(obj_val, 12.844)

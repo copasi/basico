@@ -8,6 +8,8 @@
    Biosystems 110:183–185 http://dx.doi.org/10.1016/j.biosystems.2012.09.003
 
 """
+import math
+
 import basico
 import numpy as np
 import pandas as pd
@@ -16,6 +18,7 @@ import os
 import matplotlib.pyplot as plt
 import subprocess
 from multiprocessing import Pool, Lock
+from functools import partial
 import tempfile
 import logging
 import shutil
@@ -30,14 +33,20 @@ COPASI_SE = 'CopasiSE'
 logger = logging.getLogger(__name__)
 
 
-def _processfile_with_se(filename, copasi_se=COPASI_SE):
+def _processfile_with_se(filename, copasi_se=COPASI_SE, max_time=None):
     """Executes the specified copasi file with CopasiSE
 
     :param filename: copasi file containing executable tasks to run
     :param copasi_se: path to the copasi SE executable to execute
+    :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum)
+
     """
-    logger.info(f"processing: {filename}")
-    args = [copasi_se, '--nologo', filename]
+
+    args = [copasi_se, '--nologo']
+    if max_time is not None:
+        args += ['--maxTime', str(max_time)]
+    args.append(filename)
+    logger.info(f"processing: {filename} with args: {args}")
     subprocess.call(args, cwd=os.path.dirname(filename))
     return
 
@@ -56,25 +65,32 @@ def _get_scan_files(data_dir):
     return files
 
 
-def process_dir(data_dir, pool_size=4):
+def process_dir(data_dir, pool_size=4, copasi_se=COPASI_SE, max_time=None):
     """Executes all generated copasi files from the given directory in a multiprocessing pool
 
     :param data_dir: directory containing high / low files generated
     :param pool_size: pool size for the multiprocessing pool that will be created (defaults to 4)
+    :param copasi_se: path to the copasi SE executable to execute
+    :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum
     """
     files = _get_scan_files(data_dir)
-    process_files(files, pool_size)
+    process_files(files, pool_size, copasi_se, max_time)
 
 
-def process_files(files, pool_size=4):
+def process_files(files, pool_size=4, copasi_se=COPASI_SE, max_time=None):
     """Executes all of the given files in a multiprocessing pool
 
     :param files: list of copasi filenames
     :param pool_size: pool size for the multiprocessing pool that will be created (defaults to 4)
+    :param copasi_se: path to the copasi SE executable to execute
+    :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum
+
     """
     logging.debug(f'Processing {len(files)} files with a pool of size {pool_size}')
+    ## for debugging purposes use the following line instead of the multiprocessing pool
+    # from multiprocessing.dummy import Pool
     with Pool(pool_size) as p:
-        result = p.map(_processfile_with_se, files)
+        result = p.map(partial(_processfile_with_se, copasi_se=copasi_se, max_time=max_time), files)
     logging.debug(f'Processing complete')
 
 
@@ -97,11 +113,82 @@ def plot_data(data_dir, problem_size=None):
             m, n = problem_size
             threshold = obj_val+np.sqrt(obj_val/(n-m))
             h_line = ax.axhline(threshold, color='blue', ls='dashed')
-            ax.set_ylim(top=np.abs(threshold)*1.1)
+            scale = _make_y_axis(obj_val, threshold, 3)
+            ax.set_ylim(top=scale[-1])
         title = ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
         plots.append(ax)
 
     return plots
+
+def _make_y_axis(y_min, y_max, ticks=10):
+    """
+
+    This routine creates the Y axis values for a graph.
+
+    Calculate Min amd Max graphical labels and graph
+    increments.  The number of ticks defaults to
+    10 which is the SUGGESTED value.  Any tick value
+    entered is used as a suggested value which is
+    adjusted to be a 'pretty' value.
+
+    Output will be an array of the Y axis values that
+    encompass the Y values.
+
+    translated from this SO post:
+    https://stackoverflow.com/questions/326679/choosing-an-attractive-linear-scale-for-a-graphs-y-axis/9007526#9007526
+
+    :param y_min: min value of y axis
+    :param y_max: max value of y axis
+    :param ticks: number of ticks to return (defaults to 10)
+    :return: array with the suggested scale
+    """
+
+    result = []
+
+    # If y_min and y_max are identical, then
+    # adjust the y_min and y_max values to actually
+    # make a graph. Also avoids division by zero errors.
+
+    if y_min == y_max:
+        y_min = y_min - 10
+        # some small value
+        y_max = y_max + 10
+
+    # Determine Range
+    y_range = y_max - y_min
+
+    # Adjust ticks if needed
+    if ticks < 2:
+        ticks = 2
+    else:
+        if ticks > 2:
+            ticks -= 2
+
+    # Get raw step value
+    temp_step = y_range / ticks
+
+    # Calculate pretty step value
+    mag = math.floor(np.log10(temp_step))
+    mag_pow = math.pow(10, mag)
+    mag_msd = int(temp_step / mag_pow + 0.5)
+    step_size = mag_msd * mag_pow
+
+    # build Y label array.
+    # Lower and upper bounds calculations
+    lb = step_size * math.floor(y_min / step_size)
+    ub = step_size * math.ceil(y_max / step_size)
+
+    # Build array
+    val_ = lb
+    while True:
+        result.append(val_)
+        val_ += step_size
+        if val_ > ub:
+            break
+
+    return result
+
+
 
 def _combine_files(report_files):
     df = None
@@ -318,7 +405,8 @@ def get_profiles_for_model(data_dir=None, **kwargs):
 
     :param data_dir: optional data directory to use, if not specified a temp directory will be used,
                      and deleted afterwards
-    :param kwargs: optional parameters to use, all options from :func:`.prepare_files` can be specified.
+    :param kwargs: optional parameters to use, all options from :func:`.prepare_files` and
+                   :func:`.process_dir` can be specified.
     :return: the plot axis
     """
     delete_files = False
@@ -338,7 +426,10 @@ def get_profiles_for_model(data_dir=None, **kwargs):
     experiments = problem.getExperimentSet()
     num_data = experiments.getDataPointCount()
     prepare_files(filename, data_dir, **kwargs)
-    process_dir(data_dir, kwargs.get('pool_size', 4))
+    process_dir(data_dir,
+                kwargs.get('pool_size', 4),
+                kwargs.get('copasi_se', COPASI_SE),
+                kwargs.get('max_time', None))
     result = plot_data(data_dir, problem_size=(num_params, num_data))
     if delete_files:
         shutil.rmtree(data_dir, ignore_errors=True)
@@ -356,7 +447,8 @@ def prepare_files(filename,
                   disable_plots=True,
                   disable_tasks=True,
                   use_hooke=False,
-                  prefix="out_"):
+                  prefix="out_",
+                  **kwargs):
     """Generates all files needed for the profile likelihood runs
 
     :param filename: filename of template copasi file. this file should already have a good fit, to be analyzed

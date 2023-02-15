@@ -28,6 +28,30 @@ class TestProfile(unittest.TestCase):
         self.assertIsNotNone(combined)
         self.assertAlmostEqual(obj_val, 12.844)
 
+    def test_axis(self):
+        y_min = 60
+        y_max = 330
+        scale = pl._make_y_axis(y_min, y_max)
+        self.assertEqual(scale[0], 60)
+        self.assertEqual(scale[-1], 330)
+
+        scale = pl._make_y_axis(y_min, y_max, 5)
+        self.assertEqual(scale[0], 0)
+        self.assertEqual(scale[-1], 360)
+
+        y_min = 60847326
+        y_max = 73425330
+        scale = pl._make_y_axis(y_min, y_max)
+        self.assertEqual(scale[0], 60000000)
+        self.assertEqual(scale[-1], 74000000)
+
+        scale = pl._make_y_axis(0, 12.5015)
+        self.assertEqual(scale[0], 0)
+        self.assertEqual(scale[-1], 14)
+
+        scale = pl._make_y_axis(12.1, 12.5015, 3)
+        self.assertEqual(scale[0], 12)
+        self.assertEqual(scale[-1], 12.8)
 
 if __name__ == '__main__':
     unittest.main()

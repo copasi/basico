@@ -114,7 +114,7 @@ def plot_data(data_dir, problem_size=None):
             threshold = obj_val+np.sqrt(obj_val/(n-m))
             h_line = ax.axhline(threshold, color='blue', ls='dashed')
             scale = _make_y_axis(obj_val, threshold, 3)
-            ax.set_ylim(top=scale[-1])
+            ax.set_ylim(top=scale[-1], bottom=scale[0])
         title = ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
         plots.append(ax)
 

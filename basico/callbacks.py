@@ -17,8 +17,13 @@ class TqmdCallback(COPASI.CProcessReport):
     """Utility class that uses tqdm progress information
 
     """
-    def __init__(self, maxTime=0, **tqdm_args):
-        super(TqmdCallback, self).__init__(maxTime)
+    def __init__(self, max_time=0, **tqdm_args):
+        """ Creates a new TqmdCallback instance
+
+        :param max_time: maximum time to run the tasks (defaults to 0 = no limit)
+        :param tqdm_args: arguments to be passed on to tqdm
+        """
+        super(TqmdCallback, self).__init__(max_time)
         self.shouldProceed = True
         self.count = 0
         self.handlers = {}
@@ -32,7 +37,7 @@ class TqmdCallback(COPASI.CProcessReport):
         try:
             update = self.handlers.get(handle, None)
             if update is None:
-                return self.shouldProceed
+                return self.proceed()
 
             assert (isinstance(update, tqmd_lib.tqdm))
 
@@ -44,24 +49,24 @@ class TqmdCallback(COPASI.CProcessReport):
             update.update(current - update.n)
         except KeyboardInterrupt:
             return False
-        return self.shouldProceed
+        return self.proceed()
 
     def resetItem(self, handle):
         update = self.handlers.get(handle, None)
         if update is None:
-            return self.shouldProceed
+            return self.proceed()
 
         assert (isinstance(update, tqmd_lib.tqdm))
         update.reset()
-        return self.shouldProceed
+        return self.proceed()
 
     def reset(self):
         for k in self.handlers.keys():
             self.resetItem(k)
-        return self.shouldProceed
+        return self.proceed()
 
     def proceed(self):
-        return self.shouldProceed
+        return self.shouldProceed and super(TqmdCallback, self).proceed()
 
     def askToStop(self):
         self.shouldProceed = False
@@ -109,7 +114,7 @@ class TqmdCallback(COPASI.CProcessReport):
     def finishItem(self, handle):
         update = self.handlers.get(handle, None)
         if not update:
-            return self.shouldProceed
+            return self.proceed()
 
         assert (isinstance(update, tqmd_lib.tqdm))
         update.update(update.total)
@@ -117,17 +122,17 @@ class TqmdCallback(COPASI.CProcessReport):
         del self.handlers[handle]
         self.ptrs[handle] = None
         del self.ptrs[handle]
-        return self.shouldProceed
+        return self.proceed()
 
     def finish(self):
         for k in self.handlers.keys():
             self.finishItem(k)
         self.handlers.clear()
-        return self.shouldProceed
+        return self.proceed()
 
     def setName(self, name):
         #print(name)
-        return self.shouldProceed
+        return self.proceed()
 
 
 _DEFAULT_HANDLER = COPASI.CProcessReport()

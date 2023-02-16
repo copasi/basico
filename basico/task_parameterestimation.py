@@ -360,26 +360,45 @@ def get_experiment_mapping(experiment, **kwargs):
     return pandas.DataFrame(data=rows).set_index('column')
 
 
-def _get_experiment_file(experiment):
+def _get_experiment_file(experiment, **kwargs):
     file_name_only = experiment.getFileNameOnly()
     model = experiment.getObjectDataModel()
     directory = os.path.dirname(model.getFileName())
+    return_relative = kwargs.get('return_relative', False)
 
     if not file_name_only:
         raise ValueError('Invalid Experiment, no filename specified for ' + experiment.getObjectName())
 
+    full_path = os.path.join(directory, os.path.basename(file_name_only))
+    if os.path.isfile(full_path):
+        if return_relative:
+            return os.path.relpath(full_path, directory)
+        return full_path
+
     full_path = os.path.join(directory, file_name_only)
     if os.path.isfile(full_path):
+        if return_relative:
+            return os.path.relpath(full_path, directory)
         return full_path
 
     if os.path.isfile(file_name_only):
+        if return_relative and directory:
+            return os.path.relpath(file_name_only, directory)
         return file_name_only
 
     file_name = experiment.getFileName()
     if os.path.exists(file_name):
+        if return_relative and directory:
+            return os.path.relpath(file_name, directory)
         return file_name
 
-    raise ValueError('Experiment file {0} does not exist'.format(file_name_only))
+    raise_error = kwargs.get('raise_error', True)
+    if raise_error:
+        raise ValueError('Experiment file {0} does not exist'.format(file_name_only))
+    
+    if return_relative and directory:
+        return os.path.relpath(file_name_only, directory)    
+    return file_name_only
 
 
 def get_data_from_experiment(experiment, **kwargs):
@@ -1613,7 +1632,9 @@ def get_experiment_dict(experiment, **kwargs):
     """
     experiment = get_experiment(experiment, **kwargs)
 
-    filename = _get_experiment_file(experiment)
+    kwargs['raise_error'] = False
+    kwargs['return_relative'] = True
+    filename = _get_experiment_file(experiment, **kwargs)
 
     result = {
         'name': experiment.getObjectName(),
@@ -1675,7 +1696,7 @@ def save_experiments_to_dict(**kwargs):
     exp_set = problem.getExperimentSet()
 
     for i in range (exp_set.size()):
-        experiments.append(get_experiment_dict(exp_set.getExperiment(i)))
+        experiments.append(get_experiment_dict(exp_set.getExperiment(i), **kwargs))
 
     return experiments
 

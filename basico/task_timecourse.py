@@ -350,20 +350,20 @@ def _setup_timecourse(args, kwargs):
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.CTrajectoryProblem))
     if 'duration' in kwargs:
-        problem.setDuration(kwargs['duration'])
+        problem.setDuration(float(kwargs['duration']))
         problem.setUseValues(False)
     if 'automatic' in kwargs:
-        problem.setAutomaticStepSize(kwargs['automatic'])
+        problem.setAutomaticStepSize(bool(kwargs['automatic']))
     if 'output_event' in kwargs:
-        problem.setOutputEvent(kwargs['output_event'])
+        problem.setOutputEvent(bool(kwargs['output_event']))
     if 'start_time' in kwargs:
-        problem.setOutputStartTime(kwargs['start_time'])
+        problem.setOutputStartTime(float(kwargs['start_time']))
     if 'step_number' in kwargs:
-        problem.setStepNumber(kwargs['step_number'])
+        problem.setStepNumber(int(kwargs['step_number']))
     if 'intervals' in kwargs:
-        problem.setStepNumber(kwargs['intervals'])
+        problem.setStepNumber(int(kwargs['intervals']))
     if 'stepsize' in kwargs:
-        problem.setStepSize(kwargs['stepsize'])
+        problem.setStepSize(float(kwargs['stepsize']))
     if 'values' in kwargs:
         vals = kwargs['values']
         if type(vals) != str:
@@ -374,18 +374,18 @@ def _setup_timecourse(args, kwargs):
         problem.setValues(vals)
         problem.setUseValues(True)
     if 'use_values' in kwargs:
-        problem.setUseValues(kwargs['use_values'])
+        problem.setUseValues(bool(kwargs['use_values']))
     if num_args == 3:
-        problem.setOutputStartTime(args[0])
-        problem.setDuration(args[1])
-        problem.setStepNumber(args[2])
+        problem.setOutputStartTime(float(args[0]))
+        problem.setDuration(float(args[1]))
+        problem.setStepNumber(int(args[2]))
         problem.setUseValues(False)
     elif num_args == 2:
-        problem.setDuration(args[0])
-        problem.setStepNumber(args[1])
+        problem.setDuration(float(args[0]))
+        problem.setStepNumber(int(args[1]))
         problem.setUseValues(False)
     elif num_args > 0:
-        problem.setDuration(args[0])
+        problem.setDuration(float(args[0]))
     problem.setTimeSeriesRequested(True)
     method = task.getMethod()
     if 'seed' in kwargs and method.getParameter('Random Seed'):

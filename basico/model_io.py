@@ -518,8 +518,9 @@ def save_model_and_data(filename, **kwargs):
         new_name = old_names.get(experiment.getFileNameOnly(), '')
         if not new_name:
             continue
-
-        experiment.setFileName(os.path.abspath(new_name))
+        
+        # set relative path
+        experiment.setFileName(os.path.relpath(new_name, data_dir))
 
     # write out model
     model.saveModel(filename, True)

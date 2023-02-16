@@ -484,6 +484,12 @@ def prepare_files(filename,
         logger.error(COPASI.CCopasiMessage.getAllMessageText())
         sys.exit(2)
 
+    logger.info(f"Copy Experimental Data to: {data_dir}")
+    _DataModel.copyExperimentalDataTo(data_dir)
+    _DataModel.saveModel(os.path.join(data_dir, 'original.cps'), True)
+    _DataModel.loadModel(os.path.join(data_dir, 'original.cps'))
+    basico.load_experiments_from_dict(basico.save_experiments_to_dict(model=_DataModel), model=_DataModel)
+
     global _Task
     _Task = _get_fit_task()
     if _Task == None:
@@ -494,8 +500,6 @@ def prepare_files(filename,
         data_dir = os.path.abspath(os.path.dirname(Arguments['prefix']))
     if not os.path.exists(data_dir):
         os.makedirs(data_dir, exist_ok=True)
-    logger.info(f"Copy Experimental Data to: {data_dir}")
-    _DataModel.copyExperimentalDataTo(data_dir)
 
     global _Problem
     _Problem = _Task.getProblem()

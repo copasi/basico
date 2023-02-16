@@ -1628,12 +1628,18 @@ def get_experiment_dict(experiment, **kwargs):
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
+    - | `raise_error`: boolean indicating that an error should be raised if the
+      |  experimentfile is not present (default: False)
+
+    - | `return_relative`: to indicate that relative experiment filenames should
+      | be returned (default: True)
+
     :return: all information about the experiment as dictionary
     """
     experiment = get_experiment(experiment, **kwargs)
 
-    kwargs['raise_error'] = False
-    kwargs['return_relative'] = True
+    kwargs['raise_error'] = kwargs.get('raise_error', False)
+    kwargs['return_relative'] = kwargs.get('return_relative', True)
     filename = _get_experiment_file(experiment, **kwargs)
 
     result = {
@@ -1680,6 +1686,12 @@ def save_experiments_to_dict(**kwargs):
 
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
+
+    - | `raise_error`: boolean indicating that an error should be raised if the
+      |  experimentfile is not present (default: False)
+
+    - | `return_relative`: to indicate that relative experiment filenames should
+      | be returned (default: True)
 
     :return: the parameter estimation experimetns as list of dictionary
     :rtype: [{}]

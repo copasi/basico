@@ -488,7 +488,8 @@ def prepare_files(filename,
     _DataModel.copyExperimentalDataTo(data_dir)
     _DataModel.saveModel(os.path.join(data_dir, 'original.cps'), True)
     _DataModel.loadModel(os.path.join(data_dir, 'original.cps'))
-    basico.load_experiments_from_dict(basico.save_experiments_to_dict(model=_DataModel), model=_DataModel)
+    experiments = basico.save_experiments_to_dict(model=_DataModel)
+    basico.load_experiments_from_dict(experiments, model=_DataModel)
 
     global _Task
     _Task = _get_fit_task()

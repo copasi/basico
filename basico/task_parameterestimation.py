@@ -850,6 +850,8 @@ def add_experiment(name, data, **kwargs):
 
     - | `file_name` (str): the file name to save the experimental data to (otherwise it will be name.txt)
 
+    - | `data_dir` (str): the directory to save the experimental data to (otherwise it will be the current directory)
+
     :return: the filename of the generated data file
     :rtype: str
     """
@@ -867,15 +869,15 @@ def add_experiment(name, data, **kwargs):
         return None
 
     # save data as tsv
-
-    file_name = os.path.abspath(os.path.join(os.path.curdir, name + '.txt'))
+    data_dir = kwargs.get('data_dir', os.path.curdir)
+    file_name = os.path.abspath(os.path.join(data_dir, name.replace(' ', '_') + '.txt'))
     if 'file_name' in kwargs:
         file_name = os.path.abspath(kwargs['file_name'])
 
     assert (isinstance(data, pd.DataFrame))
     data.to_csv(file_name, sep='\t', header=True, index=False)
-    # create experiment
 
+    # create experiment
     exp = COPASI.CExperiment(model)
     exp = exp_set.addExperiment(exp)
     info = COPASI.CExperimentFileInfo(exp_set)
@@ -1812,12 +1814,26 @@ def add_experiment_from_dict(exp_dict, **kwargs):
     exp_set = problem.getExperimentSet()
     assert (isinstance(exp_set, COPASI.CExperimentSet))
 
+    data_file_name = exp_dict['filename']
+
+    if not os.path.isabs(data_file_name):
+        abs_data_file_name = os.path.join(os.path.dirname(model.getFileName()), data_file_name)
+
+    if not os.path.exists(abs_data_file_name):
+        if 'data_dir' in kwargs:
+            abs_data_file_name = os.path.join(kwargs['data_dir'], data_file_name)
+        else:
+            abs_data_file_name = os.path.abspath(data_file_name)
+
+    if not os.path.exists(abs_data_file_name):
+        raise IOError("File not found: " + data_file_name)
+
     experiment = COPASI.CExperiment(model, exp_dict['name'])
     experiment.setFirstRow(exp_dict['first_row'])
     experiment.setLastRow(exp_dict['last_row'])
     if 'header_row' in exp_dict:
         experiment.setHeaderRow(exp_dict['header_row'])
-    experiment.setFileName(exp_dict['filename'])
+    experiment.setFileName(data_file_name)
     experiment.setNormalizeWeightsPerExperiment(exp_dict['normalize_per_experiment'])
     experiment.setExperimentType(basico.T.to_enum(exp_dict['type']))
     experiment.setSeparator(exp_dict['separator'])
@@ -1837,7 +1853,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
 
     names = None
     if  'header_row' in exp_dict:
-        names = _get_nth_line_from_file(exp_dict['filename'], int(exp_dict['header_row']), int(exp_dict['last_row']))
+        names = _get_nth_line_from_file(abs_data_file_name, int(exp_dict['header_row']), int(exp_dict['last_row']))
     if names is not None:
         names = names.split(exp_dict['separator'])
     else: 

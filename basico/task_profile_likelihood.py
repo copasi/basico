@@ -415,9 +415,10 @@ def get_profiles_for_model(data_dir=None, **kwargs):
         delete_files = True
         data_dir = tempfile.mkdtemp()
 
+    model = basico.get_current_model()
+    old_filename = model.getFileName()
     filename = os.path.join(data_dir, 'model.cps')
     basico.save_model_and_data(filename)
-    model = basico.get_current_model()
     task = model.getTask(basico.T.PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
     problem = task.getProblem()
@@ -433,6 +434,8 @@ def get_profiles_for_model(data_dir=None, **kwargs):
     result = plot_data(data_dir, problem_size=(num_params, num_data))
     if delete_files:
         shutil.rmtree(data_dir, ignore_errors=True)
+    # restore old filename to ensure that relative files can still be found
+    model.setFileName(old_filename)
     return result
 
 

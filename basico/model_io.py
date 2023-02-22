@@ -495,6 +495,10 @@ def save_model_and_data(filename, **kwargs):
             # same file skipping
             continue
 
+        if not os.path.exists(old_name) and not os.path.isabs(old_name):
+            directory = os.path.dirname(model.getFileName())
+            old_name = os.path.join(directory, old_name)
+
         if not os.path.exists(old_name):
             logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
                             " be used for Parameter Estimation".format(old_name))
@@ -557,6 +561,7 @@ def open_copasi(filename='', **kwargs):
     model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
     name = filename
+    old_filename = model.getFileName()
     delete_data_on_exit = False
 
     if not name:
@@ -572,6 +577,10 @@ def open_copasi(filename='', **kwargs):
         delete_data_on_exit = True
 
     save_model_and_data(name, delete_data_on_exit=delete_data_on_exit, **kwargs)
+
+    if delete_data_on_exit:
+        # we need to set the filename back to the original one, otherwise relative paths will be broken
+        model.setFileName(old_filename)
 
     if not os.path.exists(name):
         logging.error('Saving the model failed')

@@ -1020,7 +1020,7 @@ def run_parameter_estimation(**kwargs):
         if isinstance(method, int):
             task.setMethodType(method)
         else:
-            task.setMethodType(COPASI.CCopasiMethod_TypeNameToEnum(method))
+            task.setMethodType(COPASI.CCopasiMethod.TypeNameToEnum(method))
 
     if 'randomize_start_values' in kwargs:
         problem.setRandomizeStartValues(bool(kwargs['randomize_start_values']))

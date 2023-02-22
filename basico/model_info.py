@@ -4591,7 +4591,7 @@ def set_task_settings(task, settings, **kwargs):
         if 'name' in m_dict:
             name = m_dict['name']
             if name != method.getObjectName():
-                task.setMethodType(COPASI.CCopasiMethod_TypeNameToEnum(name))
+                task.setMethodType(COPASI.CCopasiMethod.TypeNameToEnum(name))
                 method = task.getMethod()
 
         _set_group_from_dict(method, m_dict)
@@ -5307,39 +5307,22 @@ def set_parameter_set(name, exact=False, param_set_dict=None, remove_others=Fals
     :return:
     """
     dm = model_io.get_model_from_dict_or_default(kwargs)
-    assert (isinstance(dm, COPASI.CDataModel))
-
-    model = dm.getModel()
-    assert (isinstance(model, COPASI.CModel))
-
-    sets = model.getModelParameterSets()
-    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
-
-    num_sets = sets.size()
-
-    for i in  reversed(range(num_sets)):
-        pset = sets.get(i)
-        set_name  = pset.getObjectName()
-
-        if name and  name not in set_name:
-            continue
-
-        if name and type(name) is str and exact and name != set_name:
-            continue
-
-        if 'name' in param_set_dict:
-            pset.setObjectName(param_set_dict['name'])
-
-        _set_parameter_set(pset, param_set_dict, dm, remove_others)
+    _run_functions_on_selected_parameter_sets(
+        name, exact, False,
+        _set_parameter_set,
+        param_set_dict, dm, remove_others, True,
+        **kwargs
+    )
 
 
-def _set_parameter_set(p_set, param_set_dict, dm, remove_others):
+def _set_parameter_set(p_set, param_set_dict, dm, remove_others, rename_set=False):
     """ CHanges the specified parameter set
 
     :param p_set: the parameter set to change
     :param param_set_dict:  the dictionary with new values
     :param dm: the data model
     :param remove_others: boolean indicating whether to remove entries, that are not specified in the dictionary
+    :param rename_set: boolean indicating whether to rename the parameter set
     :return: None
     """
     if not p_set:
@@ -5351,6 +5334,10 @@ def _set_parameter_set(p_set, param_set_dict, dm, remove_others):
     for key in param_set_dict:
         if key == 'description':
             p_set.setNotes(param_set_dict['description'])
+            continue
+
+        if key == 'name' and rename_set:
+            p_set.setObjectName(param_set_dict['name'])
             continue
 
         param = p_set.getModelParameter(COPASI.CDataString(key).getCN())
@@ -5454,6 +5441,22 @@ def apply_parameter_set(name, exact=False, **kwargs):
 
     :return:
     """
+    _run_functions_on_selected_parameter_sets(
+        name, exact, False,
+        lambda pset: pset.updateModel(),
+        **kwargs
+    )
+
+
+def _run_functions_on_selected_parameter_sets(_name, _exact, _reversed, function, *args, **kwargs):
+    """ Runs the given function on all parameter sets in the model
+
+    :param dm: the data model
+    :param function: the function to run
+    :param args: arguments for the function
+    :param kwargs: keyword arguments for the function
+    :return:
+    """
     dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -5461,21 +5464,24 @@ def apply_parameter_set(name, exact=False, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     sets = model.getModelParameterSets()
-    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
 
     num_sets = sets.size()
-
-    for i in  reversed(range(num_sets)):
+    this_range = range(num_sets)
+    if _reversed:
+        this_range = reversed(this_range)
+    for i in this_range:
         pset = sets.get(i)
         set_name  = pset.getObjectName()
 
-        if name and  name not in set_name:
+        if _name and _name not in set_name:
             continue
 
-        if name and type(name) is str and exact and name != set_name:
+        if _name and type(_name) is str and _exact and _name != set_name:
             continue
 
-        pset.updateModel()
+        function(pset, *args, **kwargs)
+
 
 def update_parameter_set(name, exact=False, **kwargs):
     """ Updates the specified parameter set with values from the model
@@ -5491,30 +5497,9 @@ def update_parameter_set(name, exact=False, **kwargs):
     :return:
 
     """
-    dm = model_io.get_model_from_dict_or_default(kwargs)
-    assert (isinstance(dm, COPASI.CDataModel))
-
-    model = dm.getModel()
-    assert (isinstance(model, COPASI.CModel))
-
-    sets = model.getModelParameterSets()
-    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
-
-    num_sets = sets.size()
-
-    for i in reversed(range(num_sets)):
-        pset = sets.get(i)
-        assert (isinstance(pset, COPASI.CModelParameterSet))
-
-        set_name = pset.getObjectName()
-
-        if name and name not in set_name:
-            continue
-
-        if name and type(name) is str and exact and name != set_name:
-            continue
-
-        pset.refreshFromModel(True)
+    _run_functions_on_selected_parameter_sets(
+        name, exact, False,
+        lambda pset: pset.refreshFromModel(True), **kwargs)
 
 def _get_object_by_ptype(p_type, name, dm):
     if p_type == COPASI.CModelParameter.Type_Model:

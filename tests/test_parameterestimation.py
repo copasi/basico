@@ -194,6 +194,12 @@ class TestBasicoParamterEstimationPK(unittest.TestCase):
         self.assertEqual(old_first['upper'], new_first['upper'])
 
     def test_statistic(self):
+        # when no fit is performed, the statistic should not crash
+        result = basico.get_fit_statistic(include_parameters=True)
+        self.assertTrue(result is not None)
+        self.assertEqual(result['f_evals'], 0)
+
+        # now get actual fit
         basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         result = basico.get_fit_statistic()
         self.assertTrue(result is not None)

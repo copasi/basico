@@ -1442,18 +1442,20 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
     experiments = problem.getExperimentSet()
     assert (isinstance(experiments, COPASI.CExperimentSet))
 
+    function_evaluations = problem.getFunctionEvaluations()
+    performed_iterations = function_evaluations > 0
     result = {
         'obj': problem.getSolutionValue(),
         'rms': problem.getRMS(),
         'sd': problem.getStdDeviation(),
-        'f_evals': problem.getFunctionEvaluations(),
+        'f_evals': function_evaluations,
         'failed_evals_exception': problem.getFailedEvaluationsExc(),
         'failed_evals_nan': problem.getFailedEvaluationsNaN(),
         'cpu_time': problem.getExecutionTime(),
         'data_points': experiments.getDataPointCount(),
         'valid_data_points': experiments.getValidValueCount(),
     }
-    result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
+    result['evals_per_sec'] = result['cpu_time'] / function_evaluations if performed_iterations else 0
 
     items = problem.getOptItemList()
     sol = problem.getSolutionVariables()
@@ -1471,11 +1473,11 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
                 'name':  name,
                 'lower': current.getLowerBound(),
                 'start': current.getLastStartValue(),
-                'value': sol.get(i),
+                'value': sol.get(i) if performed_iterations else np.nan,
                 'upper': current.getUpperBound(),
-                'std_dev': std.get(i),
-                'coeff_of_variation': abs(100 * std.get(i) / sol.get(i)),
-                'gradient': grad.get(i)
+                'std_dev': std.get(i)  if performed_iterations else np.nan,
+                'coeff_of_variation': abs(100 * std.get(i) / sol.get(i)) if performed_iterations else np.nan,
+                'gradient': grad.get(i) if performed_iterations else np.nan
             })
         result['parameters'] = parameters
 
@@ -1525,7 +1527,7 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
     if include_fitted:
         dependent = experiments.getDependentObjects()
         num_dependent = dependent.size()
-        if problem.getFunctionEvaluations() == 0:
+        if function_evaluations == 0:
             num_dependent = 0
         values = []
         for i in range(num_dependent):

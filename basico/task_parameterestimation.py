@@ -1109,9 +1109,6 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
         df = get_data_from_experiment(experiment, rename_headers=True)
         mapping = get_experiment_mapping(experiment)
 
-        # set independent values for that experiment
-        independent = mapping[mapping.type == 'independent']
-
         is_steady_state = experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState
         num_independent_points = df.shape[0]
         steady_state_task = dm.getTask(basico.T.STEADY_STATE)
@@ -1484,14 +1481,13 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
         for i in range(experiments.getExperimentCount()):
             exp = experiments.getExperiment(i)
 
-            validValueCount = exp.getValidValueCount()
-            totalValueCount = exp.getTotalValueCount()
-            print(f'  datapoints: {validValueCount} of {totalValueCount}')
+            valid_value_count = exp.getValidValueCount()
+            total_value_count = exp.getTotalValueCount()
 
             item = {
                 'name': exp.getObjectName(),
-                'valid_points': validValueCount,
-                'total_points': totalValueCount,
+                'valid_points': valid_value_count,
+                'total_points': total_value_count,
                 'obj': exp.getObjectiveValue(),
                 'rms': exp.getRMS(),
                 'error_mean': exp.getErrorMean(),

@@ -89,7 +89,7 @@ def process_files(files, pool_size=4, copasi_se=COPASI_SE, max_time=None):
     ## for debugging purposes use the following line instead of the multiprocessing pool
     # from multiprocessing.dummy import Pool
     with Pool(pool_size) as p:
-        result = p.map(partial(_processfile_with_se, copasi_se=copasi_se, max_time=max_time), files)
+        p.map(partial(_processfile_with_se, copasi_se=copasi_se, max_time=max_time), files)
     logging.debug(f'Processing complete')
 
 
@@ -294,21 +294,21 @@ def _get_fit_task():
     return None
 
 
-def _convert_opt_items(optItems):
-    optItemList = []
-    for index in range(len(optItems)):
-        optItemList.append(
+def _convert_opt_items(opt_items):
+    opt_item_list = []
+    for index in range(len(opt_items)):
+        opt_item_list.append(
             {
-                'cn': optItems[index].getObjectCN().getString(),
-                'start_value': optItems[index].getStartValue(),
+                'cn': opt_items[index].getObjectCN().getString(),
+                'start_value': opt_items[index].getStartValue(),
                 'index': index
             }
         )
 
-    return optItemList
+    return opt_item_list
 
 
-def _generate_scan_for_item(item, index, data_dir, updateModel=False, lower=False):
+def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=False):
     global _DataModel
     _DataModel.loadModel(Arguments["filename"])
     if Arguments["disable_plots"]:
@@ -325,63 +325,63 @@ def _generate_scan_for_item(item, index, data_dir, updateModel=False, lower=Fals
             _DataModel.getTask(index2).setScheduled(False)
 
     _get_time_course().getMethod().getParameter("Relative Tolerance").setDblValue(1E-09)
-    fitTask = _get_fit_task()
-    fitTask.setUpdateModel(updateModel)
+    fit_task = _get_fit_task()
+    fit_task.setUpdateModel(update_model)
 
     if Arguments["use_hooke"] == True:
-        fitTask.setMethodType(COPASI.CTaskEnum.Method_HookeJeeves)
-        fitTask.getMethod().getParameter("Iteration Limit").setIntValue(Arguments["iterations"])
-        fitTask.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
+        fit_task.setMethodType(COPASI.CTaskEnum.Method_HookeJeeves)
+        fit_task.getMethod().getParameter("Iteration Limit").setIntValue(Arguments["iterations"])
+        fit_task.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
     else:
-        fitTask.setMethodType(COPASI.CTaskEnum.Method_LevenbergMarquardt)
-        fitTask.getMethod().getParameter("Iteration Limit").setIntValue(Arguments["iterations"])
-        fitTask.getMethod().getParameter("Modulation").setDblValue(Arguments["modulation"])
-        fitTask.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
+        fit_task.setMethodType(COPASI.CTaskEnum.Method_LevenbergMarquardt)
+        fit_task.getMethod().getParameter("Iteration Limit").setIntValue(Arguments["iterations"])
+        fit_task.getMethod().getParameter("Modulation").setDblValue(Arguments["modulation"])
+        fit_task.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
 
-    problem1 = fitTask.getProblem()
+    problem1 = fit_task.getProblem()
     problem1.setCalculateStatistics(False)
     logger.debug("... Remove OptItem")
     problem1.removeOptItem(item["index"])
     logger.debug("... Generate Scan")
-    scanTask = _get_scan()
-    scanTask.setScheduled(True)
-    problem2 = scanTask.getProblem()
+    scan_task = _get_scan()
+    scan_task.setScheduled(True)
+    problem2 = scan_task.getProblem()
     problem2.setSubtask(COPASI.CTaskEnum.Task_parameterFitting)
     problem2.setContinueFromCurrentState(False)
     problem2.setOutputInSubtask(False)
     problem2.clearScanItems()
     problem2.addScanItem(1, Arguments["scan_interval"])
-    scanItem = problem2.getScanItem(0)
-    scanItem.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
+    scan_item = problem2.getScanItem(0)
+    scan_item.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
 
     start_value = item["start_value"]
     lower_value = _adjust_value(start_value, Arguments["lower_adjustment"])
     upper_value = _adjust_value(start_value, Arguments["upper_adjustment"])
 
-    if not updateModel:
+    if not update_model:
         middle = "_noupdate"
-        scanItem.getParameter("Maximum").setDblValue(upper_value)
-        scanItem.getParameter("Minimum").setDblValue(lower_value)
+        scan_item.getParameter("Maximum").setDblValue(upper_value)
+        scan_item.getParameter("Minimum").setDblValue(lower_value)
     elif lower:
         middle = "_update_low"
-        scanItem.getParameter("Minimum").setDblValue(start_value)
-        scanItem.getParameter("Maximum").setDblValue(lower_value)
+        scan_item.getParameter("Minimum").setDblValue(start_value)
+        scan_item.getParameter("Maximum").setDblValue(lower_value)
     else:
         middle = "_update_high"
-        scanItem.getParameter("Maximum").setDblValue(upper_value)
-        scanItem.getParameter("Minimum").setDblValue(start_value)
+        scan_item.getParameter("Maximum").setDblValue(upper_value)
+        scan_item.getParameter("Minimum").setDblValue(start_value)
 
-    scanTask.updateMatrices()
+    scan_task.updateMatrices()
     logger.debug("... Generate Report")
-    COPASI.COutputAssistant.createDefaultOutput(1251, scanTask, _DataModel)
+    COPASI.COutputAssistant.createDefaultOutput(1251, scan_task, _DataModel)
     report_file = os.path.abspath("{0}/{1}_{2:05d}_{3}.txt".format(data_dir, Arguments['prefix'], index, middle))
     logger.debug(f"   Report target: '{report_file}'.")
-    report = scanTask.getReport()
+    report = scan_task.getReport()
     report.setTarget(report_file)
     report.setAppend(False)
     report.setConfirmOverwrite(False)
     logger.debug("... Generate Plot")
-    plot = COPASI.COutputAssistant.createDefaultOutput(251, scanTask, _DataModel)
+    plot = COPASI.COutputAssistant.createDefaultOutput(251, scan_task, _DataModel)
     plot.setObjectName('{0} = {1}'.format('opt', start_value))
     out_file = os.path.abspath("{0}/{1}_{2:05d}_{3}.cps".format(data_dir, Arguments['prefix'], index, middle))
     logger.debug(f"Writing '{out_file}'.")
@@ -506,13 +506,13 @@ def prepare_files(filename,
 
     global _Problem
     _Problem = _Task.getProblem()
-    optItemList = _convert_opt_items(_Problem.getOptItemList())
-    logger.debug(f"Have: {len(optItemList)} optItems")
-    for index in range(len(optItemList)):
-        logger.debug(f"Handling: {optItemList[index]['cn']}")
+    opt_item_list = _convert_opt_items(_Problem.getOptItemList())
+    logger.debug(f"Have: {len(opt_item_list)} optItems")
+    for index in range(len(opt_item_list)):
+        logger.debug(f"Handling: {opt_item_list[index]['cn']}")
         # _generate_scan_for_item(optItemList[index], index, data_dir)
-        _generate_scan_for_item(optItemList[index], index, data_dir, True, True)
-        _generate_scan_for_item(optItemList[index], index, data_dir, True)
+        _generate_scan_for_item(opt_item_list[index], index, data_dir, True, True)
+        _generate_scan_for_item(opt_item_list[index], index, data_dir, True)
 
     # free the data model
     COPASI.CRootContainer.removeDatamodel(_DataModel)

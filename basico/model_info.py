@@ -2886,7 +2886,6 @@ def set_reaction_parameters(name=None, **kwargs):
                         info.setMapping(k, mv.getObjectName())
                         info.writeBackToReaction(reaction)
                         fun_params = reaction.getFunctionParameters()
-                        num_params = fun_params.size()
                         param_objects = reaction.getParameterObjects()
                         changed = True
 

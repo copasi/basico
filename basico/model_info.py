@@ -5076,6 +5076,7 @@ def set_scheduled_tasks(task_name, **kwargs):
 
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
+
     :return: None
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
@@ -5149,3 +5150,495 @@ def as_dict(df):
         return res[0]
 
     return res
+
+def get_parameter_sets(name=None, exact=False, values_only=False, **kwargs):
+    """
+    Returns the list of parameter sets
+
+    :param name: name of the parameter set to return (or a substring of the name)
+    :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact or not (default: False)
+    :type exact: bool
+
+    :param values_only: boolean indicating whether to return only the values of the entries of the
+                parameter set or a dictionary describing it (default: False)
+    :type values_only: bool
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    result = []
+
+    sets = model.getModelParameterSets()
+    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    for i in range(sets.size()):
+        pset = sets.get(i)
+        set_name  = pset.getObjectName()
+
+        if name and  name not in set_name:
+            continue
+
+        if name and type(name) is str and exact and name != set_name:
+            continue
+
+        result.append(_parameterset_to_dict(pset, dm, values_only))
+
+    return result
+
+
+def remove_parameter_sets(name=None, exact=False, **kwargs):
+    """
+    remove the named parameter set(s)
+
+    :param name: name of the parameter set to remove (or a substring of the name)
+    :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact
+    :type exact: bool
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    sets = model.getModelParameterSets()
+    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    num_sets = sets.size()
+
+    for i in  reversed(range(num_sets)):
+        pset = sets.get(i)
+        set_name  = pset.getObjectName()
+
+        if name and  name not in set_name:
+            continue
+
+        if name and type(name) is str and exact and name != set_name:
+            continue
+
+        sets.remove(i)
+
+
+def add_parameter_set(name, param_set_dict=None, **kwargs):
+    """
+    Adds a new parameter set to the model with the values from the dictionary
+
+    :param name: name of the parameter set to add
+    :type name: str
+
+    :param param_set_dict: dictionary with the parameter set values if empty, the
+                           current state of the model will be used
+    :type param_set_dict: dict or None
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    sets = model.getModelParameterSets()
+    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    if sets.getByName(name) is not None:
+        raise ValueError('Parameter set with name "{}" already exists'.format(name))
+
+    if param_set_dict is None:
+        # create parameter set from current state
+        new_set = COPASI.CModelParameterSet(model.getActiveModelParameterSet(), None, False);
+        new_set.setObjectName(name);
+        sets.addAndOwn(new_set)
+        return
+
+    new_set = COPASI.CModelParameterSet(name)
+    sets.addAndOwn(new_set)
+
+    _set_parameter_set(new_set, param_set_dict, dm, False)
+
+
+def set_parameter_set(name, exact=False, param_set_dict=None, remove_others=False, **kwargs):
+    """
+    sets the named parameter sets to the given dictionary values
+
+    :param name: name of the parameter set to change (or a substring of the name)
+    :type name: str
+
+    :param exact: boolean indicating whether the name has to be exact
+    :type exact: bool
+
+    :param param_set_dict: dictionary with the parameter set values
+    :type param_set_dict: dict or None
+
+    :param remove_others: boolean indicating whether to remove entries, that are not specified in the dictionary
+                          (default: False)
+    :type remove_others: bool
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    sets = model.getModelParameterSets()
+    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    num_sets = sets.size()
+
+    for i in  reversed(range(num_sets)):
+        pset = sets.get(i)
+        set_name  = pset.getObjectName()
+
+        if name and  name not in set_name:
+            continue
+
+        if name and type(name) is str and exact and name != set_name:
+            continue
+
+        if 'name' in param_set_dict:
+            pset.setObjectName(param_set_dict['name'])
+
+        _set_parameter_set(pset, param_set_dict, dm, remove_others)
+
+
+def _set_parameter_set(p_set, param_set_dict, dm, remove_others):
+    """ CHanges the specified parameter set
+
+    :param p_set: the parameter set to change
+    :param param_set_dict:  the dictionary with new values
+    :param dm: the data model
+    :param remove_others: boolean indicating whether to remove entries, that are not specified in the dictionary
+    :return: None
+    """
+    if not p_set:
+        return
+
+    if not param_set_dict:
+        return
+
+    for key in param_set_dict:
+        if key == 'description':
+            p_set.setNotes(param_set_dict['description'])
+            continue
+
+        param = p_set.getModelParameter(COPASI.CDataString(key).getCN())
+        if not param:
+            continue
+
+        _update_paramgroup(param, param_set_dict[key], key, dm, remove_others)
+
+    p_set.compile()
+
+def _update_paramgroup(param, group_dict, name, dm, remove_others):
+    """ Updates the given model parameter group
+
+    :param param: the parameter group to update
+    :type param: COPASI.CModelParameterGroup
+    :param group_dict: the dictionary with new values
+    :param name: name of the group
+    :param dm: the data model
+    :param remove_others: boolean indicating whether to remove entries, that are not specified in the dictionary
+    :return:
+    """
+    if remove_others:
+        param.clear()
+    for key in group_dict:
+        current = group_dict[key]
+        if isinstance(current, dict):
+            value = current['value'] if 'value' in current else None
+        else:
+            value = float(current)
+        p_type = _group_to_ptype_int(name,current)
+        s_type = _guess_simulation_type(p_type, current)
+
+        obj = _get_object_by_ptype(p_type, key, dm)
+        if not obj:
+            logging.warning('Could not find object for "{}", skipping'.format(key))
+            continue
+
+        new_param = param.getModelParameter(obj.getCN())
+        if not new_param:
+            new_param = param.add(p_type)
+            new_param.setCN(obj.getCN())
+            new_param.setSimulationType(s_type)
+
+        if p_type == COPASI.CModelParameter.Type_Model:
+            new_param.setValue(value)
+            continue
+
+        if p_type == COPASI.CModelParameter.Type_ModelValue:
+            new_param.setValue(value)
+            continue
+
+        if p_type == COPASI.CModelParameter.Type_Compartment:
+            new_param.setValue(value,COPASI.CCore.Framework_Concentration)
+            continue
+
+        if p_type == COPASI.CModelParameter.Type_Species:
+            if isinstance(current, dict):
+                if 'particle_number' in current:
+                    new_param.setValue(current['particle_number'], COPASI.CCore.Framework_ParticleNumbers)
+                if 'concentration' in current:
+                    new_param.setValue(current['concentration'], COPASI.CCore.Framework_Concentration)
+            else:
+                new_param.setValue(value, COPASI.CCore.Framework_Concentration)
+            continue
+
+        if p_type == COPASI.CModelParameter.Type_Reaction:
+            for param_key in current:
+                current_p = current[param_key]
+                if isinstance(current_p, dict):
+                    value = current_p['value'] if 'value' in current_p else None
+                    p_type = _parameter_type_to_int(
+                        current_p['parameter_type']) if 'parameter_type' in current_p else None
+                    s_type = __status_to_int(current_p['simulation_type']) if 'simulation_type' in current_p else None
+                else:
+                    value = float(current_p)
+                    p_type = COPASI.CModelParameter.Type_ReactionParameter
+                    s_type = COPASI.CModelEntity.Status_FIXED
+
+                param_name = '({}).{}'.format(key, param_key)
+                local_param_obj = dm.findObjectByDisplayName(param_name)
+
+                if not local_param_obj:
+                    logging.warning('Could not find local parameter "{}", skipping'.format(param_name))
+                    continue
+
+                local_param = new_param.add(p_type)
+                local_param.setCN(local_param_obj.getCN())
+                local_param.setValue(value)
+                local_param.setSimulationType(s_type)
+            continue
+def apply_parameter_set(name, exact=False, **kwargs):
+    """ Applies the parameter set with the given name to the model
+
+    :param name: the name of the parameter set or a substring of the name
+    :param exact: boolean indicating whether the name has to match exactly
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    sets = model.getModelParameterSets()
+    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    num_sets = sets.size()
+
+    for i in  reversed(range(num_sets)):
+        pset = sets.get(i)
+        set_name  = pset.getObjectName()
+
+        if name and  name not in set_name:
+            continue
+
+        if name and type(name) is str and exact and name != set_name:
+            continue
+
+        pset.updateModel()
+
+def update_parameter_set(name, exact=False, **kwargs):
+    """ Updates the specified parameter set with values from the model
+
+    :param name: the name of the parameter set or a substring of the name
+    :param exact: boolean indicating whether the name has to match exactly
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return:
+
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    sets = model.getModelParameterSets()
+    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
+
+    num_sets = sets.size()
+
+    for i in reversed(range(num_sets)):
+        pset = sets.get(i)
+        assert (isinstance(pset, COPASI.CModelParameterSet))
+
+        set_name = pset.getObjectName()
+
+        if name and name not in set_name:
+            continue
+
+        if name and type(name) is str and exact and name != set_name:
+            continue
+
+        pset.refreshFromModel(True)
+
+def _get_object_by_ptype(p_type, name, dm):
+    if p_type == COPASI.CModelParameter.Type_Model:
+        return dm.getModel()
+    if p_type == COPASI.CModelParameter.Type_ModelValue:
+        return dm.getModel().getModelValue(name)
+    if p_type == COPASI.CModelParameter.Type_Compartment:
+        return dm.getModel().getCompartment(name)
+    if p_type == COPASI.CModelParameter.Type_Species:
+        return dm.getModel().getMetabolite(name)
+    if p_type == COPASI.CModelParameter.Type_Reaction:
+        return dm.getModel().getReaction(name)
+    return None
+
+def _parametergroup_to_dict(pgroup, dm, values_only):
+    result = {}
+    for i in range(pgroup.size()):
+        child = pgroup.getChild(i)
+        if isinstance(child, COPASI.CModelParameterGroup):
+            result[child.getName()] = _parametergroup_to_dict(child, dm, values_only)
+            continue
+
+        if values_only:
+            if isinstance(child, COPASI.CModelParameterSpecies):
+                result[child.getName()] = child.getValue(COPASI.CCore.Framework_Concentration)
+            else:
+                result[child.getName()] = child.getValue()
+            continue
+
+        new_dict = {}
+        if isinstance(child, COPASI.CModelParameterSpecies):
+            new_dict['concentration'] = child.getValue(COPASI.CCore.Framework_Concentration)
+            new_dict['particle_number'] = child.getValue(COPASI.CCore.Framework_ParticleNumbers)
+        else:
+            new_dict['value'] = child.getValue()
+
+        new_dict['parameter_type'] = _parameter_type_to_string(child.getType())
+        new_dict['simulation_type'] = __status_to_string(child.getSimulationType())
+
+        result[child.getName()] = new_dict
+
+    return result
+
+def _group_to_ptype_int(group_name, value_or_dict):
+    if isinstance(value_or_dict, dict):
+        p_type = _parameter_type_to_int(value_or_dict['parameter_type']) if 'parameter_type' in value_or_dict else None
+        if p_type:
+            return p_type
+
+    values = {
+        'Initial Time': COPASI.CModelParameter.Type_Model,
+        "Initial Compartment Sizes": COPASI.CModelParameter.Type_Compartment,
+        "Initial Species Values": COPASI.CModelParameter.Type_Species,
+        "Initial Global Quantities": COPASI.CModelParameter.Type_ModelValue,
+        "Kinetic Parameters": COPASI.CModelParameter.Type_Reaction,
+    }
+
+    return values.get(group_name, COPASI.CModelParameter.Type_Reaction)
+
+def _guess_simulation_type(p_type, value_or_dict):
+    if isinstance(value_or_dict, dict):
+        s_type = __status_to_int(value_or_dict['simulation_type']) if 'simulation_type' in value_or_dict else None
+        if s_type:
+            return s_type
+
+    if p_type == COPASI.CModelParameter.Type_Model:
+        s_type = COPASI.CModelEntity.Status_TIME
+    elif p_type == COPASI.CModelParameter.Type_Species:
+        s_type = COPASI.CModelEntity.Status_REACTIONS
+    else:
+        s_type = COPASI.CModelEntity.Status_FIXED
+
+    return s_type
+
+def _parameter_type_to_string(p_type):
+    # type: (int)->str
+    strings = {
+        COPASI.CModelParameter.Type_Model: "model",
+        COPASI.CModelParameter.Type_ReactionParameter: "reaction_parameter",
+        COPASI.CModelParameter.Type_Reaction: "reaction",
+        COPASI.CModelParameter.Type_Set: "set",
+        COPASI.CModelParameter.Type_Group: "group",
+        COPASI.CModelParameter.Type_Compartment: "compartment",
+        COPASI.CModelParameter.Type_ModelValue: "parameter",
+        COPASI.CModelParameter.Type_Species: "species",
+        COPASI.CModelParameter.Type_unknown: "unknown",
+    }
+    return strings.get(p_type, 'unknown')
+
+def _parameter_type_to_int(p_type):
+    # type: (str)->int
+    values = {
+        "model": COPASI.CModelParameter.Type_Model,
+        "reaction_parameter": COPASI.CModelParameter.Type_ReactionParameter,
+        "reaction": COPASI.CModelParameter.Type_Reaction,
+        "set": COPASI.CModelParameter.Type_Set,
+        "group": COPASI.CModelParameter.Type_Group,
+        "compartment": COPASI.CModelParameter.Type_Compartment,
+        "parameter": COPASI.CModelParameter.Type_ModelValue,
+        "species": COPASI.CModelParameter.Type_Species,
+        "unknown": COPASI.CModelParameter.Type_unknown,
+    }
+    return values.get(p_type, COPASI.CModelParameter.Type_unknown)
+
+def _parameterset_to_dict(pset, dm, values_only):
+    """
+    Converts the given parameter set to a dictionary
+
+    :param pset: the parameter set
+    :type pset: COPASI.CModelParameterSet
+    :param dm: the datamodel
+    :return: dictionary of the parameter set
+    """
+    result = {}
+    result['name'] = pset.getObjectName()
+    result['description'] = pset.getNotes()
+
+    for entry in [
+        'Initial Time',
+        "Initial Compartment Sizes",
+        "Initial Species Values",
+        "Initial Global Quantities",
+        "Kinetic Parameters"
+    ]:
+        result[entry] = _parametergroup_to_dict(pset.getModelParameter(COPASI.CDataString(entry).getCN()), dm, values_only)
+
+    return result

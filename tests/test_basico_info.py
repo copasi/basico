@@ -416,6 +416,88 @@ class TestBasicoModelConstruction(unittest.TestCase):
                             mapping={'Vol': vol1, 'k1':
                                 'T0.r_MxferWG'})
 
+    def test_parameter_sets(self):
+        dm = basico.load_example('LM')
+        sol = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION, create_parametersets=True)
+        psets = basico.get_parameter_sets()
+        self.assertEqual(len(psets), 6)
+        psets = basico.get_parameter_sets(name='Original')
+        self.assertEqual(len(psets), 1)
+
+        # remove a specific paramter set
+        basico.remove_parameter_sets(name='Original')
+        self.assertEqual(len(basico.get_parameter_sets()), 5)
+
+        # add parameter set from model
+        basico.add_parameter_set(name='Current State')
+        current_state = basico.get_parameter_sets(name='Current State', exact=True);
+        self.assertEqual(len(current_state), 1)
+
+
+        # remove all parameter sets
+        basico.remove_parameter_sets()
+        self.assertEqual(len(basico.get_parameter_sets()), 0)
+
+        # add parameter set from dictionary
+        basico.add_parameter_set(name='Original', param_set_dict=psets[0])
+
+        new_set = basico.get_parameter_sets()
+        self.assertEqual(len(new_set), 1)
+        self.assertDictEqual(psets[0]['Initial Time'], new_set[0]['Initial Time'])
+        self.assertDictEqual(psets[0]['Initial Compartment Sizes'], new_set[0]['Initial Compartment Sizes'])
+        self.assertDictEqual(psets[0]['Initial Species Values'], new_set[0]['Initial Species Values'])
+        self.assertDictEqual(psets[0]['Initial Global Quantities'], new_set[0]['Initial Global Quantities'])
+        self.assertDictEqual(psets[0]['Kinetic Parameters'], new_set[0]['Kinetic Parameters'])
+
+        # apply a parameter set to model
+        basico.apply_parameter_set(name='Original')
+
+        # update parameter set from model
+        basico.update_parameter_set(name='Original')
+
+        # manually set parameter set to dictionary
+        basico.set_parameter_set(name='Original', param_set_dict=psets[0])
+        new_set = basico.get_parameter_sets()
+        self.assertEqual(len(new_set), 1)
+
+        self.assertDictEqual(psets[0]['Initial Time'], new_set[0]['Initial Time'])
+        self.assertDictEqual(psets[0]['Initial Compartment Sizes'], new_set[0]['Initial Compartment Sizes'])
+        self.assertDictEqual(psets[0]['Initial Species Values'], new_set[0]['Initial Species Values'])
+        self.assertDictEqual(psets[0]['Initial Global Quantities'], new_set[0]['Initial Global Quantities'])
+        self.assertDictEqual(psets[0]['Kinetic Parameters'], new_set[0]['Kinetic Parameters'])
+
+        simple_set = basico.get_parameter_sets(values_only=True)
+        basico.set_parameter_set(name='Original',param_set_dict=simple_set[0])
+
+        # now test whether the changes actually work
+        basico.remove_parameter_sets()
+        basico.add_parameter_set(name='Current State')
+        basico.add_parameter_set(name='ToModify')
+
+        # try a partial set
+        basico.add_parameter_set(name='Partial',
+                                 param_set_dict={
+                                     'Initial Compartment Sizes': {'compartment': 1},
+                                     'Initial Species Values': {'S': 2, 'E': 1}})
+
+        # try changing just the initial concentration os some species
+        basico.set_parameter_set(name='ToModify',
+                                 param_set_dict={'Initial Species Values': {'S': 5, 'E': 0.1, 'nonexisting': 2}},
+                                 remove_others=False)
+        simple_set = basico.get_parameter_sets(values_only=True)
+        self.assertEqual(simple_set[1]['Initial Species Values']['S'], 5)
+        self.assertEqual(simple_set[1]['Initial Species Values']['E'], 0.1)
+
+        # apply the parameter set
+        basico.apply_parameter_set(name='ToModify')
+
+        # look at actual model state
+        species_list = basico.as_dict(basico.get_species())
+        specis_dict = {d['name']: d for d in species_list}
+        self.assertEqual(specis_dict['S']['initial_concentration'], 5)
+
+        basico.remove_datamodel(dm)
+
 
 if __name__ == "__main__":
     unittest.main()

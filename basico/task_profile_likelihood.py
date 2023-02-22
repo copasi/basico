@@ -48,7 +48,6 @@ def _processfile_with_se(filename, copasi_se=COPASI_SE, max_time=None):
     args.append(filename)
     logger.info(f"processing: {filename} with args: {args}")
     subprocess.call(args, cwd=os.path.dirname(filename))
-    return
 
 
 def _get_scan_files(data_dir):
@@ -107,15 +106,15 @@ def plot_data(data_dir, problem_size=None):
         df, obj_val, param_val = _combine_files(file_map[entry])
         ax = df.plot(legend=False)
         ax.set_ylabel('obj')
-        v_line = ax.axvline(param_val, color='silver', ls='dotted')
-        h_line = ax.axhline(obj_val, color='silver', ls='dotted')
+        ax.axvline(param_val, color='silver', ls='dotted')
+        ax.axhline(obj_val, color='silver', ls='dotted')
         if problem_size:
             m, n = problem_size
             threshold = obj_val+np.sqrt(obj_val/(n-m))
-            h_line = ax.axhline(threshold, color='blue', ls='dashed')
+            ax.axhline(threshold, color='blue', ls='dashed')
             scale = _make_y_axis(obj_val, threshold, 3)
             ax.set_ylim(top=scale[-1], bottom=scale[0])
-        title = ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
+        ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
         plots.append(ax)
 
     return plots

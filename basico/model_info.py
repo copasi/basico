@@ -2022,9 +2022,8 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
     if not event or not dm:
         return
 
-    if 'new_name' in kwargs:
-        if not event.setObjectName(kwargs['new_name']):
-            logging.warning('could not rename event')
+    if 'new_name' in kwargs and not event.setObjectName(kwargs['new_name']):
+        logging.warning('could not rename event')
 
     if trigger:
         event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
@@ -2302,17 +2301,17 @@ def get_functions(name=None, **kwargs):
 
     for index in range(functions.size()):
         try:
-            function = functions.get(index)
+            kin_function = functions.get(index)
         except AttributeError:
-            function = functions[index]
+            kin_function = functions[index]
 
-        assert (isinstance(function, COPASI.CFunction))
+        assert (isinstance(kin_function, COPASI.CFunction))
 
         fun_data = {
-            'name': function.getObjectName(),
-            'reversible': function.isReversible() == 1,
-            'formula': function.getInfix(),
-            'general': function.isReversible() == -1,
+            'name': kin_function.getObjectName(),
+            'reversible': kin_function.isReversible() == 1,
+            'formula': kin_function.getInfix(),
+            'general': kin_function.isReversible() == -1,
         }
 
         if 'name' in kwargs and kwargs['name'] not in fun_data['name']:
@@ -2324,7 +2323,7 @@ def get_functions(name=None, **kwargs):
         if name and name not in fun_data['name']:
             continue
 
-        fun_data['mapping'] = _get_function_mapping(function)
+        fun_data['mapping'] = _get_function_mapping(kin_function)
 
         data.append(fun_data)
 
@@ -2353,21 +2352,21 @@ def _get_function(name):
 
     return None
 
-def _get_function_mapping(function, filter=None):
+def _get_function_mapping(kin_function, filter=None):
     """ Returns the mapping for the given function
 
-    :param function: the function to get the mapping for
-    :type function: COPASI.CFunction
+    :param kin_function: the function to get the mapping for
+    :type kin_function: COPASI.CFunction
     :param filter: usage to filter for (e.g. `modifier`)
     :type filter: str
     :return: the mapping as dictionary
     :rtype: Dict
     """
     mapping = {}
-    if function is None:
+    if kin_function is None:
         return mapping
 
-    params = function.getVariables()
+    params = kin_function.getVariables()
     assert (isinstance(params, COPASI.CFunctionParameters))
     for i in range(params.size()):
         p = params.getParameter(i)
@@ -2732,8 +2731,6 @@ def set_parameters(name=None, exact=False, **kwargs):
 
     num_params = parameters.size()
 
-    change_set = COPASI.ObjectStdVector()
-
     for i in range(num_params):
         param = parameters.get(i)
         assert (isinstance(param, COPASI.CModelValue))
@@ -2768,9 +2765,8 @@ def _set_parameter(param, c_model, **kwargs):
     if not param or not c_model:
         return
 
-    if 'new_name' in kwargs:
-        if not param.setObjectName(str(kwargs['new_name'])):
-            logging.warning('could not rename the parameter')
+    if 'new_name' in kwargs and not param.setObjectName(str(kwargs['new_name'])):
+        logging.warning('could not rename the parameter')
 
     if 'unit' in kwargs:
         param.setUnitExpression(kwargs['unit'])
@@ -3090,8 +3086,8 @@ def _validate_mapping(usage, param_name, mapped_value, c_model):
 def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     if not reaction or not info or not dm:
         return False
-    function = _get_function(function_name)
-    modifiers = list(_get_function_mapping(function, 'modifier').keys())
+    kin_function = _get_function(function_name)
+    modifiers = list(_get_function_mapping(kin_function, 'modifier').keys())
     if not modifiers:
         return False
 
@@ -4827,8 +4823,6 @@ def _set_named_value(obj, name, new_value, ref):
             set_function(new_value)
             model.updateInitialValues(ref)
 
-    return
-
 
 def set_value(name_or_reference, new_value, initial=False,  **kwargs):
     """Gets the value of the named element or nones
@@ -5427,7 +5421,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
                 local_param.setCN(local_param_obj.getCN())
                 local_param.setValue(value)
                 local_param.setSimulationType(s_type)
-            continue
+
 def apply_parameter_set(name, exact=False, **kwargs):
     """ Applies the parameter set with the given name to the model
 

@@ -333,7 +333,7 @@ def _get_name_for_item(item, model):
     :return: the name for the element, or list
     :rtype: str
     """
-    name = SENS.EMPTY_LIST
+
     if item.isSingleObject():
         cn = item.getSingleObjectCN()
         obj = model.getObject(cn)

@@ -253,7 +253,6 @@ def _set_parameter_from_value(parameter, value):
 
     if parameter.getType() == COPASI.CCopasiParameter.Type_UINT:
         parameter.setUIntValue(int(value))
-        return
 
 
 def _set_parameter_from_dict(parameter, values_dict, key):

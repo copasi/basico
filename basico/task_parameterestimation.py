@@ -1100,8 +1100,6 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
         else:
             solution = run_parameter_estimation(method='Current Solution Statistics', write_report=False)
 
-    model = dm.getModel()
-
     exp_data = []
     sim_data = []
 
@@ -1109,17 +1107,16 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
         experiment = experiments.getExperiment(i)
         exp_name = experiment.getObjectName()
         df = get_data_from_experiment(experiment, rename_headers=True)
-        columns = df.columns.to_list()
         mapping = get_experiment_mapping(experiment)
 
         # set independent values for that experiment
         independent = mapping[mapping.type == 'independent']
-        num_independent = independent.shape[0]
+
         is_steady_state = experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState
         num_independent_points = df.shape[0]
         steady_state_task = dm.getTask(basico.T.STEADY_STATE)
         container = dm.getModel().getMathContainer()
-        #_apply_nth_change(0, columns, df, dm, exp_name, independent, model, num_independent)
+
         if update_parameters:
             _update_fit_parameters_from(dm, solution, exp_name)
 
@@ -1134,7 +1131,6 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
 
         if is_steady_state:
             # run steady state
-            #basico.run_steadystate(model=dm)
             steady_state_task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
             steady_state_task.processRaw(True)
             data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
@@ -1146,11 +1142,11 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
                 experiment.updateModelWithIndependentData(j)
                 container.pushAllTransientValues();
                 container.pushInitialState();
-                #_apply_nth_change(j, columns, df, dm, exp_name, independent, model, num_independent)
+
                 if update_parameters:
                     _update_fit_parameters_from(dm, solution, exp_name)
                 steady_state_task.processRaw(True)
-                #basico.run_steadystate(model=dm)
+
                 new_row = basico.model_info._collect_data(
                     cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
                 data = pd.concat([data, new_row], ignore_index=True)
@@ -1457,7 +1453,6 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
     }
     result['evals_per_sec'] = result['cpu_time'] / function_evaluations if performed_iterations else 0
 
-    items = problem.getOptItemList()
     sol = problem.getSolutionVariables()
     grad = problem.getVariableGradients()
     std = problem.getVariableStdDeviations()

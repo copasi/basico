@@ -152,11 +152,16 @@ def new_model(**kwargs):
 
     - `length_unit` (str): the unit to use for 1D compartments
 
+    - `remove_user_defined_functions` (bool): whether to remove user defined functions when creating the model
+
     - | `notes`: sets notes for the model (either plain text, or valid xhtml)
 
     :return: the new model
     :rtype: COPASI.CDataModel
     """
+    if 'remove_user_defined_functions' in kwargs and kwargs['remove_user_defined_functions']:
+        basico.model_info.remove_user_defined_functions()
+
     dm = create_datamodel()
     dm.newModel()
 
@@ -242,14 +247,24 @@ def load_model_from_url(url):
     return load_model_from_string(content)
 
 
-def load_model(location):
+def load_model(location, remove_user_defined_functions=False):
     """Loads the model and sets it as current
 
     :param location: either a filename, url or raw string of a COPASI / SBML model
     :type location: str
+
+    :param  remove_user_defined_functions: optional flag, indicating that user defined functions should be removed
+            before loading the model. Since function definitions are global, this can be helpful to ensure that
+            function names remain the same as in the loaded file. (default: False)
+    :type remove_user_defined_functions: bool
+
     :return: the loaded model
     :rtype: COPASI.CDataModel
     """
+
+    if remove_user_defined_functions:
+        basico.model_info.remove_user_defined_functions()
+
     model = create_datamodel()
 
     if os.path.isfile(location):
@@ -276,14 +291,23 @@ def load_model(location):
     return None
 
 
-def load_biomodel(model_id):
+def load_biomodel(model_id, remove_user_defined_functions=False):
     """Loads a model from the BioModels Database.
 
     :param model_id: either an integer of the biomodels id, or a valid biomodels id
     :type model_id: Union[int,str]
+
+    :param  remove_user_defined_functions: optional flag, indicating that user defined functions should be removed
+            before loading the model. Since function definitions are global, this can be helpful to ensure that
+            function names remain the same as in the loaded file. (default: False)
+    :type remove_user_defined_functions: bool
+
     :return:
     :rtype: COPASI.CDataModel
     """
+
+    if remove_user_defined_functions:
+        basico.model_info.remove_user_defined_functions()
 
     from . import biomodels
 

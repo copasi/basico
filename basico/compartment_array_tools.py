@@ -38,9 +38,9 @@ try:
 except ImportError:
     pass
 
-DEFAULT_Y_LABEL = 'volume y'
-DEFAULT_X_LABEL = 'volume x'
-TITLE_FORMAT_STRING = 'concentrations of "{0}" for each volume at time {1}'
+_DEFAULT_Y_LABEL = 'volume y'
+_DEFAULT_X_LABEL = 'volume x'
+_TITLE_FORMAT_STRING = 'concentrations of "{0}" for each volume at time {1}'
 
 
 def plot_linear_time_course(data, prefix=None, metab_names=None, shading='gouraud',
@@ -117,6 +117,8 @@ def _split_ranges(names):
         if y not in y_indices:
             y_indices.append(y)
 
+    x_indices.sort()
+    y_indices.sort()
     return x_indices, y_indices, prefixes
 
 
@@ -177,9 +179,9 @@ def plot_rectangular_time_course(data, times=None, prefix=None, shading='gouraud
             vmin, vmax = _get_ranges(arr, min_range, max_range)
             mesh.set_clim(vmin=vmin, vmax=vmax)
             fig.colorbar(mesh, ax=ax)
-            ax.set_xlabel(DEFAULT_X_LABEL)
-            ax.set_ylabel(DEFAULT_Y_LABEL)
-            ax.set_title(TITLE_FORMAT_STRING.format(metab, t))
+            ax.set_xlabel(_DEFAULT_X_LABEL)
+            ax.set_ylabel(_DEFAULT_Y_LABEL)
+            ax.set_title(_TITLE_FORMAT_STRING.format(metab, t))
             result.append((fig, ax))
 
     return result
@@ -252,9 +254,9 @@ def animate_rectangular_time_course_as_image(data, metabs=None, prefix=None,
 
     fig, ax = plt.subplots()
     imgplot = ax.imshow(img)
-    ax.set_xlabel(DEFAULT_X_LABEL)
-    ax.set_ylabel(DEFAULT_Y_LABEL)
-    ax.set_title(TITLE_FORMAT_STRING.format(metabs, time[0]))
+    ax.set_xlabel(_DEFAULT_X_LABEL)
+    ax.set_ylabel(_DEFAULT_Y_LABEL)
+    ax.set_title(_TITLE_FORMAT_STRING.format(metabs, time[0]))
 
     def _plot_ith_set(time_index):
         cur = data.iloc[time_index]
@@ -268,7 +270,7 @@ def animate_rectangular_time_course_as_image(data, metabs=None, prefix=None,
             metab_data.append(arr)
 
         imgplot.set_data(_create_image(metab_data, vmax))
-        ax.set_title(TITLE_FORMAT_STRING.format(metabs, time[time_index]))
+        ax.set_title(_TITLE_FORMAT_STRING.format(metabs, time[time_index]))
         return [imgplot]
 
     anim = FuncAnimation(
@@ -340,16 +342,16 @@ def animate_rectangular_time_course(data, metab=None, prefix=None, shading='gour
     vmin, vmax = _get_ranges(arr, min_range, max_range)
     mesh.set_clim(vmin=vmin, vmax=vmax)
     fig.colorbar(mesh, ax=ax)
-    ax.set_xlabel(DEFAULT_X_LABEL)
-    ax.set_ylabel(DEFAULT_Y_LABEL)
-    ax.set_title(TITLE_FORMAT_STRING.format(metab, 0))
+    ax.set_xlabel(_DEFAULT_X_LABEL)
+    ax.set_ylabel(_DEFAULT_Y_LABEL)
+    ax.set_title(_TITLE_FORMAT_STRING.format(metab, 0))
 
     def _plot_ith_set(i):
         arr = _extract_metabolite_data(data.iloc[i], metab, prefix, x_range, y_range)
         vmin, vmax = _get_ranges(arr, min_range, max_range)
         mesh.set_array(arr.ravel())
         mesh.set_clim(vmin=vmin, vmax=vmax)
-        ax.set_title(TITLE_FORMAT_STRING.format(metab, time[i]))
+        ax.set_title(_TITLE_FORMAT_STRING.format(metab, time[i]))
 
     anim = FuncAnimation(
         fig, _plot_ith_set, interval=100, frames=len(time) - 1)

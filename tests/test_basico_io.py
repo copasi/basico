@@ -40,9 +40,19 @@ class TestBasicoIO(unittest.TestCase):
         basico.save_model(sbml_name, type='sbml')
         cps_name = tempfile.mktemp()
         basico.save_model(cps_name, type='copasi')
+        sedml_name = tempfile.mktemp()
+        basico.save_model(sedml_name, type='sedml')
+        omex_name = tempfile.mktemp()
+        basico.save_model(omex_name, type='omex')
 
         # model and data
         basico.save_model_and_data(cps_name, delete_data_on_exit=True)
+
+        # export sbml
+        sbml_string = basico.save_model_to_string(type='sbml')
+        self.assertTrue(sbml_string is not None)
+        sedml_string = basico.save_model_to_string(type='sedml', model_location='model.xml')
+        self.assertTrue(sedml_string is not None)
 
         basico.remove_datamodel(dm)
 
@@ -94,6 +104,7 @@ class TestBasicoIO(unittest.TestCase):
             data = basico.get_experiment_data_from_model(model=dm)
             self.assertTrue(len(data) > 0)
             basico.remove_datamodel(dm)
+
 
 if __name__ == "__main__":
     unittest.main()

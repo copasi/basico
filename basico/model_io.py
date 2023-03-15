@@ -404,17 +404,27 @@ def save_model(filename, **kwargs):
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
-    - `type` (str): `copasi` to write COPASI files, `sbml` to write SBML files (defaults to `copasi`)
+    - `type` (str): `copasi` to write COPASI files, `sbml` to write SBML files (defaults to `copasi`),
+      `sedml` to write SED-ML files, `omex` to write a COMBINE archive
 
     - `overwrite` (bool): whether the file should be overwritten if present (defaults to True)
 
-    - `level` (int): SBML level to export
+    - `sbml_level` (int): SBML level to export
 
-    - `version` (int): SBML version to export
+    - `sbml_version` (int): SBML version to export
+
+    - `sedml_level` (int): SEDML level to export
+
+    - `sedml_version` (int): SEDML version to export
 
     - `export_copasi_miriam` (bool): whether to export copasi miriam annotations
 
     - `export_incomplete` (bool): whether to export incomplete SBML model
+
+    - `include_copasi` (bool): whether to include the COPASI file in the COMBINE archive (defaults to True)
+    - `include_data` (bool): whether to include the data file in the COMBINE archive (defaults to True)
+    - `include_sbml` (bool): whether to include the SBML file in the COMBINE archive (defaults to True)
+    - `include_sedml` (bool): whether to include the SED-ML file in the COMBINE archive (defaults to False)
 
     :return: None
     """
@@ -422,16 +432,28 @@ def save_model(filename, **kwargs):
     assert (isinstance(model, COPASI.CDataModel))
     file_type = kwargs.get('type', 'copasi').lower()
     overwrite = kwargs.get('overwrite', True)
-    level = kwargs.get('level', 2)
-    version = kwargs.get('version', 4)
+    sbml_level = kwargs.get('sbml_level', kwargs.get('level', 2))
+    sbml_version = kwargs.get('sbml_version', kwargs.get('version', 4))
+    sedml_level = kwargs.get('sedml_level', kwargs.get('level', 1))
+    sedml_version = kwargs.get('sedml_version', kwargs.get('version', 4))
     export_copasi_miriam = kwargs.get('export_copasi_miriam', True)
     export_incomplete = kwargs.get('export_incomplete', True)
 
     exporters = {
-        'sbml': lambda filename: model.exportSBML(filename, overwrite, sbmlLevel=level, sbmlVersion=version,
+        'sbml': lambda filename: model.exportSBML(filename, overwrite, sbmlLevel=sbml_level, sbmlVersion=sbml_version,
                                                   exportIncomplete=export_incomplete,
                                                   exportCOPASIMIRIAM=export_copasi_miriam),
         'copasi': lambda filename: model.saveModel(filename, overwrite),
+        'sedml': lambda filename: model.exportSEDML(filename, overwrite,
+                                                    sedmlLevel=sedml_level, sedmlVersion=sedml_version),
+        'omex': lambda filename: model.exportCombineArchive(filename,
+                                                            includeCOPASI=kwargs.get('include_copasi', True),
+                                                            includeSBML=kwargs.get('include_sbml', True),
+                                                            includeData=kwargs.get('include_data', True),
+                                                            includeSEDML=kwargs.get('include_sedml', False),
+                                                            overwriteFile=overwrite,
+                                                            sbmlLevel=sbml_level, sbmlVersion=sbml_version,
+                                                            sedmlLevel=sedml_level, sedmlVersion=sedml_version)
     }
 
     if file_type in exporters:
@@ -441,6 +463,9 @@ def save_model(filename, **kwargs):
                                 format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
         except COPASI.CCopasiException:
             logging.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
+    else:
+        logging.error("Couldn't save the file as {0}, unknown file type {1}"
+                      .format(os.path.basename(filename), file_type))
 
 
 def save_model_to_string(**kwargs):
@@ -451,13 +476,45 @@ def save_model_to_string(**kwargs):
     - | `model`: to specify the data model to be used (if not specified
       | the one from :func:`.get_current_model` will be taken)
 
+    - `type` (str): `copasi` to write COPASI files, `sbml` to write SBML files (defaults to `copasi`),
+      `sedml` to write SED-ML files
+
+    - `sbml_level` (int): SBML level to export
+
+    - `sbml_version` (int): SBML version to export
+
+    - `sedml_level` (int): SEDML level to export
+
+    - `sedml_version` (int): SEDML version to export
+
     :return: the copasi model as string
     :rtype: str
 
     """
     model = get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
-    return model.saveModelToString()
+
+    file_type = kwargs.get('type', 'copasi').lower()
+    sbml_level = kwargs.get('sbml_level', kwargs.get('level', 2))
+    sbml_version = kwargs.get('sbml_version', kwargs.get('version', 4))
+    sedml_level = kwargs.get('sedml_level', kwargs.get('level', 1))
+    sedml_version = kwargs.get('sedml_version', kwargs.get('version', 4))
+
+    exporters = {
+        'copasi': lambda: model.saveModelToString(),
+        'sbml': lambda: model.exportSBMLToString( sbml_level, sbml_version),
+        'sedml': lambda: model.exportSEDMLToString(get_default_handler(),
+                                                   sedml_level, sedml_version,
+                                                   kwargs.get('model_location', 'model.xml'))
+    }
+
+    if file_type in exporters:
+        try:
+            return exporters[file_type]()
+        except COPASI.CCopasiException:
+            logging.error("Couldn't save the model")
+    else:
+        logging.error("Couldn't save the model, unknown file type {0}", file_type)
 
 
 def save_model_and_data(filename, **kwargs):

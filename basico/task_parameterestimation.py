@@ -18,6 +18,7 @@ Example:
     >>> print(get_parameters_solution())
 
 """
+import shutil
 
 import pandas
 import COPASI
@@ -396,8 +397,15 @@ def _get_experiment_file(experiment, **kwargs):
     if raise_error:
         raise ValueError('Experiment file {0} does not exist'.format(file_name_only))
     
-    if return_relative and directory:
-        return os.path.relpath(file_name_only, directory)    
+    if return_relative and directory and os.path.exists(file_name_only):
+        try:
+            return os.path.relpath(file_name_only, directory)
+        except ValueError:
+            # if we can't create a relative path, we copy the file over and then return the relative path
+            dst = os.path.join(directory, os.path.basename(file_name_only))
+            shutil.copy(file_name_only, dst)
+            return os.path.relpath(dst, directory)
+
     return file_name_only
 
 
@@ -1008,7 +1016,7 @@ def run_parameter_estimation(**kwargs):
     # old_calculate_statistics = problem.getCalculateStatistics()
     # old_randomize_start_values = problem.getRandomizeStartValues()
 
-    problem.setCreateParameterSets(True)
+    # problem.setCreateParameterSets(True)
 
     write_report = kwargs.get('write_report', True)
     report_name = task.getReport().getTarget()
@@ -1038,10 +1046,16 @@ def run_parameter_estimation(**kwargs):
 
     task.setCallBack(get_default_handler())
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+    can_run = True
     if not result:
-        logging.error("Error while initializing parameter estimation: " +
-                      COPASI.CCopasiMessage.getLastMessage().getText())
-    else:
+        message = COPASI.CCopasiMessage.getLastMessage().getText()
+        can_run = False
+        if message.endswith("CCopasiTask (5): No output file defined for report of task 'Parameter Estimation'."):
+            can_run = True
+        if not can_run:
+            logging.error("Error while initializing parameter estimation: " + message)
+
+    if can_run:
         result = task.processRaw(use_initial_values)
         if not result:
             logging.error("Error while running parameter estimation: " +
@@ -1751,6 +1765,7 @@ def load_experiments_from_yaml(experiment_description, **kwargs):
 
     return load_experiments_from_dict(experiments, **kwargs)
 
+
 def load_experiments_from_dict(experiments, **kwargs):
     """ Loads all experiments from the specified experiment description
 
@@ -1764,6 +1779,9 @@ def load_experiments_from_dict(experiments, **kwargs):
 
     :return:
     """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    fit_items = get_fit_parameters(model)
+
     # remove existing experiments
     remove_experiments(**kwargs)
 
@@ -1771,7 +1789,10 @@ def load_experiments_from_dict(experiments, **kwargs):
         experiments = [experiments]
 
     for exp_dict in experiments:
-        add_experiment_from_dict(exp_dict,**kwargs)
+        add_experiment_from_dict(exp_dict, **kwargs)
+
+    # update fit items, as the affected experiments might need updating
+    set_fit_parameters(fit_items, model=model)
 
 def _get_nth_line_from_file(filename, n, max_line=None):
     with open(filename, 'r') as stream:
@@ -1788,6 +1809,7 @@ def _get_first_column(mappings, column):
         if entry['column'] == column:
             return entry
     return None
+
 
 def add_experiment_from_dict(exp_dict, **kwargs):
     """ Adds an experiment from dictionary
@@ -1809,6 +1831,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
 
     data_file_name = exp_dict['filename']
 
+    abs_data_file_name = data_file_name
     if not os.path.isabs(data_file_name):
         abs_data_file_name = os.path.join(os.path.dirname(model.getFileName()), data_file_name)
 

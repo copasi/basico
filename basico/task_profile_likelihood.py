@@ -1,4 +1,4 @@
-""" Utility functions for geerating profile likelihood plots
+""" Utility functions for generating profile likelihood plots
 
    This module contains utility functions for generating scans
    around the current solution of a parameter estimation. The method
@@ -13,16 +13,16 @@ import math
 import basico
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 import sys
 import os
-import matplotlib.pyplot as plt
-import subprocess
-from multiprocessing import Pool, Lock
-from functools import partial
+
+from basico.processing import process_files
 import tempfile
 import logging
 import shutil
 import COPASI
+import yaml
 
 try:
     from . import model_io
@@ -31,23 +31,6 @@ except ImportError:
 
 COPASI_SE = 'CopasiSE'
 logger = logging.getLogger(__name__)
-
-
-def _processfile_with_se(filename, copasi_se=COPASI_SE, max_time=None):
-    """Executes the specified copasi file with CopasiSE
-
-    :param filename: copasi file containing executable tasks to run
-    :param copasi_se: path to the copasi SE executable to execute
-    :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum)
-
-    """
-
-    args = [copasi_se, '--nologo']
-    if max_time is not None:
-        args += ['--maxTime', str(max_time)]
-    args.append(filename)
-    logger.info(f"processing: {filename} with args: {args}")
-    subprocess.call(args, cwd=os.path.dirname(filename))
 
 
 def _get_scan_files(data_dir):
@@ -76,48 +59,141 @@ def process_dir(data_dir, pool_size=4, copasi_se=COPASI_SE, max_time=None):
     process_files(files, pool_size, copasi_se, max_time)
 
 
-def process_files(files, pool_size=4, copasi_se=COPASI_SE, max_time=None):
-    """Executes all of the given files in a multiprocessing pool
-
-    :param files: list of copasi filenames
-    :param pool_size: pool size for the multiprocessing pool that will be created (defaults to 4)
-    :param copasi_se: path to the copasi SE executable to execute
-    :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum
-
-    """
-    logging.debug(f'Processing {len(files)} files with a pool of size {pool_size}')
-    ## for debugging purposes use the following line instead of the multiprocessing pool
-    # from multiprocessing.dummy import Pool
-    with Pool(pool_size) as p:
-        p.map(partial(_processfile_with_se, copasi_se=copasi_se, max_time=max_time), files)
-    logging.debug(f'Processing complete')
-
-
-def plot_data(data_dir, problem_size=None):
+def plot_data(data_dir, problem_size=None, **kwargs):
     """Plots all files from the given data directory
 
     :param data_dir: data directory containing the report files
+
+    :param problem_size: tuple containing the number of parameters (m) and number of data points (n)
+
+    :param kwargs: additional keyword arguments to pass to the plot function
+
+        - scale_mode: scale_mode to use for the y-axis (defaults to None for automatic scaling). If scale_mode
+          is a float, we compute a scale between objective value and threshold with the given steps.
+          If scale_mode is a dict, we use the given dict as the scale for `set_ylim`.
+
+        - obj_val: objective value to use for the plot (defaults to None for using the value from the info file)
+
+        - alpha: alpha value to use for the calculation of thresholds (defaults to 0.05)
+
+        - thresholds: list of thresholds to calculate and display. if not specified, we plot the thresholds
+                      for the 95% interval, and 68% interval according to obj*(1+chi2/(n-m)). Valid values are:
+
+            - 'default_68: threshold for 68%
+            - 'default_95: threshold for 95%
+            - 'schaber_chi2_1p': threshold for one parameter according to Schaber using chi2 with 1 parameter
+            - 'schaber_chi2_p': threshold for one parameter according to Schaber using chi2 with p parameters
+            - 'schaber_fratio_p': threshold for one parameter according to Schaber using fratio with p parameters
+            - `donaldson_fratio_1p`: threshold for one parameter according to Donaldson using fratio with 1 parameter
+
     :return: list of Axes created
     :rtype: List[matplotlib.axes.Axes]
     """
+
+    if os.path.exists(os.path.join(data_dir, '.info.yaml')):
+        with open(os.path.join(data_dir, '.info.yaml'), 'r', encoding='utf8') as f:
+            info = yaml.safe_load(f)
+        param_sds = info.get('param_sds', {})
+    else:
+        info = None
+        param_sds = {}
+
     file_map = _get_report_filemap(data_dir)
     plots = []
+    first = True
     for entry in file_map:
         df, obj_val, param_val = _combine_files(file_map[entry])
+        if 'obj_val' in kwargs:
+            obj_val = kwargs['obj_val']
+        elif info is not None:
+            obj_val = info['obj']
+
+        if not problem_size and info is not None:
+            problem_size = (info['num_params'], info['num_data'])
+        param_name = df.index.name
         ax = df.plot(legend=False)
         ax.set_ylabel('obj')
         ax.axvline(param_val, color='silver', ls='dotted')
+        if param_name in param_sds:
+            ax.axvline(param_val + param_sds[param_name], color='lightblue', ls='dotted')
+            ax.axvline(param_val + 2 * param_sds[param_name], color='lavender', ls='dotted')
+            ax.axvline(param_val - param_sds[param_name], color='lightblue', ls='dotted')
+            ax.axvline(param_val - 2 * param_sds[param_name], color='lavender', ls='dotted')
         ax.axhline(obj_val, color='silver', ls='dotted')
+        thresholds_to_plot = kwargs.get('thresholds', ['default_95', 'default_68'])
         if problem_size:
             m, n = problem_size
-            threshold = obj_val+np.sqrt(obj_val/(n-m))
-            ax.axhline(threshold, color='blue', ls='dashed')
-            scale = _make_y_axis(obj_val, threshold, 3)
-            ax.set_ylim(top=scale[-1], bottom=scale[0])
+            scale_mode = kwargs.get('scale_mode', 3)
+            log_level = kwargs.get('log_level', logging.INFO)
+            if type(log_level) is str:
+                log_level = logging.getLevelName(log_level.upper())
+
+            if scale_mode is not None:
+                if type(scale_mode) is float:
+                    scale = _make_y_axis(obj_val, threshold, scale_mode)
+                    ax.set_ylim(top=scale[-1], bottom=scale[0])
+
+                if type(scale_mode) is dict:
+                    ax.set_ylim(**scale_mode)
+
+            # threshold for COPASI chi2 alpha is 68% (sahle)
+            if 'default_68' in thresholds_to_plot:
+                c0 = stats.chi2.isf(0.32, 1, loc=0, scale=1)
+                threshold = obj_val * (1 + c0/(n-m))
+                if first:
+                    logging.log(log_level, f'blue, dashed : COPASI threshold {threshold} for alpha=0.32')
+                ax.axhline(threshold, color='blue', ls='dashed')
+
+            # for remaining thresholds we use alpha = 0.05 unless otherwise specified
+            alpha = kwargs.get('alpha', 0.05)
+
+            # threshold for COPASI chi2 alpha is 95% (sahle)
+            if 'default_95' in thresholds_to_plot:
+                c0 = stats.chi2.isf(alpha, 1, loc=0, scale=1)
+                threshold = obj_val * (1 + c0/(n-m))
+                if first:
+                    logging.log(log_level, f'blue, dotted : COPASI threshold {threshold} for alpha={alpha}')
+                ax.axhline(threshold, color='blue', ls='dotted')
+
+            # estimating chi-square value fitting one parameter (schaber)
+            if 'schaber_chi2_1p' in thresholds_to_plot:
+                c1 = stats.chi2.isf(alpha, 1, loc=0, scale=1)
+                t1 = obj_val * math.exp(c1 / n)
+                if first:
+                    logging.log(log_level, f'green, dashed: Schaber threshold {t1} for alpha={alpha}, 1 parameter, chi2')
+                ax.axhline(y=t1, color='green', linestyle='dashed')
+
+            # estimating chi-square value fitting m parameters (schaber)
+            if 'schaber_chi2_p' in thresholds_to_plot:
+                c2 = stats.chi2.isf(alpha, m, loc=0, scale=1)
+                t2 = obj_val * math.exp(c2 / n)
+                if first:
+                    logging.log(log_level, f'green, dotted: Schaber threshold {t2} for alpha={alpha}, m parameter, chi2')
+                ax.axhline(y=t2, color='green', linestyle='dotted')
+
+            # estimating fratio value fitting m parameters (schaber)
+            if 'schaber_fratio_p' in thresholds_to_plot:
+                c3 = stats.f.isf(alpha, m, n-m, loc=0, scale=1)
+                t3 = obj_val * (1 + (m / (n-m)) * c3)
+                if first:
+                    logging.log(log_level, f'red: Schaber threshold {t3} for alpha={alpha}, m parameter, Fratio')
+                ax.axhline(y=t3, color='red', linestyle='dotted')
+
+            # estimating chi-square value fitting 1 parameter (donaldson)
+            if 'donaldson_fratio_1p' in thresholds_to_plot:
+                c4 = stats.f.isf(alpha, 1, n-m, loc=0, scale=1)
+                t4 = obj_val * (1 + c4/(n-m))
+                if first:
+                    logging.log(log_level, f'orange: Donaldson threshold {t4} for alpha={alpha}, 1 parameter, Fratio')
+                ax.axhline(y=t4, color='orange', linestyle='dashed')
+
+            first = False
+
         ax.set_title(f'{df.index.name} obj={obj_val}, value={param_val}')
         plots.append(ax)
 
     return plots
+
 
 def _make_y_axis(y_min, y_max, ticks=10):
     """
@@ -136,8 +212,8 @@ def _make_y_axis(y_min, y_max, ticks=10):
     translated from this SO post:
     https://stackoverflow.com/questions/326679/choosing-an-attractive-linear-scale-for-a-graphs-y-axis/9007526#9007526
 
-    :param y_min: min value of y axis
-    :param y_max: max value of y axis
+    :param y_min: min value of y-axis
+    :param y_max: max value of y-axis
     :param ticks: number of ticks to return (defaults to 10)
     :return: array with the suggested scale
     """
@@ -188,19 +264,16 @@ def _make_y_axis(y_min, y_max, ticks=10):
     return result
 
 
-
 def _combine_files(report_files):
     df = None
-    param_val = 0
-    obj_val = 0
     for filename in report_files:
         if df is None:
             df = _get_data_from_file(filename)
-            param_val = df.index[0]
-            obj_val = df.values[0][0]
         else:
             df = pd.concat([df, _get_data_from_file(filename)])
     df.sort_index(inplace=True, axis=0)
+    param_val = df[['TaskList[Parameter Estimation].(Problem)Parameter Estimation.Best Value']].idxmin().values[0]
+    obj_val = df[['TaskList[Parameter Estimation].(Problem)Parameter Estimation.Best Value']].min().values[0]
     return df, obj_val, param_val
 
 
@@ -297,18 +370,22 @@ def _get_fit_task():
 def _convert_opt_items(opt_items):
     opt_item_list = []
     for index in range(len(opt_items)):
+        obj = _DataModel.getObject(COPASI.CCommonName(opt_items[index].getObjectCN()))
         opt_item_list.append(
             {
                 'cn': opt_items[index].getObjectCN().getString(),
                 'start_value': opt_items[index].getStartValue(),
-                'index': index
+                'lower_bound': opt_items[index].getLowerBound(),
+                'upper_bound': opt_items[index].getUpperBound(),
+                'index': index,
+                'name': obj.getObjectDisplayName() if obj is not None else '',
             }
         )
 
     return opt_item_list
 
 
-def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=False):
+def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=False, **kwargs):
     global _DataModel
     _DataModel.loadModel(Arguments["filename"])
     if Arguments["disable_plots"]:
@@ -328,7 +405,7 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     fit_task = _get_fit_task()
     fit_task.setUpdateModel(update_model)
 
-    if Arguments["use_hooke"] == True:
+    if Arguments["use_hooke"]:
         fit_task.setMethodType(COPASI.CTaskEnum.Method_HookeJeeves)
         fit_task.getMethod().getParameter("Iteration Limit").setIntValue(Arguments["iterations"])
         fit_task.getMethod().getParameter("Tolerance").setDblValue(Arguments["tolerance"])
@@ -355,8 +432,11 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     scan_item.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
 
     start_value = item["start_value"]
-    lower_value = _adjust_value(start_value, Arguments["lower_adjustment"])
-    upper_value = _adjust_value(start_value, Arguments["upper_adjustment"])
+    param_sd = kwargs.get('param_sds', {}).get(item["name"], None)
+    lower_value = _adjust_value(start_value, Arguments["lower_adjustment"],
+                                item['lower_bound'], param_sd)
+    upper_value = _adjust_value(start_value, Arguments["upper_adjustment"],
+                                item['upper_bound'], param_sd)
 
     if not update_model:
         middle = "_noupdate"
@@ -388,16 +468,53 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     _DataModel.saveModel(out_file, True)
 
 
-def _adjust_value(value, mulitiplier):
-    if type(mulitiplier) is str:
-        is_additive = mulitiplier.startswith('+')
-        if '%' in mulitiplier:
-            mulitiplier = float(mulitiplier.rstrip('%')) / 100.0
-            if mulitiplier < 0 or is_additive:
-                return value + value * mulitiplier
-        else:
-            mulitiplier = float(mulitiplier)
-    return value * mulitiplier
+def _adjust_value(value, adjustment, explicit=None, std_dev=None):
+    """ adjusts the given value according to the multiplier
+
+    :param value: the value to be adjusted
+
+    :param adjustment: the adjustment to be made to the value
+        adjustment is a float: the value will be adjusted to `value * adjustment`
+        adjustment is a string starting with '+', the value will be adjusted to `value + value * adjustment`
+        adjustment contains a '%', the adjustment value is adjusted by dividing by 100
+        adjustment starts with '=', the value will be adjusted to `adjustment`
+        adjustment is None, or 'default': the explicit value given will be used
+
+    :param explicit: the explicit value to be used if adjustment is None or 'default'
+
+    :return: the adjusted value
+    """
+
+    if not adjustment or adjustment == 'default':
+        return float(explicit)
+
+    if type(adjustment) is str and adjustment.endswith('SD') and std_dev is not None:
+        return value + float(adjustment[:-2]) * std_dev
+
+    if type(adjustment) is str:
+        is_additive = adjustment.startswith('+')
+        if is_additive:
+            adjustment = adjustment[1:]
+
+        is_declarative = adjustment.startswith('=')
+
+        if is_declarative:
+            adjustment = adjustment[1:]
+
+        has_percent = '%' in adjustment
+        if has_percent:
+            adjustment = float(adjustment.rstrip('%')) / 100.0
+            adjustment *= value
+
+        adjustment = float(adjustment)
+        if (adjustment < 0 or is_additive) and not is_declarative:
+            return value + adjustment
+
+        if has_percent or is_declarative:
+            return adjustment
+
+    return value * adjustment
+
 
 def get_profiles_for_model(data_dir=None, **kwargs):
     """ Convenience function, combining the steps of preparing, running, and plotting
@@ -410,7 +527,7 @@ def get_profiles_for_model(data_dir=None, **kwargs):
     """
     delete_files = False
 
-    if data_dir == None:
+    if data_dir is None:
         delete_files = True
         data_dir = tempfile.mkdtemp()
 
@@ -418,19 +535,17 @@ def get_profiles_for_model(data_dir=None, **kwargs):
     old_filename = model.getFileName()
     filename = os.path.join(data_dir, 'model.cps')
     basico.save_model_and_data(filename)
-    task = model.getTask(basico.T.PARAMETER_ESTIMATION)
-    assert (isinstance(task, COPASI.CFitTask))
-    problem = task.getProblem()
-    assert (isinstance(problem, COPASI.CFitProblem))
-    num_params = problem.getOptItemSize()
-    experiments = problem.getExperimentSet()
-    num_data = experiments.getDataPointCount()
-    prepare_files(filename, data_dir, **kwargs)
+
+    info = prepare_files(filename, data_dir, **kwargs)
+
     process_dir(data_dir,
                 kwargs.get('pool_size', 4),
                 kwargs.get('copasi_se', COPASI_SE),
                 kwargs.get('max_time', None))
-    result = plot_data(data_dir, problem_size=(num_params, num_data))
+
+    result = plot_data(data_dir,
+                       problem_size=(info['num_params'], info['num_data']),
+                       **kwargs)
     if delete_files:
         shutil.rmtree(data_dir, ignore_errors=True)
     # restore old filename to ensure that relative files can still be found
@@ -457,23 +572,24 @@ def prepare_files(filename,
     :param data_dir: directory in which the files will be generated
     :param lower_adjustment: adjustment of the current parameter value for the lower bound of the scan, this
            can be either a double multiplier, or a string with a percentage. By default, half of the current value
-           will be substracted from it '-50%'.
+           will be substracted from it '-50%'. To take the current lower bound value as lower bound, use 'default'.
     :param upper_adjustment: adjustment of the current parameter value for the upper bound of the scan, this
            can be either a double multiplier, or a string with a percentage. By default, half of the current value
-           will be added from it '+50%'.
+           will be added from it '+50%'. To take the current upper bound value as upper bound, use 'default'.
     :param modulation: In case Levenberg Marquardt is used, this is the modulation parameter, defaults to 0.01
     :param tolerance: optimization tolerance, defaults to 1e-6
     :param iterations: number of iterations to perform, defaults to 50
-    :param scan_interval: number of scan intervals in each direction, defaults to 40, wich means that 80 total
-           optimnization runs will be taken by default
+    :param scan_interval: number of scan intervals in each direction, defaults to 40, which means that 80 total
+           optimization runs will be taken by default
     :param disable_plots: boolean, indicating whether other plots in the model should be disabled (defaults to True)
     :param disable_tasks: boolean, indicating whether other tasks in the model should be disabled (defaults to True)
     :param use_hooke: boolean indicating whether Hooks & Jeeves should be used (if True), or Levenberg Marquardt
            (if False) defaults to False.
     :param prefix: Prefix to be used for the files that will be generated in the `data_dir`, Defaults to 'out_'
-    :return: None
+    :return: dictionary, containing the number of parameters, the number of data sets, and the current objective value
+    :rtype: dict
     """
-    # remove old warnigns
+    # remove old warnings
     COPASI.CCopasiMessage.clearDeque()
 
     global Arguments
@@ -487,15 +603,20 @@ def prepare_files(filename,
         sys.exit(2)
 
     logger.info(f"Copy Experimental Data to: {data_dir}")
-    _DataModel.copyExperimentalDataTo(data_dir)
-    _DataModel.saveModel(os.path.join(data_dir, 'original.cps'), True)
-    _DataModel.loadModel(os.path.join(data_dir, 'original.cps'))
+
+    if os.path.abspath(filename) != os.path.abspath(os.path.join(data_dir, 'model.cps')):
+        # copy files if needed
+        basico.save_model_and_data(os.path.join(data_dir, 'original.cps'), model=_DataModel)
+        _DataModel.loadModel(os.path.join(data_dir, 'original.cps'))
+
+    # convert experiments to relative paths, so they'll work in cluster environment
     experiments = basico.save_experiments_to_dict(model=_DataModel)
     basico.load_experiments_from_dict(experiments, model=_DataModel)
+    experiments_verify = basico.save_experiments_to_dict(model=_DataModel)
 
     global _Task
     _Task = _get_fit_task()
-    if _Task == None:
+    if _Task is None:
         logger.error("No Fit Task.")
         return
 
@@ -506,17 +627,45 @@ def prepare_files(filename,
 
     global _Problem
     _Problem = _Task.getProblem()
+
+    num_params = _Problem.getOptItemSize()
+    exp_set = _Problem.getExperimentSet()
+    exp_set.compile(_DataModel.getModel().getMathContainer())
+    num_data = exp_set.getDataPointCount()
+
+    if 'obj' in kwargs:
+        current_obj = kwargs['obj']
+        param_sds = kwargs.get('param_sds', {})
+    else:
+        basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION, model=_DataModel)
+        statistic = basico.get_fit_statistic(model=_DataModel, include_parameters=True)
+        current_obj = statistic['obj']
+        param_sds = {}
+        for param in statistic['parameters']:
+            param_sds[param['name']] = param['std_dev']
+
+    info = {
+        'num_params': num_params,
+        'num_data': num_data,
+        'obj': current_obj,
+        'param_sds': param_sds,
+    }
+
+    with open(os.path.join(data_dir, '.info.yaml'), 'w', encoding='utf8') as f:
+        yaml.dump(info, f)
+
     opt_item_list = _convert_opt_items(_Problem.getOptItemList())
     logger.debug(f"Have: {len(opt_item_list)} optItems")
     for index in range(len(opt_item_list)):
         logger.debug(f"Handling: {opt_item_list[index]['cn']}")
         # _generate_scan_for_item(optItemList[index], index, data_dir)
-        _generate_scan_for_item(opt_item_list[index], index, data_dir, True, True)
-        _generate_scan_for_item(opt_item_list[index], index, data_dir, True)
+        _generate_scan_for_item(opt_item_list[index], index, data_dir, True, True, param_sds=param_sds)
+        _generate_scan_for_item(opt_item_list[index], index, data_dir, True, param_sds=param_sds)
 
     # free the data model
     COPASI.CRootContainer.removeDatamodel(_DataModel)
     _DataModel = None
+    return info
 
 
 def printUsageAndExit():
@@ -596,4 +745,4 @@ if __name__ == "__main__":
     try:
         prepare_files(**Arguments)
     except:
-        logger.exception("Exception occured while preparing files")
+        logger.exception("Exception occurred while preparing files")

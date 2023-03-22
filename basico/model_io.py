@@ -502,7 +502,7 @@ def save_model_to_string(**kwargs):
 
     exporters = {
         'copasi': lambda: model.saveModelToString(),
-        'sbml': lambda: model.exportSBMLToString( sbml_level, sbml_version),
+        'sbml': lambda: model.exportSBMLToString(sbml_level, sbml_version),
         'sedml': lambda: model.exportSEDMLToString(get_default_handler(),
                                                    sedml_level, sedml_version,
                                                    kwargs.get('model_location', 'model.xml'))
@@ -569,10 +569,12 @@ def save_model_and_data(filename, **kwargs):
     exp_set = problem.getExperimentSet()
     assert (isinstance(exp_set, COPASI.CExperimentSet))
 
+    written_files = []
+
     # copy experiment files
     for old_name in exp_set.getFileNames():
         new_name = os.path.join(data_dir, os.path.basename(old_name))
-        if new_name == old_name:
+        if new_name == old_name or new_name in written_files:
             # same file skipping
             continue
 
@@ -590,6 +592,7 @@ def save_model_and_data(filename, **kwargs):
                             .format(new_name))
         else:
             shutil.copyfile(old_name, new_name)
+            written_files.append(new_name)
         old_names[old_name] = new_name
         new_names[new_name] = old_name
         if delete_data_on_exit:

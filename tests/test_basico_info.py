@@ -320,6 +320,16 @@ class TestBasicoModelConstruction(unittest.TestCase):
         basico.remove_species('A0')
         self.assertIsNone(basico.get_species('A0', exact=True))
 
+    def test_annotation(self):
+        basico.add_species('A', initial_concentration=10)
+        basico.set_miriam_annotation(name='A', descriptions=[{'id': 'P09560',
+   'qualifier': 'is version of',
+   'uri': 'http://identifiers.org/uniprot/P09560',
+   'resource': 'UniProt Knowledgebase'}])
+
+        annot = basico.get_miriam_annotation(name='A')
+        self.assertEqual(annot['descriptions'][0]['id'], 'P09560')
+
     def test_compartment(self):
         basico.add_compartment('v',  initial_size=2)
         v = basico.get_compartments('v', exact=True)

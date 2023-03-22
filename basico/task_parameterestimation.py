@@ -41,10 +41,10 @@ class PE:
 
     Convert between method names to enums
 
-        >>> T.from_enum(0)
+        >>> PE.from_enum(0)
         'Current Solution Statistics'
 
-        >>> T.to_enum('Current Solution Statistics')
+        >>> PE.to_enum('Current Solution Statistics')
         17
 
 
@@ -311,7 +311,7 @@ def _get_experiment_mapping_dict(experiment, **kwargs):
 
     last = obj_map.getLastColumn() + 1
     size = obj_map.size()
-    max_col = min(len(names),max(last, size))
+    max_col = min(len(names), max(last, size))
     for i in range(max_col):
         role = obj_map.getRole(i)
         cn = obj_map.getObjectCN(i)
@@ -338,6 +338,7 @@ def _get_experiment_mapping_dict(experiment, **kwargs):
         rows.append(current)
 
     return rows
+
 
 def get_experiment_mapping(experiment, **kwargs):
     """Retrieves a data frame of the experiment mapping.
@@ -433,7 +434,7 @@ def get_data_from_experiment(experiment, **kwargs):
     separator = experiment.getSeparator()
     with open(experiment_file, encoding='utf-8') as f:
         for line in f:
-            num_lines +=1
+            num_lines += 1
             if num_lines == header_row:
                 original_headers = line.strip().split(separator)
                 original_headers = dict(enumerate(original_headers))
@@ -479,7 +480,8 @@ def get_data_from_experiment(experiment, **kwargs):
                              sep=separator,
                              header=None,
                              skiprows=skip_idx)
-    elif original_headers != None and not rename_headers:
+
+    elif original_headers is not None and not rename_headers:
         df = pandas.read_csv(experiment_file,
                              sep=separator,
                              header=None,
@@ -750,6 +752,7 @@ def set_fit_parameters(fit_parameters, model=None):
 
                 index = experiment_names.index(name)
                 fit_item.addExperiment(experiment_keys[index])
+
 
 def _get_name_for_key(key):
     factory = COPASI.CRootContainer.getKeyFactory()
@@ -1148,11 +1151,11 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
             
             for j in range(1, num_independent_points):
                 container.applyInitialValues()
-                container.updateSimulatedValues(False);
-                container.updateTransientDataValues();
+                container.updateSimulatedValues(False)
+                container.updateTransientDataValues()
                 experiment.updateModelWithIndependentData(j)
-                container.pushAllTransientValues();
-                container.pushInitialState();
+                container.pushAllTransientValues()
+                container.pushInitialState()
 
                 if update_parameters:
                     _update_fit_parameters_from(dm, solution, exp_name)
@@ -1322,7 +1325,7 @@ def plot_per_experiment(**kwargs):
                                            label="{0} Fit".format(name), ax=ax, color=nextval)
             name = dependent.iloc[j].mapping
             exp_data[i].plot.scatter(x='Time', y=name, ax=ax, color=nextval,
-                                 label='{0} Measured'.format(name))
+                                     label='{0} Measured'.format(name))
         result.append((fig, ax))
 
     return result
@@ -1716,7 +1719,7 @@ def save_experiments_to_dict(**kwargs):
     assert (isinstance(problem, COPASI.CFitProblem))
     exp_set = problem.getExperimentSet()
 
-    for i in range (exp_set.size()):
+    for i in range(exp_set.size()):
         experiments.append(get_experiment_dict(exp_set.getExperiment(i), **kwargs))
 
     return experiments

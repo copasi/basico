@@ -9,8 +9,9 @@ import os
 
 dir_name = os.path.dirname(__file__)
 
+
 class TestProfile(unittest.TestCase):
-    def test_adjustements(self):
+    def test_adjustments(self):
         self.assertAlmostEqual(2, pl._adjust_value(1, '200%'))
         self.assertAlmostEqual(1, pl._adjust_value(2, '-50%'))
         self.assertAlmostEqual(3, pl._adjust_value(2, '+50%'))
@@ -19,15 +20,21 @@ class TestProfile(unittest.TestCase):
         self.assertAlmostEqual(3, pl._adjust_value(2, '150%'))
         self.assertAlmostEqual(3, pl._adjust_value(2, 1.5))
         self.assertAlmostEqual(1, pl._adjust_value(2, 0.5))
+        self.assertAlmostEqual(5, pl._adjust_value(3, '=5'))
+        self.assertAlmostEqual(0.3, pl._adjust_value(3, '=10%'))
+        self.assertAlmostEqual(-0.3, pl._adjust_value(3, '=-10%'))
+        self.assertAlmostEqual(1, pl._adjust_value(3, None, 1))
+        self.assertAlmostEqual(1, pl._adjust_value(3, None, '1'))
+        self.assertAlmostEqual(1, pl._adjust_value(3, 'default', '1'))
+        self.assertAlmostEqual(1, pl._adjust_value(3, 'default', 1))
+        self.assertAlmostEqual(1, pl._adjust_value(3, '-1SD', 1, 2))
+        self.assertAlmostEqual(7, pl._adjust_value(3, '2SD', 1, 2))
 
     def test_reports(self):
         report_files = [
             os.path.join(dir_name, 'out__00000__update_high.txt'),
             os.path.join(dir_name, 'out__00000__update_low.txt'),
         ]
-
-        first = pl._get_data_from_file(report_files[0])
-        second = pl._get_data_from_file(report_files[1])
 
         combined, obj_val, param_val = pl._combine_files(report_files)
         self.assertIsNotNone(combined)
@@ -67,13 +74,13 @@ class TestProfile(unittest.TestCase):
         dynamic properties of microbial signal transduction networks, Curr Opin Biotechnol, 22, 109-
         116 (https://doi.org/10.1016/j.copbio.2010.09.014)
 
-        """);
+        """)
 
         basico.add_function('mod. MA',
-                     'k * S * T',
-                     'irreversible',
-                     mapping={'S': 'modifier', 'T': 'substrate'}
-                     );
+                            'k * S * T',
+                            'irreversible',
+                            mapping={'S': 'modifier', 'T': 'substrate'}
+                            )
 
         basico.add_reaction('v1', 'T -> Tp; S', function='mod. MA')
         basico.add_reaction('v2', 'Tp -> T')
@@ -84,24 +91,36 @@ class TestProfile(unittest.TestCase):
             'Time': [1, 2, 4, 6],
             '[TpFit]': [1, 0.88, 0.39, 0.22],
             # 'sd': [0.09, 0.09, 0.09, 0.09]
-        }), file_name=os.path.join(temp_dir, 'data.csv'
-        ))
-
-        temp_file = os.path.join(temp_dir, 'test.cps')
-        basico.save_model_and_data(temp_file)
+        }), file_name=os.path.join(temp_dir, 'data.csv')
+        )
 
         basico.set_fit_parameters([
             {'name': '(v1).k', 'lower': 0, 'upper': 100},
             {'name': '(v2).k1', 'lower': 0, 'upper': 100},
         ])
 
+        temp_file = os.path.join(temp_dir, 'test.cps')
+        basico.save_model_and_data(temp_file)
+
         sol = basico.run_parameter_estimation(method=basico.PE.HOOKE_JEEVES, update_model=True)
         self.assertAlmostEqual(sol['sol'][0], 2.27, places=2)
         self.assertAlmostEqual(sol['sol'][1], 1.43, places=2)
 
-        pl.prepare_files(temp_file, data_dir=temp_dir, lower_adjustment=0.1, upper_adjustment=10)
+        temp_file = os.path.join(temp_dir, 'test.cps')
+        basico.save_model_and_data(temp_file)
+
+        info = pl.prepare_files(temp_file, data_dir=temp_dir, lower_adjustment=0.1, upper_adjustment=10)
+        self.assertEqual(info['num_params'], 2)
+        self.assertEqual(info['num_data'], 4)
+        self.assertAlmostEqual(info['obj'], 0.0059, places=4)
         generated = glob.glob(os.path.join(temp_dir, 'out__*.cps'))
         self.assertIsNotNone(generated)
+
+        info = pl.prepare_files(temp_file, data_dir=temp_dir, lower_adjustment='-2SD', upper_adjustment='+2SD')
+        self.assertEqual(info['num_params'], 2)
+        self.assertTrue('param_sds' in info)
+        self.assertTrue('(v1).k' in info['param_sds'])
+        self.assertAlmostEqual(info['param_sds']['(v1).k'], 0.5657, places=2)
 
         # cleanup
         shutil.rmtree(temp_dir)

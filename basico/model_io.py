@@ -270,13 +270,13 @@ def load_model(location, remove_user_defined_functions=False):
     if os.path.isfile(location):
         location = os.path.abspath(location)
         if zipfile.is_zipfile(location):
-            if model.openCombineArchive(location, get_default_handler()):
+            if model.openCombineArchive(location):
                 return set_current_model(model)
-        if model.importSBML(location, get_default_handler()):
+        if model.importSBML(location):
             return set_current_model(model)
         if model.loadModel(location):
             return set_current_model(model)
-        if model.importSEDML(location, get_default_handler()):
+        if model.importSEDML(location):
             return set_current_model(model)
 
     remove_datamodel(model)

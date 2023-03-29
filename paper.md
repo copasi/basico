@@ -7,7 +7,7 @@ tags:
   - simulation
   - COPASI
 authors:
-  - name:Frank T. Bergmann
+  - name: Frank T. Bergmann
     orcid: 0000-0001-5553-4702
     equal-contrib: true
     affiliation: 1

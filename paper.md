@@ -41,7 +41,7 @@ more automated way. `BASICO` can be easily installed using: `pip install copasi-
 
 # Statement of need
 
-COmplex PAthway SImulator (`COPASI`, `@hoops_2006`, `@bergmann_2017`) is a widely used
+COmplex PAthway SImulator (`COPASI`; `@hoops_2006`; `@bergmann_2017`) is a widely used
 program for analyzing and generating systems biology models. Its graphic user 
 interface (GUI) makes it a quick and easy to learn tool. Since its operation requires
 little knowledge about mathematical backgrounds, it is very attractive for biologists. 

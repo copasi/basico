@@ -63,18 +63,21 @@ knowledge of `COPASI`'s architecture, which makes them hard to use.
 
 `BASICO` is a pure python package, building on top of these automatically generated 
 language bindings, in order to simplify using all of the features of `COPASI`. Thanks 
-to being hosted on GitHub [@GitHub] with its automated processes, modifications and 
-improvements of the software can be easily integrated, and published to the community.
+to being hosted on [GitHub](https://github.com/copasi/basico) with its automated 
+processes, modifications and improvements of the software can be easily integrated, 
+and published to the community.
 
 Documentation for `BASICO` along with many examples, in the form of Jupyter Notebooks
-can be found at [https://basico.readthedocs.io/](https://basico.readthedocs.io/).
+can be found at [https://basico.readthedocs.io/](https://basico.readthedocs.io/). `BASICO`
+can be readily used in the cloud using [Google Colab](https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index.ipynb), 
+or [mybinder.org](https://mybinder.org/v2/gh/copasi/basico.git/HEAD?filepath=docs/notebooks/index.ipynb).
 
 # Features & Functionality
 `BASICO` provides a set of functions that allow to create, edit, simulate and analyze
 biochemical reaction networks. It is easy installed using: 
 
 ```bash
-pip install copasi-basico
+    pip install copasi-basico
 ```
 
 From there, models can be created from scratch, or loaded from COPASI, SBML / SED-ML or COMBINE Archive files. We  also provide functions, to directly access and search models from the 

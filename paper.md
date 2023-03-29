@@ -50,6 +50,7 @@ of implemented local and global optimization algorithms, to more complex tasks s
 as time scale separation analysis, and lyapunov exponent calculations. 
 SBML import and export are supported and allow a quick exchange of models with other 
 modeling environments [@Hucka_2003; @keating_sbml_2020].
+
 To further the powerful application range of COPASI, files prepared in the GUI can be
 scheduled in cluster environments. This is extremely helpful for running time 
 consuming tasks such as optimization runs or parameter estimations. Generating 
@@ -117,9 +118,9 @@ tool.
 # Acknowledgements
 
 We acknowledge contributions from Lilija, Aprupe-Wehling, Katharina Beuke, and
-Pedro Mendes as well as the COPASI developers, currently Stefan Hoops, Brian Klahn, 
-Ursula Kummer, Jürgen Pahle, and  Sven Sahle; and the members of the COPASI user 
-group. This work has has been possible thanks to the BMBF funded de.NBI initiative
- (031L0104A).
+Pedro Mendes as well as the COPASI developers, currently Hasan Baig, Stefan Hoops, 
+Brian Klahn, Ursula Kummer, Jürgen Pahle, and Sven Sahle; and the members of the 
+[COPASI user forum](https://groups.google.com/g/copasi-user-forum/). This work has 
+has been possible thanks to the BMBF funded de.NBI initiative (031L0104A).
 
 # References

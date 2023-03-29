@@ -9,7 +9,6 @@ tags:
 authors:
   - name: Frank T. Bergmann
     orcid: 0000-0001-5553-4702
-    equal-contrib: true
     affiliation: 1
 
 affiliations:
@@ -49,22 +48,28 @@ It incorporates very powerful methods ranging from basic time series for both
 deterministic and stochastic simulations, parameter estimation with a broad range 
 of implemented local and global optimization algorithms, to more complex tasks such 
 as time scale separation analysis, and lyapunov exponent calculations. 
-SBML import and export are supported and allow a quick exchange of models with other modeling environments [@Hucka_2003; @keating_sbml_2020].
+SBML import and export are supported and allow a quick exchange of models with other 
+modeling environments [@Hucka_2003; @keating_sbml_2020].
 To further the powerful application range of COPASI, files prepared in the GUI can be
 scheduled in cluster environments. This is extremely helpful for running time 
 consuming tasks such as optimization runs or parameter estimations. Generating 
 these files for different parameterizations or versions of models and synchronizing 
 is a very tedious task. That is where it is extremely helpful to use python scripting 
 to handle several model versions with different parameterizations, as it is often 
-required in systems biology. Here, task parameters ca be pre-defined, along with which 
-task to run. The language bindings offer a formalized way of modifying a COPASI 
-file through the same means the GUI modifies the model. This ensures that the files 
-remain intact and machine readable.
+required in systems biology. Here, task parameters can be pre-defined, along with which 
+task to run. The `COPASI` project uses SWIG [@SWIG] to automatically generate language 
+bindings for a variety of programming languages. These bindings however, require deep
+knowledge of `COPASI`'s architecture, which makes them hard to use. 
+
+`BASICO` is a pure python package, building on top of these automatically generated 
+language bindings, in order to simplify using all of the features of `COPASI`. 
 
 # Acknowledgements
 
 We acknowledge contributions from Lilija, Aprupe-Wehling, Katharina Beuke, and
-Pedro Mendes as well as the COPASI developers, currently Stefan Hoops, Brian Klahn, Ursula Kummer, J\"urgen Pahle, and  Sven Sahle; and the members of the COPASI 
-user group. This work has has been possible thanks to the BMBF funded de.NBI initiative (031L0104A).
+Pedro Mendes as well as the COPASI developers, currently Stefan Hoops, Brian Klahn, 
+Ursula Kummer, Jürgen Pahle, and  Sven Sahle; and the members of the COPASI user 
+group. This work has has been possible thanks to the BMBF funded de.NBI initiative
+ (031L0104A).
 
 # References

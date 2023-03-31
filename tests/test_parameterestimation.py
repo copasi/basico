@@ -4,7 +4,7 @@ import os
 import sys
 import numpy as np
 import basico
-
+import shutil
 
 class TestBasicoParamterEstimation(unittest.TestCase):
 
@@ -49,9 +49,10 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         # remove data
         basico.remove_experiments()
 
+        files_to_delete = []
         # add data back
         for exp, name in zip(data, names):
-            basico.add_experiment(name, exp)
+            files_to_delete.append(basico.add_experiment(name, exp))
 
         # remove data
         basico.remove_experiments()
@@ -66,6 +67,11 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         # ensure it still works
         sol_after = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         self.assertListEqual(basico.as_dict(sol_before[['sol']]), basico.as_dict(sol_after[['sol']]))
+
+        # delete temp files
+        for file in files_to_delete:
+            os.remove(file)
+        os.remove(main_file)
 
 
     def test_mapping(self):

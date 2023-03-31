@@ -78,6 +78,10 @@ setup(name='copasi_basico',
         "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index.ipynb",
       },
       test_suite='setup.basico_testsuite',
-      extras_require={'petab': ['copasi-petab-importer', 'petab', 'petab-select']},
+      extras_require={
+        'petab': ['copasi-petab-importer', 'petab', 'petab-select'],
+        'tqdm': ['tqdm'],
+        'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-mermaid', 'sphinxcontrib-plantuml', 'sphinxcontrib'],
+        },
 
       )

@@ -711,6 +711,9 @@ def set_fit_parameters(fit_parameters, model=None):
     experiment_keys = _get_experiment_keys(model=model)
     experiment_names = get_experiment_names(model=model)
 
+    if fit_parameters is None:
+        return
+
     for i in range(len(fit_parameters)):
         item = fit_parameters.iloc[i]
         cn = None
@@ -1409,7 +1412,8 @@ def prune_simulation_results(simulation_results):
     for i in range(len(simulation_results[0])):
         s_df = simulation_results[1][i].reset_index()
         e_df = simulation_results[0][i]
-        s_df = s_df[s_df.Time.isin(e_df.Time.to_list())]
+        if 'Time' in s_df.columns and 'Time' in e_df.columns:
+            s_df = s_df[s_df.Time.isin(e_df.Time.to_list())]
         s_df = s_df.reset_index()
         common_cols = [c for c in e_df.columns.to_list() if c in s_df.columns.to_list()]
         s_df = s_df[common_cols]

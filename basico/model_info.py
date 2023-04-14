@@ -457,6 +457,10 @@ def get_events(name=None, exact=False, **kwargs):
             'trigger': _replace_cns_with_names(event.getTriggerExpression(), model=dm),
             'delay': _replace_cns_with_names(event.getDelayExpression(), model=dm),
             'assignments': assignments,
+            'priority': _replace_cns_with_names(event.getPriorityExpression(), model=dm),
+            'fire_at_initial_time': event.getFireAtInitialTime(),
+            'persistent': event.getPersistentTrigger(),
+            'delay_calculation': event.getDelayAssignment(),
             'key': event.getKey(),
             'sbml_id': event.getSBMLId()
         }
@@ -1933,6 +1937,12 @@ def add_event(name, trigger, assignments, **kwargs):
 
              * | `model`: to specify the data model to be used (if not specified
                | the one from :func:`.get_current_model` will be taken)
+             * 'new_name': the new name for the event
+             * 'delay': the delay expression
+             * 'priority': the priority expression
+             * 'persistent': boolean indicating if the event is persistent
+             * 'delay_calculation': boolean indicating whether just the assignment is delayed, or the calculation as well
+             * 'fire_at_initial_time': boolean indicating if the event should fire at the initial time
 
         :return: the newly created event
         """
@@ -1947,7 +1957,7 @@ def add_event(name, trigger, assignments, **kwargs):
         raise ValueError('An Event named ' + name + ' already exists')
     assert (isinstance(event, COPASI.CEvent))
 
-    _set_event(event, dm, trigger=trigger, assignments=assignments)
+    _set_event(event, dm, trigger=trigger, assignments=assignments, **kwargs)
 
     return event
 
@@ -1975,6 +1985,12 @@ def set_event(name, exact=False, trigger=None, assignments=None, **kwargs):
 
          * | `model`: to specify the data model to be used (if not specified
            | the one from :func:`.get_current_model` will be taken)
+         * 'new_name': the new name for the event
+         * 'delay': the delay expression
+         * 'priority': the priority expression
+         * 'persistent': boolean indicating if the event is persistent
+         * 'delay_calculation': boolean indicating whether just the assignment is delayed, or the calculation as well
+         * 'fire_at_initial_time': boolean indicating if the event should fire at the initial time
 
     :return:
     """
@@ -2016,20 +2032,46 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
     :param assignments: dictionary of event assignments
     :param trigger: trigger expression
     :param kwargs: other attributes
+       - 'new_name': the new name for the event
+       - 'delay': the delay expression
+       - 'priority': the priority expression
+       - 'persistent': boolean indicating if the event is persistent
+       - 'delay_calculation': boolean indicating whether just the assignment is delayed, or the calculation as well
+       - 'fire_at_initial_time': boolean indicating if the event should fire at the initial time
+       - 'model': the model to use
     :return:
     """
 
     if not event or not dm:
         return
 
+    need_compile = False
     if 'new_name' in kwargs and not event.setObjectName(kwargs['new_name']):
         logging.warning('could not rename event')
 
+    if 'delay' in kwargs:
+        event.setDelayExpression(_replace_names_with_cns(kwargs['delay'], model=dm))
+        need_compile = True
+
+    if 'priority' in kwargs:
+        event.setPriorityExpression(_replace_names_with_cns(kwargs['priority'], model=dm))
+        need_compile = True
+
+    if 'persistent' in kwargs:
+        event.setPersistentTrigger(bool(kwargs['persistent']))
+        need_compile = True
+
+    if 'delay_calculation' in kwargs:
+        event.setDelayAssignment(bool(kwargs['delay_calculation']))
+        need_compile = True
+
+    if 'fire_at_initial_time' in kwargs:
+        event.setFireAtInitialTime(bool(kwargs['fire_at_initial_time']))
+        need_compile = True
+
     if trigger:
         event.setTriggerExpression(_replace_names_with_cns(trigger, model=dm))
-        l = COPASI.ContainerList()
-        l.push_back(dm)
-        event.compile(l)
+        need_compile = True
 
     if assignments:
         for assignment in assignments:
@@ -2044,11 +2086,15 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
             ea.setTargetCN(target.getCN())
             ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
 
+        need_compile = True
+
+    if need_compile:
         l = COPASI.ContainerList()
         l.push_back(dm)
         event.compile(l)
 
     dm.getModel().compileIfNecessary()
+
 
 def add_event_assignment(name, assignment, exact=False, **kwargs):
     """Adds an event assignment to the named event

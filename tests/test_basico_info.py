@@ -377,12 +377,16 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_events(self):
         basico.add_parameter('p0', initial_value=10)
-        basico.add_event('e0', trigger='Time > 10', assignments=[('Values[p0]', 1)])
+        basico.add_event('e0', trigger='Time > 10', assignments=[('Values[p0]', 1)],
+                         fire_at_initial_time=True, persistent=True, delay_calculation=False)
         e = basico.as_dict(basico.get_events('e0', exact=True))
         self.assertIsNotNone(e)
         self.assertEqual(e['trigger'], 'Time > 10')
         self.assertEqual(e['assignments'][0]['target'], 'Values[p0]')
         self.assertEqual(e['assignments'][0]['expression'], '1')
+        self.assertEqual(e['fire_at_initial_time'], True)
+        self.assertEqual(e['persistent'], True)
+        self.assertEqual(e['delay_calculation'], False)
         basico.remove_event('e0', exact=True)
         e = basico.as_dict(basico.get_events('e0', exact=True))
         self.assertIsNone(e)

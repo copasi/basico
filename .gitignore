@@ -129,8 +129,10 @@ $RECYCLE.BIN/
 /docs/notebooks/*.omex
 /docs/notebooks/*.txt
 /docs/notebooks/*.yaml
+/docs/notebooks/output/
+/docs/notebooks/temp_selection/
 /tests/temp_selection/
-/tests/model_selection/
+/tests/output/
 /tests/test_private.py
 /tests/test_petab.py
 /tests/test_data/problem*
@@ -140,3 +142,4 @@ $RECYCLE.BIN/
 /tests/test_data/observ*
 /tests/test_data/parameter*
 temp_dir
+.DS_Store

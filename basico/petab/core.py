@@ -73,7 +73,11 @@ def _update_df_from_simulation(petab_df, basico_df, experiment_name):
                     petab_df.iloc[index, sim_col] = basic_data
                 if np.isinf(row.time):
                     # update from steady state:
-                    petab_df.iloc[index, sim_col] = basico_df[obs]
+                    basic_data = basico_df[obs]
+                    if basic_data.size > 1:
+                        # if there are more rows, we still only can take the first one
+                        basic_data = basic_data.iloc[0]
+                    petab_df.iloc[index, sim_col] = basic_data
             continue
 
         petab_df.loc[

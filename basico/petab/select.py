@@ -40,7 +40,7 @@ def default_evaluation():
     """Default evaluation of current model:
 
     * runs particle swarm for 600 iterations followed by
-    * levelberg marquardt
+    * levenberg marquardt
 
 
     :return: found parameter values
@@ -58,7 +58,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     :param test_model: the model to test
     :type test_model: petab_select.Model
     :param evaluation: optional function to evaluate the test model with. defaults to func:`.default_evaluation`
-    :type evaluation: () -> pandasDataFrame
+    :type evaluation: () -> pandas.DataFrame
     :param temp_dir: optional temp directory to store the files in (otherwise the os temp dir will be used)
     :type temp_dir: str or None
     :param delete_temp_files: boolean indicating whether temp files should be deleted
@@ -86,6 +86,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     model_id = test_model.model_id
     files = core.write_problem_to(pp, temp_dir, model_id)
 
+    logging.debug(f'\n\n\nsubspace: {test_model.model_subspace_id}, params: {test_model.parameters}, indices: {test_model.model_subspace_indices}, model_id: {model_id}')
     # load into basico
     out_name = 'cps_{0}'.format(model_id)
     cps_file = os.path.join(temp_dir, out_name + '.cps')
@@ -108,16 +109,18 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         sim_dfs.append(sim_df)
 
     # compute metrics
-    llh = basico.petab.petab_llh(pp, sim_df)
+    llh = float(basico.petab.petab_llh(pp, sim_df))
     test_model.set_criterion(Criterion.LLH, llh)
 
     task = basico.get_current_model().getTask("Parameter Estimation")
     prob = task.getProblem()
     obj = prob.getSolutionValue()
+    logging.debug(f'obj: {obj}, llh: {llh}, si: {test_model.model_subspace_id}\n\n')
 
     test_model.compute_criterion(Criterion.AIC)
     test_model.compute_criterion(Criterion.AICC)
     test_model.compute_criterion(Criterion.BIC)
+    test_model.compute_criterion(Criterion.NLLH)
 
     # update estimated parameters
     for param_id in test_model.parameters:
@@ -167,12 +170,19 @@ def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, d
     :return:
     """
 
+    obj_values = []
     for test_model in test_models:
         try:
-            evaluate_model(test_model, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
+            obj = evaluate_model(test_model, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
+            obj_values.append({'obj': obj,
+                               'id': test_model.model_subspace_id,
+                               'params:, test_model.parameters, '
+                               'indices': test_model.model_subspace_indices})
         except Exception as e:
             logging.exception("couldn't evaluate " + test_model.model_id)
             logging.critical(e, exc_info=True)
+
+    logging.debug(f'obj_values: {obj_values}')
 
 
 def evaluate_problem(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
@@ -215,7 +225,6 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
 
     while test_models:
         basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
-        selection_problem.exclude_models(test_models)
         for model in test_models:
             logging.info('{0} = {1}'.format(model.model_id, model.criteria))
 
@@ -230,6 +239,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         }
 
         calibrated_models.update(newly_calibrated_models)
+        selection_problem.exclude_models(newly_calibrated_models.values())
 
         petab_select.ui.candidates(
             problem=selection_problem,
@@ -242,5 +252,5 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         test_models = candidate_space.models
 
     # pick the best one found overall
-    chosen_model = selection_problem.get_best(newly_calibrated_models.values())
+    chosen_model = selection_problem.get_best(calibrated_models.values())
     return chosen_model

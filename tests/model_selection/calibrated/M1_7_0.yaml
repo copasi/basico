@@ -1,0 +1,12 @@
+criteria:
+  AIC: 20
+model_id: M1_7_0
+parameters:
+  k1: estimate
+  k2: estimate
+  k3: estimate
+estimated_parameters:
+  k1: 0.25
+  k2: 0.1
+  k3: 0.0
+petab_yaml: ../petab_problem.yaml

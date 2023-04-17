@@ -1210,6 +1210,7 @@ def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num
     if change_set.size() > 0:
         model.updateInitialValues(change_set)
 
+
 def _get_value_from_bound(bound):
     """
 
@@ -1222,6 +1223,7 @@ def _get_value_from_bound(bound):
     except ValueError:
         value = basico.get_value(bound)
     return value
+
 
 def _update_fit_parameters_from(dm, solution, exp_name=''):
     """ Utility function that updates the models fit parameters for the given solution

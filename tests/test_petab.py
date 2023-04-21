@@ -3,6 +3,8 @@ import sys
 import unittest
 import glob
 import logging
+
+import numpy as np
 import pandas as pd
 import os.path
 import yaml
@@ -74,6 +76,20 @@ class PetabTestCase(unittest.TestCase):
         os.remove('ss_out_df.csv')
         self.assertEqual(mes_df.shape[0], result_df.shape[0])
         self.assertEqual(mes_df.shape[1], result_df.shape[1])
+
+    @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
+    def test_dataframe_multiple_times(self):
+        mes_df = pd.read_csv(os.path.join(_dir_name, 'ex_0008.tsv'), sep='\t')
+        sim_df = pd.read_csv(os.path.join(_dir_name, '0008.tsv'), sep='\t', index_col='Time')
+
+        result_df = mes_df.copy(True)
+        result_df = result_df.rename(columns={"measurement": "simulation"})
+        basico.petab.core._update_df_from_simulation(result_df, sim_df, 'c0')
+        result_df.to_csv('out0008.csv', index=False)
+        os.remove('out0008.csv')
+        self.assertEqual(mes_df.shape[0], result_df.shape[0])
+        self.assertEqual(mes_df.shape[1], result_df.shape[1])
+
 
     @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
     def test_model_selection(self):

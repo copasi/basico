@@ -31,6 +31,7 @@ import tempfile
 import shutil
 import platform
 
+logger = logging.getLogger(__name__)
 __current_model = None
 __model_list = []
 __temp_files = []
@@ -55,7 +56,7 @@ def set_current_model(model):
 
     if __current_model is not None:
         __current_model.getModel().applyInitialValues()
-        logging.debug(overview(__current_model))
+        logger.debug(overview(__current_model))
     return __current_model
 
 
@@ -70,7 +71,7 @@ def get_current_model():
     """
     global __current_model
     if __current_model is None:
-        logging.warning('There is no model, creating a new one')
+        logger.warning('There is no model, creating a new one')
         new_model()
     return __current_model
 
@@ -459,12 +460,12 @@ def save_model(filename, **kwargs):
     if file_type in exporters:
         try:
             if not exporters[file_type](filename):
-                logging.warning("Saving the file as {0} failed with: \n{1}".
+                logger.warning("Saving the file as {0} failed with: \n{1}".
                                 format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
         except COPASI.CCopasiException:
-            logging.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
+            logger.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
     else:
-        logging.error("Couldn't save the file as {0}, unknown file type {1}"
+        logger.error("Couldn't save the file as {0}, unknown file type {1}"
                       .format(os.path.basename(filename), file_type))
 
 
@@ -512,9 +513,9 @@ def save_model_to_string(**kwargs):
         try:
             return exporters[file_type]()
         except COPASI.CCopasiException:
-            logging.error("Couldn't save the model")
+            logger.error("Couldn't save the model")
     else:
-        logging.error("Couldn't save the model, unknown file type {0}", file_type)
+        logger.error("Couldn't save the model, unknown file type {0}", file_type)
 
 
 def save_model_and_data(filename, **kwargs):
@@ -583,12 +584,12 @@ def save_model_and_data(filename, **kwargs):
             old_name = os.path.join(directory, old_name)
 
         if not os.path.exists(old_name):
-            logging.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
+            logger.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
                             " be used for Parameter Estimation".format(old_name))
             continue
 
         if os.path.exists(new_name):
-            logging.warning("Experimental data file {0} does already exist, and will not be overwritten."
+            logger.warning("Experimental data file {0} does already exist, and will not be overwritten."
                             .format(new_name))
         else:
             shutil.copyfile(old_name, new_name)
@@ -656,8 +657,8 @@ def open_copasi(filename='', **kwargs):
         name = os.path.join(temp_name, 'model.cps')
         __temp_files.append(name)
 
-        logging.info('using temp file: ' + name)
-        logging.warning("Created a temporary file to open. This file will be deleted later, so safe your changes.")
+        logger.info('using temp file: ' + name)
+        logger.warning("Created a temporary file to open. This file will be deleted later, so safe your changes.")
         delete_data_on_exit = True
 
     save_model_and_data(name, delete_data_on_exit=delete_data_on_exit, **kwargs)
@@ -667,7 +668,7 @@ def open_copasi(filename='', **kwargs):
         model.setFileName(old_filename)
 
     if not os.path.exists(name):
-        logging.error('Saving the model failed')
+        logger.error('Saving the model failed')
 
     if platform.system() == 'Darwin':
         subprocess.call(('open', name))
@@ -691,4 +692,4 @@ def __cleanup():
             try:
                 os.removedirs(name)
             except OSError:
-                logging.warning("Couldn't remove temp dir: {0}".format(name))
+                logger.warning("Couldn't remove temp dir: {0}".format(name))

@@ -8,6 +8,9 @@ import COPASI
 
 from . import model_io
 
+logger = logging.getLogger(__name__)
+
+
 class EnumHelper:
     """Utility class for dealing with mapping from names to enums easier
 
@@ -312,7 +315,7 @@ def _to_sens_item(name, model):
 
     obj = model.findObjectByDisplayName(name)
     if obj is None:
-        logging.warning('Object could not be resolved {0}'.format(name))
+        logger.warning('Object could not be resolved {0}'.format(name))
         return COPASI.CSensItem(0)
 
     if obj.getObjectType() != 'Reference':
@@ -338,7 +341,7 @@ def _get_name_for_item(item, model):
         cn = item.getSingleObjectCN()
         obj = model.getObject(cn)
         if obj is None:
-            logging.warning('Object for sensitivities not found')
+            logger.warning('Object for sensitivities not found')
 
         name = basico.model_info._get_name_for_object(obj, model=model)
     else:
@@ -380,13 +383,13 @@ def run_sensitivities(**kwargs):
     assert (isinstance(problem, COPASI.CSensProblem))
 
     if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
-        logging.error('Could not initialize Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
+        logger.error('Could not initialize Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
         return
 
     use_initial_values = kwargs.get('use_initial_values', True)
 
     if not task.processRaw(use_initial_values):
-        logging.error('Could not run Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
+        logger.error('Could not run Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
         return
 
     task.restore()

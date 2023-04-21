@@ -17,14 +17,14 @@ def process_files(files, pool_size=4, copasi_se=COPASI_SE, max_time=None):
     :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum
 
     """
-    logging.debug(f'Processing {len(files)} files with a pool of size {pool_size}')
+    logger.debug(f'Processing {len(files)} files with a pool of size {pool_size}')
 
     # for debugging purposes use the following line instead of the multiprocessing pool
     # from multiprocessing.dummy import Pool
 
     with Pool(pool_size) as p:
         p.map(partial(process_file_with_se, copasi_se=copasi_se, max_time=max_time), files)
-    logging.debug(f'Processing complete')
+    logger.debug(f'Processing complete')
 
 
 def process_file_with_se(filename, copasi_se=COPASI_SE, max_time=None):

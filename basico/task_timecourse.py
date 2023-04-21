@@ -34,6 +34,7 @@ import pandas
 import numpy
 import logging
 
+logger = logging.getLogger(__name__)
 
 def __build_result_from_ts(time_series, use_concentrations=True, use_sbml_id=False, model=None):
     # type: (COPASI.CTimeSeries) -> pandas.DataFrame
@@ -159,12 +160,12 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     task.setCallBack(get_default_handler())
     if not result:
-        logging.error("Error while initializing the simulation: " +
+        logger.error("Error while initializing the simulation: " +
         COPASI.CCopasiMessage.getLastMessage().getText())
     else:
         result = task.processRaw(use_initial_values)
         if not result:
-            logging.error("Error while running the simulation: " +
+            logger.error("Error while running the simulation: " +
             COPASI.CCopasiMessage.getLastMessage().getText())
     task.setCallBack(COPASI.CProcessReport())
     df = get_data_from_data_handler(dh, columns)
@@ -218,7 +219,7 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
         if name.startswith('CN='):
             obj = model.getObject(COPASI.CCommonName(name))
             if not obj:
-                logging.warning('no object for cn {0}'.format(name))
+                logger.warning('no object for cn {0}'.format(name))
                 continue
             cn = name
             columns.append(obj.getObjectDisplayName())
@@ -226,7 +227,7 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
             obj = model.findObjectByDisplayName(name)
 
             if not obj:
-                logging.warning('no object for name {0}'.format(name))
+                logger.warning('no object for name {0}'.format(name))
                 continue
 
             if obj.getObjectType() != 'Reference':
@@ -317,13 +318,13 @@ def run_time_course(*args, **kwargs):
 
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
-        logging.error("Error while initializing the simulation: " +
+        logger.error("Error while initializing the simulation: " +
         COPASI.CCopasiMessage.getLastMessage().getText())
     else:
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
-            logging.error("Error while running the simulation: " +
+            logger.error("Error while running the simulation: " +
             COPASI.CCopasiMessage.getLastMessage().getText())
 
     use_concentrations = kwargs.get('use_concentrations', True)

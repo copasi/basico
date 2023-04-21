@@ -28,6 +28,8 @@ import dateutil.parser
 import datetime
 import sys
 
+logger = logging.getLogger(__name__)
+
 MIRIAM_XML = 'http://copasi.org/static/miriam.xml' # noqa
 
 try:
@@ -589,7 +591,7 @@ def get_report_dict(report, **kwargs):
     if isinstance(report, str) or isinstance(report, int):
         spec = dm.getReportDefinition(report)
         if spec is None:
-            logging.error('No plot specification: {0}'.format(report))
+            logger.error('No plot specification: {0}'.format(report))
             return
 
         report = spec
@@ -626,7 +628,7 @@ def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
             obj = dm.getObjectFromCN(COPASI.CCommonName(cn))
 
         if obj is None:
-            logging.warning('report item cannot be resolved: {0}'.format(cn.getString()))
+            logger.warning('report item cannot be resolved: {0}'.format(cn.getString()))
             continue
 
         reverse = dm.findObjectByDisplayName(obj.getObjectDisplayName())
@@ -685,7 +687,7 @@ def get_plot_dict(plot_spec, **kwargs):
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
         spec = dm.getPlotSpecification(plot_spec)
         if spec is None:
-            logging.error('No plot specification: {0}'.format(plot_spec))
+            logger.error('No plot specification: {0}'.format(plot_spec))
             return
 
         plot_spec = spec
@@ -795,7 +797,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
         spec = dm.getPlotSpecification(plot_spec)
         if spec is None:
-            logging.error('No plot specification: {0}'.format(plot_spec))
+            logger.error('No plot specification: {0}'.format(plot_spec))
             return
 
         plot_spec = spec
@@ -856,7 +858,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
                 if channel == 'Time':
                     obj = dm.getModel().getValueReference()
                 if obj is None:
-                    logging.warning("Couldn't resolve {0} when adding curve spec".format(channel))
+                    logger.warning("Couldn't resolve {0} when adding curve spec".format(channel))
                     continue
                 plot_item.addChannel(COPASI.CPlotDataChannelSpec(obj.getCN()))
 
@@ -907,7 +909,7 @@ def add_default_plot(name, **kwargs):
     """
 
     if name not in get_default_plot_names():
-        logging.warning('No such default plot: {0}'.format(name))
+        logger.warning('No such default plot: {0}'.format(name))
         return
 
     item = COPASI.COutputAssistant.getItem(_default_plots[name])
@@ -925,11 +927,11 @@ def add_default_plot(name, **kwargs):
             task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
             result = COPASI.COutputAssistant.createDefaultOutput(_default_plots[name], task, dm)
             if result is None:
-                logging.warning('Failed to create default plot for: {0}'.format(name))
+                logger.warning('Failed to create default plot for: {0}'.format(name))
                 return None
             return result.getObjectName()
 
-    logging.warning('No task found for the plot')
+    logger.warning('No task found for the plot')
     return None
 
 
@@ -996,7 +998,7 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
     if isinstance(plot_spec, str) or isinstance(plot_spec, int):
         spec = dm.getPlotSpecification(plot_spec)
         if spec is None:
-            logging.error('No plot specification: {0}'.format(plot_spec))
+            logger.error('No plot specification: {0}'.format(plot_spec))
             return
 
         plot_spec = spec
@@ -1125,7 +1127,7 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
     if isinstance(spec, str) or isinstance(spec, int):
         r = dm.getReportDefinition(spec)
         if r is None:
-            logging.error('No report specification: {0}'.format(spec))
+            logger.error('No report specification: {0}'.format(spec))
             return
 
         spec = r
@@ -1359,11 +1361,11 @@ def set_notes(notes, **kwargs):
     elif 'name' in kwargs:
         element = dm.findObjectByDisplayName(kwargs['name'])
         if element is None:
-            logging.warning("Couldn't find element {0} to set notes.".format(kwargs['name']))
+            logger.warning("Couldn't find element {0} to set notes.".format(kwargs['name']))
             return
 
     if element is None:
-        logging.warning("Couldn't find element to set notes.")
+        logger.warning("Couldn't find element to set notes.")
         return
 
     if isinstance(element, COPASI.CDataObject):
@@ -1374,7 +1376,7 @@ def set_notes(notes, **kwargs):
     if isinstance(element, COPASI.CAnnotation):
         element.setNotes(notes)
     else:
-        logging.warning("Unsupported element type for setting notes.")
+        logger.warning("Unsupported element type for setting notes.")
 
 
 def get_notes(**kwargs):
@@ -1400,11 +1402,11 @@ def get_notes(**kwargs):
     elif 'name' in kwargs:
         element = dm.findObjectByDisplayName(kwargs['name'])
         if element is None:
-            logging.warning("Couldn't find element {0} to get notes.".format(kwargs['name']))
+            logger.warning("Couldn't find element {0} to get notes.".format(kwargs['name']))
             return None
 
     if element is None:
-        logging.warning("Couldn't find element to get notes.")
+        logger.warning("Couldn't find element to get notes.")
         return None
 
     if isinstance(element, COPASI.CDataObject):
@@ -1415,7 +1417,7 @@ def get_notes(**kwargs):
     if isinstance(element, COPASI.CAnnotation):
         return element.getNotes()
     else:
-        logging.warning("Unsupported element type for getting notes.")
+        logger.warning("Unsupported element type for getting notes.")
     return None
 
 
@@ -1467,11 +1469,11 @@ def get_miriam_annotation(**kwargs):
     elif 'name' in kwargs:
         element = dm.findObjectByDisplayName(kwargs['name'])
         if element is None:
-            logging.warning("Couldn't find element {0} to get annotations.".format(kwargs['name']))
+            logger.warning("Couldn't find element {0} to get annotations.".format(kwargs['name']))
             return None
 
     if element is None:
-        logging.warning("Couldn't find element to get annotations.")
+        logger.warning("Couldn't find element to get annotations.")
         return None
 
     if isinstance(element, COPASI.CDataObject):
@@ -1521,7 +1523,7 @@ def get_miriam_annotation(**kwargs):
 
         return result
     else:
-        logging.warning("Unsupported element type for getting annotations.")
+        logger.warning("Unsupported element type for getting annotations.")
     return None
 
 
@@ -1593,15 +1595,15 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
     elif 'name' in kwargs:
         element = dm.findObjectByDisplayName(kwargs['name'])
         if element is None:
-            logging.warning("Couldn't find element {0} to set annotations.".format(kwargs['name']))
+            logger.warning("Couldn't find element {0} to set annotations.".format(kwargs['name']))
             return
 
     if element is None:
-        logging.warning("Couldn't find element to set annotations.")
+        logger.warning("Couldn't find element to set annotations.")
         return
 
     if not isinstance(element, COPASI.CDataObject):
-        logging.warning("Unsupported element type for setting annotations.")
+        logger.warning("Unsupported element type for setting annotations.")
         return
 
     info = COPASI.CMIRIAMInfo()
@@ -1761,12 +1763,12 @@ def add_function(name, infix, type='general', mapping=None, **kwargs):
         mapping = {}
     
     if db.findLoadFunction(name) is not None:
-        logging.error('A function with name "' + name + '" already exists')
+        logger.error('A function with name "' + name + '" already exists')
         return
 
     fun = db.createFunction(name, COPASI.CEvaluationTree.Function)
     if fun is None:
-        logging.error('Could not create a function with name "' + name + '" already exists')
+        logger.error('Could not create a function with name "' + name + '" already exists')
         return
 
     fun.setInfix(infix)
@@ -1805,11 +1807,11 @@ def remove_function(name, **kwargs):
     fun = db.findFunction(name)
     assert(isinstance(fun, COPASI.CFunction))
     if fun is None:
-        logging.warning('A function with name "' + name + '" does not exists')
+        logger.warning('A function with name "' + name + '" does not exists')
         return
 
     if fun.isReadOnly():
-        logging.error('The function "' + name + '" is readonly and cannot be deleted')
+        logger.error('The function "' + name + '" is readonly and cannot be deleted')
         return
 
     key = fun.getKey()
@@ -2047,7 +2049,7 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
 
     need_compile = False
     if 'new_name' in kwargs and not event.setObjectName(kwargs['new_name']):
-        logging.warning('could not rename event')
+        logger.warning('could not rename event')
 
     if 'delay' in kwargs:
         event.setDelayExpression(_replace_names_with_cns(kwargs['delay'], model=dm))
@@ -2079,7 +2081,7 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
             assert (isinstance(ea, COPASI.CEventAssignment))
             target = dm.findObjectByDisplayName(assignment[0])
             if target is None:
-                logging.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
+                logger.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
                 continue
             if target.getObjectType() == 'Reference':
                 target = target.getObjectParent()
@@ -2336,7 +2338,7 @@ def get_functions(name=None, **kwargs):
         dm = model_io.get_model_from_dict_or_default(kwargs)
         suitable_for = dm.getModel().getReaction(kwargs['suitable_for'])
         if suitable_for is None:
-            logging.error('No reaction {0} found'.format(kwargs['suitable_for']))
+            logger.error('No reaction {0} found'.format(kwargs['suitable_for']))
             return None
         assert(isinstance(suitable_for, COPASI.CReaction))
         eqn = suitable_for.getChemEq()
@@ -2737,7 +2739,7 @@ def _set_safe(fun, expression):
     """
     result = fun(_replace_names_with_cns(expression))
     if result.isError():
-        logging.error('Invalid expression: {0}'.format(expression))
+        logger.error('Invalid expression: {0}'.format(expression))
         # set to empty string avoid crash
         fun('')
 
@@ -2812,7 +2814,7 @@ def _set_parameter(param, c_model, **kwargs):
         return
 
     if 'new_name' in kwargs and not param.setObjectName(str(kwargs['new_name'])):
-        logging.warning('could not rename the parameter')
+        logger.warning('could not rename the parameter')
 
     if 'unit' in kwargs:
         param.setUnitExpression(kwargs['unit'])
@@ -2920,7 +2922,7 @@ def set_reaction_parameters(name=None, **kwargs):
             if 'mapped_to' in kwargs and current_param is not None:
                 mv = model.getModelValue(kwargs['mapped_to'])
                 if not mv:
-                    logging.warning('No such parameter "{0}" to map to.'.format(kwargs['mapped_to']))
+                    logger.warning('No such parameter "{0}" to map to.'.format(kwargs['mapped_to']))
                     continue
 
                 info = COPASI.CReactionInterface()
@@ -3054,7 +3056,7 @@ def _set_reaction(reaction, dm, **kwargs):
                             reaction, info, kwargs['function'],
                             kwargs['mapping'], dm)):
             # not valid yet, try and see if it were valid when adding modifiers
-            logging.error(
+            logger.error(
                 'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied. (missing mapping(s) for {2})'.format(
                     reaction.getObjectName(), kwargs['function'], [ entry['usage']  + ': ' + entry['name'] for entry in missing ]))
         
@@ -3123,7 +3125,7 @@ def _validate_mapping(usage, param_name, mapped_value, c_model):
         result =  c_model.getMetabolite(mapped_value) is not None
 
     if not result:
-        logging.error('Invalid mapping provilded for {0} of type {1} (invalid value {2})'
+        logger.error('Invalid mapping provilded for {0} of type {1} (invalid value {2})'
                       .format(param_name, usage, mapped_value))
 
     return result
@@ -3195,7 +3197,7 @@ def get_reaction_mapping(reaction, **kwargs):
     if type(reaction) is str:
         r = model.getReaction(reaction)
         if r is None:
-            logging.warning('No reaction with name: {0}'.format(reaction))
+            logger.warning('No reaction with name: {0}'.format(reaction))
             return False
 
         reaction = r
@@ -3250,7 +3252,7 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
     if type(reaction) is str:
         r = model.getReaction(reaction)
         if r is None:
-            logging.warning('No reaction with name: {0}'.format(reaction))
+            logger.warning('No reaction with name: {0}'.format(reaction))
             return False
 
         reaction = r
@@ -3279,10 +3281,10 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                     if obj is None:
                         obj = dm.findObjectByDisplayName(mapped_to)
                         if obj is not None and type(obj) != COPASI.CModelValue:
-                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                             continue
                     if obj is None:
-                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                         continue
 
                     info.setMapping(j, obj.getObjectName())
@@ -3297,10 +3299,10 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                     if obj is None:
                         obj = dm.findObjectByDisplayName(mapped_to)
                         if obj is not None and type(obj) != COPASI.CMetab:
-                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                             continue
                     if obj is None:
-                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                         continue
                     info.setMapping(j, obj.getObjectName())
                     changed = True
@@ -3320,7 +3322,7 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                 mapped_length = len(mapped_list)
 
                 if current_length != mapped_length:
-                    logging.warning('Different length encountered when setting mapping for parameter {0}: {1} != {2}'
+                    logger.warning('Different length encountered when setting mapping for parameter {0}: {1} != {2}'
                                     .format(p_name, current_length, mapped_length))
 
                 smallest = min(current_length, mapped_length)
@@ -3330,10 +3332,10 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                     if obj is None:
                         obj = dm.findObjectByDisplayName(mapped_to)
                         if obj is not None and type(obj) != COPASI.CMetab:
-                            logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                            logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                             continue
                     if obj is None:
-                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                         continue
                     objs[i] = obj
 
@@ -3346,10 +3348,10 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                 if obj is None:
                     obj = dm.findObjectByDisplayName(mapped_to)
                     if obj is not None and type(obj) != COPASI.CCompartment:
-                        logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                        logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                         continue
                 if obj is None:
-                    logging.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
+                    logger.warning("Couldn't map '{0}' to parameter '{1}'".format(mapped_to, p_name))
                     continue
 
                 info.setMapping(j, obj.getObjectName())
@@ -3359,7 +3361,7 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
         return False
 
     if not info.writeBackToReaction(reaction):
-        logging.error("Couldn't change the reaction")
+        logger.error("Couldn't change the reaction")
     reaction.compile()
     return True
 
@@ -3384,7 +3386,7 @@ def remove_species(name, **kwargs):
 
     metab = model.getMetabolite(name)
     if metab is None:
-        logging.warning('no such metabolite {0}'.format(name))
+        logger.warning('no such metabolite {0}'.format(name))
         return
 
     key = metab.getKey()
@@ -3415,7 +3417,7 @@ def remove_parameter(name, **kwargs):
 
     mv = model.getModelValue(name)
     if mv is None:
-        logging.warning('no such global parameter {0}'.format(name))
+        logger.warning('no such global parameter {0}'.format(name))
         return
 
     key = mv.getKey()
@@ -3446,7 +3448,7 @@ def remove_compartment(name, **kwargs):
 
     comp = model.getCompartment(name)
     if comp is None:
-        logging.warning('no such compartment {0}'.format(name))
+        logger.warning('no such compartment {0}'.format(name))
         return
 
     key = comp.getKey()
@@ -3477,7 +3479,7 @@ def remove_event(name, **kwargs):
 
     ev = model.getEvent(name)
     if ev is None:
-        logging.warning('no such event {0}'.format(name))
+        logger.warning('no such event {0}'.format(name))
         return
     key = ev.getKey()
     ev = None
@@ -3513,7 +3515,7 @@ def remove_plot(name, **kwargs):
         output_list.remove(i)
         return
 
-    logging.warning('no such plot {0}'.format(name))
+    logger.warning('no such plot {0}'.format(name))
 
 
 def remove_report(name, **kwargs):
@@ -3542,7 +3544,7 @@ def remove_report(name, **kwargs):
         report_list.remove(i)
         return
 
-    logging.warning('no such report {0}'.format(name))
+    logger.warning('no such report {0}'.format(name))
 
 
 def remove_reaction(name, **kwargs):
@@ -3565,7 +3567,7 @@ def remove_reaction(name, **kwargs):
 
     reaction = model.getReaction(name)
     if reaction is None:
-        logging.warning('no such reaction {0}'.format(name))
+        logger.warning('no such reaction {0}'.format(name))
         return
 
     key = reaction.getKey()
@@ -3747,7 +3749,7 @@ def set_element_name(element, new_name, **kwargs):
     """
     if isinstance(element, COPASI.CDataObject):
         if not element.setObjectName(new_name):
-            logging.warning("couldn't change name of the element")
+            logger.warning("couldn't change name of the element")
         return
     
     dm = model_io.get_model_from_dict_or_default(kwargs)
@@ -3757,10 +3759,10 @@ def set_element_name(element, new_name, **kwargs):
         obj = dm.findObjectByDisplayName(element)
         if obj is not None:
             if not obj.setObjectName(new_name):
-                logging.warning("couldn't change name of the element")
+                logger.warning("couldn't change name of the element")
             return
 
-    logging.warning("couldn't change name of the element (could not find the object)")
+    logger.warning("couldn't change name of the element (could not find the object)")
 
 
 def set_model_unit(**kwargs):
@@ -3848,7 +3850,7 @@ def add_amount_expressions(**kwargs):
     for metab in model.getMetabolites():
         assert (isinstance(metab, COPASI.CMetab))
         if metab.getCompartment() is None:
-            logging.warning('Cannot create an amount expression for {0} as it has no compartment'.format(
+            logger.warning('Cannot create an amount expression for {0} as it has no compartment'.format(
                 metab.getObjectDisplayName()))
             continue
 
@@ -3940,7 +3942,7 @@ def get_miriam_resources():
                 'uri': res.getIdentifiersOrgURL()
             })
     except AttributeError:
-        logging.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")
+        logger.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")
 
     df = pandas.DataFrame(data=resources)
     if resources:
@@ -4017,7 +4019,7 @@ def _tokenize_eqn(eqn):
         c_2 = eqn[i + 2] if i + 2 < num_chars else None
 
         if ord(c_0) > 127:  # skip non-ascii characters
-            logging.warning(u'Encountered invalid character {0} while tokenizing equation, skipping it.'.format(c_0))
+            logger.warning(u'Encountered invalid character {0} while tokenizing equation, skipping it.'.format(c_0))
             i = i + 1
             continue
 
@@ -4278,7 +4280,7 @@ def _annotated_matrix_to_df_1d(ann_matrix):
     assert(isinstance(ann_matrix, COPASI.CDataArray))
     dim = ann_matrix.dimensionality()
     if dim != 1:
-        logging.error('only one dimensional matrices are supported by this method')
+        logger.error('only one dimensional matrices are supported by this method')
         return None
 
     matrix = ann_matrix.getArray()
@@ -4309,7 +4311,7 @@ def _annotated_matrix_to_df(ann_matrix):
         if dim == 0:
             return ann_matrix.getArray().get(COPASI.SizeTStdVector())
 
-        logging.error('only 0-two dimensional matrices are supported at this time')
+        logger.error('only 0-two dimensional matrices are supported at this time')
         return None
 
     matrix = ann_matrix.getArray()
@@ -4556,7 +4558,7 @@ def get_task_settings(task, basic_only=True, **kwargs):
         task = dm.getTask(name)
 
     if not isinstance(task, COPASI.CCopasiTask):
-        logging.error('no such task')
+        logger.error('no such task')
         return {}
 
     result = {
@@ -4607,7 +4609,7 @@ def set_task_settings(task, settings, **kwargs):
         task = dm.getTask(name)
 
     if not isinstance(task, COPASI.CCopasiTask):
-        logging.error('no such task')
+        logger.error('no such task')
         return
 
     if 'is_scheduled' in settings:
@@ -4680,7 +4682,7 @@ def _collect_data(names=None, cns=None, **kwargs):
             obj = model.getObject(c_cn)
             if obj is None:
                 # couldn't find that object in the model
-                logging.warning('No object for cn: {0}'.format(str(cn)))
+                logger.warning('No object for cn: {0}'.format(str(cn)))
                 continue
             assert(isinstance(obj, COPASI.CDataObject))
             value = _get_value_from_reference(obj)
@@ -4692,7 +4694,7 @@ def _collect_data(names=None, cns=None, **kwargs):
             obj = model.findObjectByDisplayName(name)
             if obj is None:
                 # couldn't find that object in the model
-                logging.warning('No object for name: {0}'.format(name))
+                logger.warning('No object for name: {0}'.format(name))
                 continue
             assert (isinstance(obj, COPASI.CDataObject))
             if obj.getObjectType() == 'Reference':
@@ -5039,13 +5041,13 @@ def assign_report(name, task, filename='', append=True, confirm_overwrite=True, 
     if isinstance(task, int) or isinstance(task, str):
         obj = model.getTask(task)
         if obj is None:
-            logging.error('No task {0}'.format(task))
+            logger.error('No task {0}'.format(task))
             return
         task = obj
 
     report_definition = model.getReportDefinition(name)
     if not report_definition:
-        logging.error('No report definition: {0}'.format(name))
+        logger.error('No report definition: {0}'.format(name))
 
     assert(isinstance(report_definition, COPASI.CReportDefinition))
     assert(isinstance(task, COPASI.CCopasiTask))
@@ -5076,7 +5078,7 @@ def remove_report_from_task(task, **kwargs):
     if isinstance(task, int) or isinstance(task, str):
         obj = model.getTask(task)
         if obj is None:
-            logging.error('No task {0}'.format(task))
+            logger.error('No task {0}'.format(task))
             return
         task = obj
 
@@ -5411,7 +5413,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
 
         obj = _get_object_by_ptype(p_type, key, dm)
         if not obj:
-            logging.warning('Could not find object for "{}", skipping'.format(key))
+            logger.warning('Could not find object for "{}", skipping'.format(key))
             continue
 
         new_param = param.getModelParameter(obj.getCN())
@@ -5459,7 +5461,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
                 local_param_obj = dm.findObjectByDisplayName(param_name)
 
                 if not local_param_obj:
-                    logging.warning('Could not find local parameter "{}", skipping'.format(param_name))
+                    logger.warning('Could not find local parameter "{}", skipping'.format(param_name))
                     continue
 
                 local_param = new_param.add(p_type)

@@ -13,6 +13,7 @@ import pandas as pd
 import basico
 from . import model_io
 
+logger = logging.getLogger(__name__)
 
 def _scan_type_to_name(type):
     names = {
@@ -116,7 +117,7 @@ def _scan_item_to_dict(item, model=None):
     if isinstance(item, int):
         problem = model.getTask('Scan').getProblem()
         if item >= problem.getNumberOfScanItems():
-            logging.error('No Scan item: {0}'.format(item))
+            logger.error('No Scan item: {0}'.format(item))
             return None
         item = problem.getScanItem(item)
 
@@ -160,7 +161,7 @@ def _scan_item_to_dict(item, model=None):
     if cn:
         obj = model.getObject(COPASI.CCommonName(cn))
         if not obj:
-            logging.warning('missing object in scan item: {0}'.format(cn))
+            logger.warning('missing object in scan item: {0}'.format(cn))
         else:
             current['item'] = obj.getObjectDisplayName()
         current['cn'] = cn
@@ -478,11 +479,11 @@ def run_scan(**kwargs):
     assert (isinstance(task, COPASI.CScanTask))
 
     if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
-        logging.warning("Couldn't initialize scan task")
+        logger.warning("Couldn't initialize scan task")
 
     use_initial_values = kwargs.get('use_initial_values', True)
     if not task.processRaw(use_initial_values):
-        logging.warning("Couldn't process scan task")
+        logger.warning("Couldn't process scan task")
 
     if dh:
         model.removeInterface(dh)

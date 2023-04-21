@@ -15,6 +15,8 @@ from . import model_io
 from . import model_info
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def run_steadystate(**kwargs):
     """Brings the model to steady state.
@@ -80,12 +82,12 @@ def run_steadystate(**kwargs):
 
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
-        logging.error("Error while initializing the simulation: " +
+        logger.error("Error while initializing the simulation: " +
                       COPASI.CCopasiMessage.getLastMessage().getText())
     else:
         result = task.processRaw(use_initial_values)
         if not result:
-            logging.error("Error while running the simulation: " +
+            logger.error("Error while running the simulation: " +
                           COPASI.CCopasiMessage.getLastMessage().getText())
 
     return task.getResult()

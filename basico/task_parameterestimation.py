@@ -32,6 +32,7 @@ import yaml
 import basico
 from basico.callbacks import get_default_handler
 
+logger = logging.getLogger(__name__)
 AFFECTED_EXPERIMENTS = 'Affected Experiments'
 TASK_PARAMETER_ESTIMATION = 'Parameter Estimation'
 
@@ -730,7 +731,7 @@ def set_fit_parameters(fit_parameters, model=None):
                     cn = obj.getCN()
 
         if not cn:
-            logging.warning('object {0} not found'.format(name))
+            logger.warning('object {0} not found'.format(name))
             continue
 
         fit_item = problem.addFitItem(cn)
@@ -750,7 +751,7 @@ def set_fit_parameters(fit_parameters, model=None):
                     continue
 
                 if name not in experiment_names:
-                    logging.warning('Invalid affected experiment name {0}'.format(name))
+                    logger.warning('Invalid affected experiment name {0}'.format(name))
                     continue
 
                 index = experiment_names.index(name)
@@ -807,7 +808,7 @@ def get_parameters_solution(model=None):
         sol = solution.get(i)
         obj = model.getObject(COPASI.CCommonName(item.getObjectCN()))
         if obj is None:
-            logging.debug('fit item not in model, cn: {0}'.format(item.getObjectCN()))
+            logger.debug('fit item not in model, cn: {0}'.format(item.getObjectCN()))
             continue
         obj = obj.toObject().getObjectParent()
         name = obj.getObjectDisplayName()
@@ -879,7 +880,7 @@ def add_experiment(name, data, **kwargs):
     assert (isinstance(exp_set, COPASI.CExperimentSet))
     exp = exp_set.getExperiment(name)
     if exp is not None:
-        logging.error('An experiment with the name {0} already exists'.format(name))
+        logger.error('An experiment with the name {0} already exists'.format(name))
         return None
 
     # save data as tsv
@@ -920,14 +921,14 @@ def add_experiment(name, data, **kwargs):
         else:
             obj = model.findObjectByDisplayName(current)
             if obj is None:
-                logging.warning("Can't find model element for {0}".format(current))
+                logger.warning("Can't find model element for {0}".format(current))
             else:
                 assert(isinstance(obj, COPASI.CDataObject))
                 if obj.getObjectType() != 'Reference':
                     try:
                         obj = obj.getValueReference()
                     except AttributeError:
-                        logging.warning("Cannot map the element {0}".format(current))
+                        logger.warning("Cannot map the element {0}".format(current))
                 role = _get_role_for_reference(obj.getObjectName())
                 obj_map.setObjectCN(i, str(obj.getCN()))
         obj_map.setRole(i, role)
@@ -1009,7 +1010,7 @@ def run_parameter_estimation(**kwargs):
     assert (isinstance(problem, COPASI.CFitProblem))
 
     if problem.getOptItemSize() == 0:
-        logging.warning('No fit parameters defined, skipping parameter estimation run')
+        logger.warning('No fit parameters defined, skipping parameter estimation run')
         return get_parameters_solution(model)
 
     if 'scheduled' in kwargs:
@@ -1059,12 +1060,12 @@ def run_parameter_estimation(**kwargs):
         if message.endswith("CCopasiTask (5): No output file defined for report of task 'Parameter Estimation'."):
             can_run = True
         if not can_run:
-            logging.error("Error while initializing parameter estimation: " + message)
+            logger.error("Error while initializing parameter estimation: " + message)
 
     if can_run:
         result = task.processRaw(use_initial_values)
         if not result:
-            logging.error("Error while running parameter estimation: " +
+            logger.error("Error while running parameter estimation: " +
                           COPASI.CCopasiMessage.getLastMessage().getText())
     task.setCallBack(None)
     problem.setCreateParameterSets(old_create_parameter_sets)
@@ -1197,7 +1198,7 @@ def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num
         obj = dm.getObject(COPASI.CCommonName(cn))
 
         if obj is None:  # not found skip
-            logging.debug('independent object not found for cn: {0}'.format(cn))
+            logger.debug('independent object not found for cn: {0}'.format(cn))
             continue
 
         if obj.getObjectName() == 'InitialConcentration':
@@ -1206,7 +1207,7 @@ def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num
             obj.getObjectParent().setInitialValue(value)
 
         change_set.append(obj)
-        logging.debug('set independent "{0}" to "{1}"'.format(cn, value))
+        logger.debug('set independent "{0}" to "{1}"'.format(cn, value))
     if change_set.size() > 0:
         model.updateInitialValues(change_set)
 
@@ -1271,10 +1272,10 @@ def _update_fit_parameters_from(dm, solution, exp_name=''):
                 obj.getObjectParent().setInitialValue(value)
 
             change_set.append(obj)
-            logging.debug('set solution value "{0}" to "{1}"'.format(cn, value))
+            logger.debug('set solution value "{0}" to "{1}"'.format(cn, value))
         else:
             basico.set_reaction_parameters(name, value=value)
-            logging.debug('set reaction parameter "{0}" to "{1}"'.format(name, value))
+            logger.debug('set reaction parameter "{0}" to "{1}"'.format(name, value))
     if change_set.size() > 0:
         model.updateInitialValues(change_set)
 

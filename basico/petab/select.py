@@ -9,6 +9,7 @@ from . import core
 import basico
 import petab_select
 
+logger = logging.getLogger(__name__)
 
 def copasi_aic():
     """Calculates the AIC based on the last parameter estimation run
@@ -86,7 +87,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     model_id = test_model.model_id
     files = core.write_problem_to(pp, temp_dir, model_id)
 
-    logging.debug(f'\n\n\nsubspace: {test_model.model_subspace_id}, params: {test_model.parameters}, indices: {test_model.model_subspace_indices}, model_id: {model_id}')
+    logger.debug(f'\n\n\nsubspace: {test_model.model_subspace_id}, params: {test_model.parameters}, indices: {test_model.model_subspace_indices}, model_id: {model_id}')
     # load into basico
     out_name = 'cps_{0}'.format(model_id)
     cps_file = os.path.join(temp_dir, out_name + '.cps')
@@ -115,7 +116,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     task = basico.get_current_model().getTask("Parameter Estimation")
     prob = task.getProblem()
     obj = prob.getSolutionValue()
-    logging.debug(f'obj: {obj}, llh: {llh}, si: {test_model.model_subspace_id}\n\n')
+    logger.debug(f'obj: {obj}, llh: {llh}, si: {test_model.model_subspace_id}\n\n')
 
     test_model.compute_criterion(Criterion.AIC)
     test_model.compute_criterion(Criterion.AICC)
@@ -179,10 +180,10 @@ def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, d
                                'params:, test_model.parameters, '
                                'indices': test_model.model_subspace_indices})
         except Exception as e:
-            logging.exception("couldn't evaluate " + test_model.model_id)
-            logging.critical(e, exc_info=True)
+            logger.exception("couldn't evaluate " + test_model.model_id)
+            logger.critical(e, exc_info=True)
 
-    logging.debug(f'obj_values: {obj_values}')
+    logger.debug(f'obj_values: {obj_values}')
 
 
 def evaluate_problem(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
@@ -209,13 +210,13 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     :rtype: petab_select.Model
     """
     if candidate_space is None:
-        logging.info('initializing new candidate space with method: {0}'.format(selection_problem.method))
+        logger.info('initializing new candidate space with method: {0}'.format(selection_problem.method))
         candidate_space = petab_select.ui.candidates(problem=selection_problem)
 
     test_models = candidate_space.models
 
     if not test_models:
-        logging.warning('no models to test, method: {0}'.format(selection_problem.method))
+        logger.warning('no models to test, method: {0}'.format(selection_problem.method))
         return None
 
     chosen_model = None
@@ -226,13 +227,13 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     while test_models:
         basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
         for model in test_models:
-            logging.info('{0} = {1}'.format(model.model_id, model.criteria))
+            logger.info('{0} = {1}'.format(model.model_id, model.criteria))
 
         chosen_model = selection_problem.get_best(test_models)
         if chosen_model is None:
-            logging.warning('found no best model?')
+            logger.warning('found no best model?')
 
-        logging.debug('best model is {0}'.format(chosen_model.model_id))
+        logger.debug('best model is {0}'.format(chosen_model.model_id))
 
         newly_calibrated_models = {
             model.get_hash(): model for model in test_models

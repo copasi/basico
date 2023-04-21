@@ -49,6 +49,7 @@ try:
 except ValueError:
     import model_io
 
+logger = logging.getLogger(__name__)
 
 def get_opt_parameters(model=None):
     """Returns a data frame with all parameters to be varied during optimization
@@ -142,7 +143,7 @@ def set_opt_parameters(opt_parameters, model=None):
                         cn = obj.getCN()
 
         if not cn:
-            logging.warning('object {0} not found'.format(name))
+            logger.warning('object {0} not found'.format(name))
             continue
 
         opt_item = problem.addOptItem(cn)
@@ -204,7 +205,7 @@ def set_objective_function(expression, maximize=None, minimize=None, model=None)
     assert (isinstance(problem, COPASI.COptProblem))
 
     if not problem.setObjectiveFunction(basico.model_info._replace_names_with_cns(expression, model=model)):
-        logging.error('invalid objective function: {0}'.format(expression))
+        logger.error('invalid objective function: {0}'.format(expression))
 
     if maximize:
         problem.setMaximize(maximize)
@@ -302,7 +303,7 @@ def get_opt_solution(model=None):
         sol = solution.get(i)
         obj = model.getObject(COPASI.CCommonName(item.getObjectCN()))
         if obj is None:
-            logging.debug('opt item not in model, cn: {0}'.format(item.getObjectCN()))
+            logger.debug('opt item not in model, cn: {0}'.format(item.getObjectCN()))
             continue
         obj = obj.toObject().getObjectParent()
         name = obj.getObjectDisplayName()
@@ -358,11 +359,11 @@ def run_optimization(expression=None, output=None, settings=None, **kwargs):
         model.addInterface(dh)
 
     if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
-        logging.warning("Couldn't initialize optimization task")
+        logger.warning("Couldn't initialize optimization task")
 
     use_initial_values = kwargs.get('use_initial_values', True)
     if not task.processRaw(use_initial_values):
-        logging.warning("Couldn't process optimization task")
+        logger.warning("Couldn't process optimization task")
 
     if dh:
         model.removeInterface(dh)

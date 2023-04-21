@@ -124,9 +124,9 @@ def plot_data(data_dir, problem_size=None, **kwargs):
         if problem_size:
             m, n = problem_size
             scale_mode = kwargs.get('scale_mode', 3)
-            log_level = kwargs.get('log_level', logging.INFO)
+            log_level = kwargs.get('log_level', logger.INFO)
             if type(log_level) is str:
-                log_level = logging.getLevelName(log_level.upper())
+                log_level = logger.getLevelName(log_level.upper())
 
             if scale_mode is not None:
                 if type(scale_mode) is float:
@@ -141,7 +141,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c0 = stats.chi2.isf(0.32, 1, loc=0, scale=1)
                 threshold = obj_val * (1 + c0/(n-m))
                 if first:
-                    logging.log(log_level, f'blue, dashed : COPASI threshold {threshold} for alpha=0.32')
+                    logger.log(log_level, f'blue, dashed : COPASI threshold {threshold} for alpha=0.32')
                 ax.axhline(threshold, color='blue', ls='dashed')
 
             # for remaining thresholds we use alpha = 0.05 unless otherwise specified
@@ -152,7 +152,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c0 = stats.chi2.isf(alpha, 1, loc=0, scale=1)
                 threshold = obj_val * (1 + c0/(n-m))
                 if first:
-                    logging.log(log_level, f'blue, dotted : COPASI threshold {threshold} for alpha={alpha}')
+                    logger.log(log_level, f'blue, dotted : COPASI threshold {threshold} for alpha={alpha}')
                 ax.axhline(threshold, color='blue', ls='dotted')
 
             # estimating chi-square value fitting one parameter (schaber)
@@ -160,7 +160,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c1 = stats.chi2.isf(alpha, 1, loc=0, scale=1)
                 t1 = obj_val * math.exp(c1 / n)
                 if first:
-                    logging.log(log_level, f'green, dashed: Schaber threshold {t1} for alpha={alpha}, 1 parameter, chi2')
+                    logger.log(log_level, f'green, dashed: Schaber threshold {t1} for alpha={alpha}, 1 parameter, chi2')
                 ax.axhline(y=t1, color='green', linestyle='dashed')
 
             # estimating chi-square value fitting m parameters (schaber)
@@ -168,7 +168,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c2 = stats.chi2.isf(alpha, m, loc=0, scale=1)
                 t2 = obj_val * math.exp(c2 / n)
                 if first:
-                    logging.log(log_level, f'green, dotted: Schaber threshold {t2} for alpha={alpha}, m parameter, chi2')
+                    logger.log(log_level, f'green, dotted: Schaber threshold {t2} for alpha={alpha}, m parameter, chi2')
                 ax.axhline(y=t2, color='green', linestyle='dotted')
 
             # estimating fratio value fitting m parameters (schaber)
@@ -176,7 +176,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c3 = stats.f.isf(alpha, m, n-m, loc=0, scale=1)
                 t3 = obj_val * (1 + (m / (n-m)) * c3)
                 if first:
-                    logging.log(log_level, f'red: Schaber threshold {t3} for alpha={alpha}, m parameter, Fratio')
+                    logger.log(log_level, f'red: Schaber threshold {t3} for alpha={alpha}, m parameter, Fratio')
                 ax.axhline(y=t3, color='red', linestyle='dotted')
 
             # estimating chi-square value fitting 1 parameter (donaldson)
@@ -184,7 +184,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
                 c4 = stats.f.isf(alpha, 1, n-m, loc=0, scale=1)
                 t4 = obj_val * (1 + c4/(n-m))
                 if first:
-                    logging.log(log_level, f'orange: Donaldson threshold {t4} for alpha={alpha}, 1 parameter, Fratio')
+                    logger.log(log_level, f'orange: Donaldson threshold {t4} for alpha={alpha}, 1 parameter, Fratio')
                 ax.axhline(y=t4, color='orange', linestyle='dashed')
 
             first = False

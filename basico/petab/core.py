@@ -41,8 +41,11 @@ def _update_df_from_simulation(petab_df, basico_df, experiment_name):
     :return: None
     """
     sim_col = petab_df.columns.get_loc('simulation')
-    sim_times = basico_df.index.to_list()
     have_time = 'Time' in basico_df.reset_index().columns
+    have_no_time_index = 'Time' in basico_df.columns
+    if have_time and have_no_time_index:
+        basico_df = basico_df.set_index('Time')
+    sim_times = basico_df.index.to_list()
     for obs in basico_df.columns.to_list():
         obs_id = obs
         if obs == 'Time':
@@ -67,6 +70,7 @@ def _update_df_from_simulation(petab_df, basico_df, experiment_name):
             for index, row in expected.iterrows():
                 if row.time in sim_times and have_time:
                     basic_data = basico_df.loc[row.time, obs]
+                    target = petab_df.iloc[index, sim_col]
                     if basic_data.size > 1:
                         # if there are more rows, we still only can take the first one
                         basic_data = basic_data.iloc[0]
@@ -277,7 +281,7 @@ class PetabSimulator(petab.simulate.Simulator):
         """
 
         simulation_results = basico.get_simulation_results(values_only=True, solution=self.evaluate())
-
+        
         return create_simulation_df(self.petab_problem.measurement_df, simulation_results)
 
     def __getstate__(self):

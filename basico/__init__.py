@@ -12,6 +12,7 @@ Example:
 
 from .model_io import *
 from .model_info import *
+from .logging import *
 
 from .task_timecourse import *
 from .task_parameterestimation import *

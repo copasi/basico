@@ -46,9 +46,25 @@ def default_evaluation():
 
     :return: found parameter values
     """
-    basico.run_parameter_estimation(method='Particle Swarm', update_model=True,
-                                    settings={'method': {'Iteration Limit': 600}})
-    sol = basico.run_parameter_estimation(method='Levenberg - Marquardt', update_model=True)
+    #logger.debug('running ps\n')
+    #basico.run_parameter_estimation(method='Particle Swarm', update_model=True,
+    #                                settings={'method': {'Iteration Limit': 600}})
+    logger.debug('running ga, 30gens\n')
+    basico.run_parameter_estimation(method=basico.PE.GENETIC_ALGORITHM_SR, update_model=True,
+                                    settings={'method': {
+                                        'Number of Generations': 30,
+                                        'Population Size': 10, 
+                                        'Stop after # Stalled Generations': 30
+                                        }})
+    logger.debug('running nl, 1000 iterations')
+    sol = basico.run_parameter_estimation(method=basico.PE.NL2SOL, update_model=True,
+                                            settings={'method': {
+                                                'Iteration Limit': 1000,
+                                            }}
+                                          )
+    # logger.debug('running lm')
+    # sol = basico.run_parameter_estimation(method='Levenberg - Marquardt', update_model=True)
+    logger.debug('evaluation done')
     return sol
 
 
@@ -211,7 +227,18 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     """
     if candidate_space is None:
         logger.info('initializing new candidate space with method: {0}'.format(selection_problem.method))
-        candidate_space = petab_select.ui.candidates(problem=selection_problem)
+
+        yaml = selection_problem.candidate_space_arguments.get('predecessor_model', None)
+        if yaml is not None:
+            previous_model = petab_select.Model.from_yaml(yaml)
+        else: 
+            previous_model = None
+
+        candidate_space = petab_select.ui.candidates(
+            problem=selection_problem,
+            previous_predecessor_model=previous_model,
+        )
+        candidate_space.set_predecessor_model(selection_problem.candidate_space_arguments.get('predecessor_model', None))
 
     test_models = candidate_space.models
 
@@ -247,7 +274,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
             candidate_space=candidate_space,
             newly_calibrated_models=newly_calibrated_models
             # predecessor_model=chosen_model,
-           # excluded_models=test_models
+            # excluded_models=test_models
         )
 
         test_models = candidate_space.models

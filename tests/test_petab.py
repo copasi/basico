@@ -10,12 +10,15 @@ import os.path
 import yaml
 
 # set log level to debug
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+_REMOVE_TEMP_FILES = True
+
 
 import basico
 
 try:
     import petab_select
+    import petab
     from petab import Problem
     from basico.petab import PetabSimulator, evaluate_problem
     petab_test_enabled = True
@@ -65,6 +68,26 @@ class PetabTestCase(unittest.TestCase):
         self.assertEqual(mes_df.shape[1], result_df.shape[1])
 
     @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
+    def test_dataframe_transform(self):
+        log_df = pd.read_csv(os.path.join(_dir_name, 'simulation_log.tsv'), sep='\t')
+        nom_df = pd.read_csv(os.path.join(_dir_name, 'simulation_nom.tsv'), sep='\t')
+
+        result_df = basico.petab.transform_simulation_df(
+            log_df,
+            pd.DataFrame(
+                data=[{
+                    'observableId': 'observable_x_0ac',
+                    'observableFormula': 'observable_x_0ac',
+                    'observableTransformation': 'log'
+                 }]
+         ))
+
+        transformed = result_df.query('observableId == "observable_x_0ac"')
+        normal = nom_df.query('observableId == "observable_x_0ac"')
+        self.assertTrue(np.allclose(
+            transformed['simulation'].values, normal['simulation'].values))
+
+    @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
     def test_dataframe_convert_steady(self):
         mes_df = pd.read_csv(os.path.join(_dir_name, 'ss_mes_df.csv'))
         sim_df = pd.read_csv(os.path.join(_dir_name, 'steady_df.csv'))
@@ -94,15 +117,32 @@ class PetabTestCase(unittest.TestCase):
     @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
     def test_model_selection(self):
         problem = petab_select.Problem.from_yaml(os.path.join(_dir_name, 'model_selection', 'petab_select_problem.yaml'))
-        best = evaluate_problem(problem, temp_dir=os.path.join(_dir_name, 'temp_selection'), delete_temp_files=False)
+        best = evaluate_problem(problem, temp_dir=os.path.join(_dir_name, 'temp_selection'),
+                                delete_temp_files=_REMOVE_TEMP_FILES)
         self.assertIsNotNone(best)
 
     @unittest.skipUnless(petab_test_enabled and
                          _PETAB_SELECT_MODEL_DIR and
                          os.path.exists(_PETAB_SELECT_MODEL_DIR),
                          "require petab for these tests")
+    def test_model_selection_test9_expected(self):
+        # logging.basicConfig(level=logging.DEBUG)
+        expected_file = os.path.join(_PETAB_SELECT_MODEL_DIR, '0009/expected.yaml')
+        self.assertTrue(os.path.exists(expected_file))
+
+        model = petab_select.Model.from_yaml(expected_file)
+        nllh_before = model.get_criterion(petab_select.Criterion.NLLH)
+        model.criteria = {}
+        basico.petab.evaluate_model(model, temp_dir=os.path.join(_dir_name, 'temp_selection'), delete_temp_files=_REMOVE_TEMP_FILES)
+        nllh_after = model.get_criterion(petab_select.Criterion.NLLH)
+        self.assertAlmostEqual(nllh_before, nllh_after, places=3)
+
+    @unittest.skipUnless(petab_test_enabled and
+                         _PETAB_SELECT_MODEL_DIR and
+                         os.path.exists(_PETAB_SELECT_MODEL_DIR),
+                         "require petab for these tests")
     def test_model_selection_suite(self):
-        logging.basicConfig(level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
 
         files = sorted(glob.glob(_PETAB_SELECT_MODEL_DIR+'/*/peta*.yaml'))
         self.assertTrue(len(files) > 0)
@@ -114,7 +154,7 @@ class PetabTestCase(unittest.TestCase):
             problem = petab_select.Problem.from_yaml(f)
             best = evaluate_problem(problem,
                                     temp_dir=os.path.join(_dir_name, 'temp_selection'),
-                                    delete_temp_files=False)
+                                    delete_temp_files=_REMOVE_TEMP_FILES)
             self.assertIsNotNone(best)
             # print(os.path.dirname(f), best.model_subspace_id, best.criteria)
 

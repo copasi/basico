@@ -122,6 +122,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     simulation_results = basico.get_simulation_results(values_only=True, solution=sol)
     basico.prune_simulation_results(simulation_results)
     sim_df = basico.petab.create_simulation_df(pp.measurement_df, simulation_results)
+    sim_df = basico.petab.transform_simulation_df(sim_df, pp.observable_df)
     if sim_dfs:
         sim_dfs.append(sim_df)
 

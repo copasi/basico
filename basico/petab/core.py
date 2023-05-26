@@ -8,6 +8,44 @@ import pandas as pd
 import copasi_petab_importer
 import os
 
+def transform_simulation_df(sim_df, observable_df):
+    """ Reverses the transformation of the simulation results
+
+    if there is an observableTransformation is defined for an observable
+    that is log or log 10, the according simulation result will be transformed
+    back.
+
+    :param sim_df: the simulation data frame
+    :type sim_df: pd.DataFrame
+    :param observable_df: the observable data frame
+    :type observable_df: pd.DataFrame
+
+    :return: the transformed simulation data frame
+    :rtype: pd.DataFrame
+    """
+    result = sim_df.copy(True)
+    obs_df = observable_df.reset_index()
+
+    if not 'observableTransformation' in obs_df.columns:
+        return result
+
+    if not 'simulation' in result.columns:
+        logging.warning('No simulation column found in simulation data frame')
+        return result
+
+    if not 'observableId' in obs_df.columns:
+        logging.warning('No observableId column found in observable data frame')
+        return result
+
+    for _, row in obs_df.iterrows():
+        if row['observableTransformation'] == 'log':
+            result.loc[result['observableId'] == row['observableId'], 'simulation'] = \
+                np.exp(result.loc[result['observableId'] == row['observableId'], 'simulation'])
+        elif row['observableTransformation'] == 'log10':
+            result.loc[result['observableId'] == row['observableId'], 'simulation'] = \
+                np.power(10, result.loc[result['observableId'] == row['observableId'], 'simulation'])
+
+    return result
 
 def create_simulation_df(measurement_df, simulation_results):
     """Creates a simulation data frame
@@ -281,8 +319,9 @@ class PetabSimulator(petab.simulate.Simulator):
         """
 
         simulation_results = basico.get_simulation_results(values_only=True, solution=self.evaluate())
-        
-        return create_simulation_df(self.petab_problem.measurement_df, simulation_results)
+        sim_df = create_simulation_df(self.petab_problem.measurement_df, simulation_results)
+        sim_df = basico.petab.transform_simulation_df(sim_df, self.petab_problem.observable_df)
+        return sim_df
 
     def __getstate__(self):
         """Return state for pickling"""

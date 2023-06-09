@@ -75,6 +75,7 @@ def __method_name_to_type(method_name):
     methods = {
         'deterministic': COPASI.CTaskEnum.Method_deterministic,
         'lsoda': COPASI.CTaskEnum.Method_deterministic,
+        'hybrid': COPASI.CTaskEnum.Method_hybrid,
         'hybridode45': COPASI.CTaskEnum.Method_hybridODE45,
         'hybridlsoda': COPASI.CTaskEnum.Method_hybridLSODA,
         'adaptivesa': COPASI.CTaskEnum.Method_adaptiveSA,
@@ -117,7 +118,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
        |   * `deterministic` / `lsoda`: the LSODA implementation
        |   * `stochastic`: the Gibson & Bruck Gillespie implementation
        |   * `directMethod`: Gillespie Direct Method
-       |   * others: `hybridode45`, `hybridlsoda`, `adaptivesa`, `tauleap`, `radau5`, `sde`
+       |   * others: `hybrid`, `hybridode45`, `hybridlsoda`, `adaptivesa`, `tauleap`, `radau5`, `sde`
 
      - `duration` (float): the duration in time units for how long to simulate
 
@@ -273,7 +274,7 @@ def run_time_course(*args, **kwargs):
        |   * `deterministic` / `lsoda`: the LSODA implementation
        |   * `stochastic`: the Gibson & Bruck Gillespie implementation
        |   * `directMethod`: Gillespie Direct Method
-       |   * others: `hybridode45`, `hybridlsoda`, `adaptivesa`, `tauleap`, `radau5`, `sde`
+       |   * others: `hybrid`, `hybridode45`, `hybridlsoda`, `adaptivesa`, `tauleap`, `radau5`, `sde`
 
      - `duration` (float): the duration in time units for how long to simulate
 

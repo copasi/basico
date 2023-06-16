@@ -47,7 +47,6 @@ class PetabTestCase(unittest.TestCase):
                 continue
             #if 'Lucarelli' not in f:
             #    continue
-            logging.warning(f)
             pp = Problem.from_yaml(f)
             name = os.path.splitext(os.path.basename(f))[0]
             sim = PetabSimulator(pp, working_dir='./test_data/', name=name)

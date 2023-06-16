@@ -512,6 +512,8 @@ def get_plots(name=None, **kwargs):
         assert (isinstance(plot_spec, COPASI.CPlotSpecification))
 
         plot_data = get_plot_dict(plot_spec, model=dm)
+        if plot_data is None:
+            continue
 
         if 'name' in kwargs and not kwargs['name'] in plot_data['name']:
             continue
@@ -551,6 +553,8 @@ def get_reports(name=None, ignore_automatic=False, task=None, **kwargs):
         assert (isinstance(report, COPASI.CReportDefinition))
 
         report_data = get_report_dict(report, model=dm)
+        if not report_data:
+            continue
 
         if 'name' in kwargs and not kwargs['name'] in report_data['name']:
             continue
@@ -935,7 +939,7 @@ def add_default_plot(name, **kwargs):
     return None
 
 
-_default_plots = None
+_default_plots = {}
 
 
 def get_default_plot_names(filter=None, **kwargs):

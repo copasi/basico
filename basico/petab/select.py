@@ -68,6 +68,62 @@ def default_evaluation():
     return sol
 
 
+def _get_value_for_parameter(solution, param_id, param_name=None):
+    """
+    Extracts the value for the given parameter from the given solution
+
+    :param solution: the solution to extract the parameter from (as dictionary,
+        with index of COPASI opt item names, and solution in 'sol')
+    :type solution: dict
+    :param param_id: the id of the parameter to extract
+    :type param_id: str
+    :param param_name: the name of the parameter to extract
+    :type param_name: str or None
+    :return: the value of the parameter in the solution or None if the parameter
+        was not found in the solution
+    :rtype: float or None
+
+    """
+
+    id_to_find = 'Values[' + param_id + ']'
+    name_to_find = 'Values[' + param_name + ']' if param_name is not None else None
+
+    for entry in solution:
+        if entry['name'] == id_to_find:
+            return entry['sol']
+        if name_to_find is not None and entry['name'] == name_to_find:
+            return entry['sol']
+
+    return None
+
+
+def _get_estimated_parameters(solution, petab_problem):
+    """
+    Extracts the estimated parameters from the given solution and returns them
+    as a dictionary just like the parameters in the petab problem
+
+    :param solution: the solution to extract the parameters from (as returned by
+        basico.get_parameters_solution)
+    :type solution: pandas.DataFrame
+    :param petab_problem: the petab problem to extract the parameters from
+    :type petab_problem: petab.Problem
+
+    :return: the estimated parameters as a dictionary with petab parameter ids and
+    the obtained solution for the parameters to be estimated.
+    :rtype: dict
+
+    """
+    params = {}
+    estimated = basico.as_dict(solution)
+    for entry in basico.as_dict(petab_problem.parameter_df):
+        param_id = entry['parameterId']
+        name = entry['parameterName'] if 'parameterName' in entry else None
+        value = _get_value_for_parameter(estimated, param_id, name)
+        if value is not None:
+            params[param_id] = value
+    return params
+
+
 def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, delete_temp_files=True,
                    sim_dfs=None, sol_dfs=None, temp_files=None):
     """evaluates the given test model and updates it with the calculated metrics and estimated parameters
@@ -118,6 +174,10 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     sol = evaluation()
     if sol_dfs:
         sol_dfs.append(sol)
+
+    # set estimated parameters
+    params = _get_estimated_parameters(sol, pp)
+    test_model.set_estimated_parameters(params)
 
     simulation_results = basico.get_simulation_results(values_only=True, solution=sol)
     basico.prune_simulation_results(simulation_results)
@@ -229,15 +289,8 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     if candidate_space is None:
         logger.info('initializing new candidate space with method: {0}'.format(selection_problem.method))
 
-        yaml = selection_problem.candidate_space_arguments.get('predecessor_model', None)
-        if yaml is not None:
-            previous_model = petab_select.Model.from_yaml(yaml)
-        else: 
-            previous_model = None
-
         candidate_space = petab_select.ui.candidates(
-            problem=selection_problem,
-            previous_predecessor_model=previous_model,
+            problem=selection_problem
         )
         candidate_space.set_predecessor_model(selection_problem.candidate_space_arguments.get('predecessor_model', None))
 
@@ -247,10 +300,8 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         logger.warning('no models to test, method: {0}'.format(selection_problem.method))
         return None
 
-    chosen_model = None
     # Calibrated and newly calibrated models should be tracked between iterations.
     calibrated_models = {}
-    newly_calibrated_models = {}
 
     while test_models:
         basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
@@ -274,8 +325,6 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
             problem=selection_problem,
             candidate_space=candidate_space,
             newly_calibrated_models=newly_calibrated_models
-            # predecessor_model=chosen_model,
-            # excluded_models=test_models
         )
 
         test_models = candidate_space.models

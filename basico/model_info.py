@@ -27,6 +27,7 @@ import logging
 import dateutil.parser
 import datetime
 import sys
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -5672,3 +5673,67 @@ def _parameterset_to_dict(pset, dm, values_only):
         result[entry] = _parametergroup_to_dict(pset.getModelParameter(COPASI.CDataString(entry).getCN()), dm, values_only)
 
     return result
+
+
+def _simplify_name(name, drop=None):
+    """
+    Simplifies the given name by removing all special characters and replacing them with underscores
+    additionally a list of substrings can be given that will be removed from the name
+
+    :param name: the name to simplify
+    :type name: str
+    :param drop: a list of substrings to drop
+    :type drop: list[str] or None
+    :return: the simplified name
+    """
+    if drop:
+        for substr in drop:
+            name = name.replace(substr, '')
+
+    name = re.sub(r'[^a-zA-Z0-9_]', '_', name) # replace all non-alphanumeric characters with underscores
+
+    name = name.replace('__', '_') # remove double underscores
+
+    # remove trailing underscores
+    while name.endswith('_'):
+        name = name[:-1]
+
+    if drop:
+        for substr in drop:
+            name = name.replace(substr, '')
+
+    return name
+
+
+def simplify_names(**kwargs):
+    """
+    Simplifies the names of the model elements by removing all special characters and replacing them with underscores
+
+    :param kwargs:
+
+    - model: the model to simplify
+    - drop: a list of substrings to drop from the names
+
+    :return: None
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    drop = kwargs.get('drop', None)
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    for i in range(model.getNumReactions()):
+        reaction = model.getReaction(i)
+        reaction.setObjectName(_simplify_name(reaction.getObjectName(), drop))
+
+    for i in range(model.getNumMetabs()):
+        metab = model.getMetabolite(i)
+        metab.setObjectName(_simplify_name(metab.getObjectName(), drop))
+
+    for i in range(model.getNumCompartments()):
+        comp = model.getCompartment(i)
+        comp.setObjectName(_simplify_name(comp.getObjectName(), drop))
+
+    for i in range(model.getNumModelValues()):
+        gq = model.getModelValue(i)
+        gq.setObjectName(_simplify_name(gq.getObjectName(), drop))

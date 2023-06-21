@@ -5737,3 +5737,109 @@ def simplify_names(**kwargs):
     for i in range(model.getNumModelValues()):
         gq = model.getModelValue(i)
         gq.setObjectName(_simplify_name(gq.getObjectName(), drop))
+
+
+def run_scheduled_tasks(include_plots=True, plots=None, reports=None, **kwargs):
+    """
+    Runs all scheduled tasks, optionally producing plots and reports
+
+    :param include_plots: boolean indicating whether to produce the plots associated with the task
+    :param plots: optional list of plot dataframes computed by the task
+    :param reports: optional list of report dataframes computed by the task
+    :return: Figure produced if `include_plots` is true, otherwise None
+    """
+    for name in get_scheduled_tasks():
+        run_task(name, include_plots, plots, reports, **kwargs)
+
+
+def run_task(task_name, include_plots=True, include_general_plots=False, plots=None, reports=None, **kwargs):
+    """
+    Utility function that runs the named task and returns the result
+
+    :param task_name: the name of the task e.g. 'Time-Course' to run the timecourse task. See the
+        basico.T for all the task names.
+    :type task_name: str
+    :param include_plots: boolean indicating whether to produce the plots associated with the task
+    :type include_plots: bool
+    :param include_general_plots: boolean indicating whether to produce the general plots (those not specified to
+         a particular task)
+    :type include_general_plots: bool
+    :param plots: optional list of plot dataframes computed by the task
+    :type plots: list[pandas.DataFrame] or None
+    :param reports: optional list of report dataframes computed by the task
+    :type reports: list[pandas.DataFrame] or None
+    :return: Figure produced if `include_plots` is true, otherwise None
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+
+    report_defs = []
+    plot_defs = []
+
+    # find reports and plots
+    for i in range(dm.getNumReportDefinitions()):
+        spec = get_report_dict(i)
+        if spec is None:
+            continue
+        if spec['task'] != task_name:
+            continue
+        report_defs.append(spec)
+
+    for i in range(dm.getNumPlotSpecifications()):
+        spec = get_plot_dict(i)
+        if spec is None:
+            continue
+        if not spec['tasks'] and not include_general_plots:
+            continue
+        elif task_name not in spec['tasks']:
+            continue
+
+        plot_defs.append(spec)
+
+    # create data handlers for reports and plots
+    report_handlers = []
+    if reports is not None and report_defs:
+        for spec in report_defs:
+            if spec['is_table']:
+                # just go through the table entries and add them to handler
+                pass
+            else:
+                # add header, body and footer separately
+                pass
+
+    plot_handlers = []
+    for spec in plot_defs:
+        dh = COPASI.CDataHandler()
+        for curve in spec['curves']:
+            if curve['activity'] != 'during':
+                continue
+            for channel in curve['channels']:
+                dh.addDuringName(COPASI.CRegisteredCommonName(channel))
+            pass
+        plot_handlers.append(dh)
+        dm.addInterface(dm)
+
+    # bail if no outputs
+    if not report_handlers and not plot_handlers:
+        logger.error('No reports or plots for the task {}'.format(task_name))
+        return
+
+    # run task
+    task = dm.getTask(task_name)
+    task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, dh)
+    task.processRaw(True)
+    task.restore()
+
+    # remove output interfaces
+    for handler in report_handlers:
+        dm.removeInterface(handler)
+    for handler in plot_handlers:
+        dm.removeInterface(handler)
+
+    # produce dataframes for reports and plots
+    for handler in report_handlers:
+        pass
+    for handler in plot_handlers:
+        pass
+    # produce plots
+
+    pass

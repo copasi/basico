@@ -43,6 +43,11 @@ class TestTimeCourse(unittest.TestCase):
         result = basico.run_time_course(duration=20, method='directMethod', use_numbers=True)
         self.assertIsNotNone(result)
 
+    def test_general_run(self):
+        dm = basico.load_example('bruss')
+        basico.run_task(basico.T.TIME_COURSE, model=dm)
+        basico.remove_datamodel(dm)
+
 
 if __name__ == '__main__':
     unittest.main()

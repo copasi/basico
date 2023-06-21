@@ -5815,31 +5815,36 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
             for channel in curve['channels']:
                 dh.addDuringName(COPASI.CRegisteredCommonName(channel))
             pass
-        plot_handlers.append(dh)
-        dm.addInterface(dm)
+        plot_handlers.append({
+            'handler': dh,
+            'spec': spec
+        })
 
     # bail if no outputs
     if not report_handlers and not plot_handlers:
         logger.error('No reports or plots for the task {}'.format(task_name))
         return
 
-    # run task
-    task = dm.getTask(task_name)
-    task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, dh)
-    task.processRaw(True)
-    task.restore()
+    # workaround run over all handlers
 
-    # remove output interfaces
-    for handler in report_handlers:
-        dm.removeInterface(handler)
-    for handler in plot_handlers:
-        dm.removeInterface(handler)
+    for handler in report_handlers + plot_handlers:    
+        # run task
+        task = dm.getTask(task_name)
+        task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, handler['handler'])
+        task.processRaw(True)
+        task.restore()
+        dm.removeInterface(handler['handler'])
 
     # produce dataframes for reports and plots
     for handler in report_handlers:
         pass
     for handler in plot_handlers:
+        data = []
+        for i in range(handler['handler'].getNumRowsDuring()):
+            data.append(handler['handler'].getNthRow(i))
+        handler['df'] = pd.DataFrame(data)
         pass
+
     # produce plots
 
     pass

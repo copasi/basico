@@ -5852,13 +5852,26 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
 
     # workaround run over all handlers
 
-    for handler in report_handlers + plot_handlers:    
-        # run task
-        task = dm.getTask(task_name)
-        task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, handler['handler'])
-        task.processRaw(True)
-        task.restore()
+    for handler in report_handlers + plot_handlers:
+        dm.addInterface(handler['handler'])
+
+    # run task
+    task = dm.getTask(task_name)
+    task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, dm)
+    task.processRaw(True)
+    task.restore()
+
+    for handler in report_handlers + plot_handlers:
         dm.removeInterface(handler['handler'])
+
+
+    # for handler in report_handlers + plot_handlers:
+    #     # run task
+    #     task = dm.getTask(task_name)
+    #     task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, handler['handler'])
+    #     task.processRaw(True)
+    #     task.restore()
+    #     dm.removeInterface(handler['handler'])
 
     # produce dataframes for reports and plots
     for handler in report_handlers:
@@ -5870,5 +5883,4 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         handler['df'] = pd.DataFrame(data)
         if plots is not None:
             plots.append(handler['df'])
-        
     # produce plots

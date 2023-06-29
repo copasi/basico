@@ -5920,7 +5920,7 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
 
     figures = []
     for handler in plot_handlers:
-        fix, ax = _create_plot(handler['spec'], handler['df'])
-        figures.append(fix, ax)
+        fig, ax = _create_plot(handler['spec'], handler['df'])
+        figures.append((fig, ax))
 
     return figures

@@ -115,7 +115,8 @@ class PetabTestCase(unittest.TestCase):
 
     @unittest.skipUnless(petab_test_enabled, "require petab for these tests")
     def test_model_selection(self):
-        problem = petab_select.Problem.from_yaml(os.path.join(_dir_name, 'model_selection', 'petab_select_problem.yaml'))
+        problem = petab_select.Problem.from_yaml(
+            os.path.join(_dir_name, 'model_selection', 'petab_select_problem.yaml'))
         best = evaluate_problem(problem, temp_dir=os.path.join(_dir_name, 'temp_selection'),
                                 delete_temp_files=_REMOVE_TEMP_FILES)
         self.assertIsNotNone(best)

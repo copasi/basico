@@ -11,6 +11,7 @@ import petab_select
 
 logger = logging.getLogger(__name__)
 
+
 def copasi_aic():
     """Calculates the AIC based on the last parameter estimation run
 
@@ -308,7 +309,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         for model in test_models:
             logger.info('{0} = {1}'.format(model.model_id, model.criteria))
 
-        chosen_model = selection_problem.get_best(test_models)
+        chosen_model = selection_problem.get_best(test_models, compute_criterion=True)
         if chosen_model is None:
             logger.warning('found no best model?')
 

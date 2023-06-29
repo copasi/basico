@@ -44,8 +44,11 @@ class TestTimeCourse(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_general_run(self):
+        from matplotlib import pyplot as plt
         dm = basico.load_example('bruss')
-        basico.run_task(basico.T.TIME_COURSE, model=dm)
+        plots = []
+        basico.run_task(basico.T.TIME_COURSE, model=dm, plots=plots)
+        self.assertEqual(len(plots), 2)
         basico.remove_datamodel(dm)
 
 

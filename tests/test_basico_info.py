@@ -1,3 +1,4 @@
+import logging
 import sys
 import unittest
 import basico
@@ -443,7 +444,7 @@ class TestBasicoModelConstruction(unittest.TestCase):
         psets = basico.get_parameter_sets(name='Original')
         self.assertEqual(len(psets), 1)
 
-        # remove a specific paramter set
+        # remove a specific parameter set
         basico.remove_parameter_sets(name='Original')
         self.assertEqual(len(basico.get_parameter_sets()), 5)
 

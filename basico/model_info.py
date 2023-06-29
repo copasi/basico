@@ -157,8 +157,8 @@ def __status_to_string(status):
     return strings.get(status, 'fixed')
 
 
-def __xml_task_type_to_string(type):
-    return T.from_enum(type)
+def __xml_task_type_to_string(type_value):
+    return T.from_enum(type_value)
 
 
 def __task_name_to_xml_type(name):
@@ -398,7 +398,7 @@ def get_species(name=None, exact=False, **kwargs):
         if 'type' in kwargs and kwargs['type'] not in metab_data['type']:
             continue
 
-        if 'sbml_id' in kwargs and kwargs['sbml_id']  != metab_data['sbml_id']:
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != metab_data['sbml_id']:
             continue
 
         data.append(metab_data)
@@ -955,7 +955,7 @@ def get_default_plot_names(filter=None, **kwargs):
     if _default_plots:
         return _default_plots
 
-    _default_plots={}
+    _default_plots = {}
     for index in ids:
         item = COPASI.COutputAssistant.getItem(index)
         assert (isinstance(item, COPASI.CDefaultOutputDescription))
@@ -1062,7 +1062,8 @@ def add_report(name, **kwargs):
 
 
 def set_report_dict(spec, precision=None, separator=None, table=None,
-                    print_headers=True, header=None, body=None, footer=None, task=None, comment=None, add_separator=None, **kwargs):
+                    print_headers=True, header=None, body=None, footer=None, task=None,
+                    comment=None, add_separator=None, **kwargs):
     """Sets properties of the named report definition.
     
         Examples:
@@ -1113,8 +1114,8 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
         :param comment: a documentation string for the report (can bei either string, or xhtml string)
         :type comment: Optional[str]
         
-        :param add_separator: an optional boolean flag, to automatically add seprators between header, body and footer entries
-               since this is not necessary for table entries. 
+        :param add_separator: an optional boolean flag, to automatically add seprators between header, body and
+            footer entries since this is not necessary for table entries.
         :type add_separator: Optional[bool]
 
         :param kwargs: optional arguments
@@ -1212,7 +1213,7 @@ def _set_report_vector(vec, list_of_cns, dm, separator=None):
             vec.append(COPASI.CRegisteredCommonName(separator))
 
     if separator:
-       vec.pop()
+        vec.pop()
 
 
 def wrap_copasi_string(text):
@@ -1222,6 +1223,7 @@ def wrap_copasi_string(text):
     :return: an escaped COPASI string, that can be used in reports
     """
     return 'String=' + COPASI.CCommonName.escape(text)
+
 
 def _replace_names_with_cns(expression, **kwargs):
     """ replaces all names in the given expression with cns
@@ -1820,7 +1822,6 @@ def remove_function(name, **kwargs):
         return
 
     key = fun.getKey()
-    fun = None
 
     db.removeFunction(key)
 
@@ -1948,7 +1949,8 @@ def add_event(name, trigger, assignments, **kwargs):
              * 'delay': the delay expression
              * 'priority': the priority expression
              * 'persistent': boolean indicating if the event is persistent
-             * 'delay_calculation': boolean indicating whether just the assignment is delayed, or the calculation as well
+             * 'delay_calculation': boolean indicating whether just the assignment is delayed, or the
+                                    calculation as well
              * 'fire_at_initial_time': boolean indicating if the event should fire at the initial time
 
         :return: the newly created event
@@ -2096,9 +2098,9 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
         need_compile = True
 
     if need_compile:
-        l = COPASI.ContainerList()
-        l.push_back(dm)
-        event.compile(l)
+        model_list = COPASI.ContainerList()
+        model_list.push_back(dm)
+        event.compile(model_list)
 
     dm.getModel().compileIfNecessary()
 
@@ -2212,7 +2214,7 @@ def get_compartments(name=None, exact=False, **kwargs):
             'sbml_id': compartment.getSBMLId()
         }
 
-        if name and exact and  name != comp_data['name']:
+        if name and exact and name != comp_data['name']:
             continue
 
         if 'name' in kwargs and kwargs['name'] not in comp_data['name']:
@@ -2310,6 +2312,7 @@ def get_parameters(name=None, exact=False, **kwargs):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+
 def get_functions(name=None, **kwargs):
     """Returns all available functions as pandas dataframe.
 
@@ -2350,7 +2353,8 @@ def get_functions(name=None, **kwargs):
         num_substrates = eqn.getSubstrates().size()
         num_products = eqn.getProducts().size()
         reversibility = suitable_for.isReversible()
-        functions = COPASI.CRootContainer.getFunctionList().suitableFunctions(num_substrates, num_products, reversibility)
+        functions = COPASI.CRootContainer.getFunctionList().suitableFunctions(
+            num_substrates, num_products, reversibility)
 
     for index in range(functions.size()):
         try:
@@ -2404,6 +2408,7 @@ def _get_function(name):
             return fun
 
     return None
+
 
 def _get_function_mapping(kin_function, filter=None):
     """ Returns the mapping for the given function
@@ -2667,6 +2672,7 @@ def set_compartment(name=None, exact=False, **kwargs):
 
         _set_compartment(compartment, model, **kwargs)
 
+
 def _set_compartment(compartment, c_model, **kwargs):
     """Changes all compartment properties
 
@@ -2722,6 +2728,7 @@ def _set_initial_expression(element, expression):
 
     _set_safe(element.setInitialExpression, expression)
 
+
 def _set_expression(element, expression):
     """Utility function to safely set an ODE / assignment expression
 
@@ -2734,6 +2741,7 @@ def _set_expression(element, expression):
     if element is None:
         return
     _set_safe(element.setExpression, expression)
+
 
 def _set_safe(fun, expression):
     """Calls the given function that is supposed to return a COPASI.CIssue
@@ -3031,9 +3039,9 @@ def _set_reaction(reaction, dm, **kwargs):
     if 'scheme' in kwargs:
         info = COPASI.CReactionInterface()
         info.init(reaction)
-        info.setChemEqString(kwargs['scheme'], '');
-        info.createMetabolites();
-        info.createOtherObjects();
+        info.setChemEqString(kwargs['scheme'], '')
+        info.createMetabolites()
+        info.createOtherObjects()
         info.writeBackToReaction(reaction)
         reaction.compile()
         changed = True
@@ -3052,7 +3060,9 @@ def _set_reaction(reaction, dm, **kwargs):
                 if entry['is_vector']:
                     continue
                 param_name = entry['name']
-                if param_name in mapping and _validate_mapping(entry['usage'], param_name, mapping[param_name], c_model):
+                if param_name in mapping and _validate_mapping(entry['usage'],
+                                                               param_name,
+                                                               mapping[param_name], c_model):
                     info.setMapping(entry['index'], mapping[param_name])
 
         missing = _get_parameter_mapping(info, missing_only=True)
@@ -3062,8 +3072,10 @@ def _set_reaction(reaction, dm, **kwargs):
                             kwargs['mapping'], dm)):
             # not valid yet, try and see if it were valid when adding modifiers
             logger.error(
-                'the mapping for reaction "{0}" with function "{1}" is not valid and cannot be applied. (missing mapping(s) for {2})'.format(
-                    reaction.getObjectName(), kwargs['function'], [ entry['usage']  + ': ' + entry['name'] for entry in missing ]))
+                'the mapping for reaction "{0}" with function "{1}" is not '
+                'valid and cannot be applied. (missing mapping(s) for {2})'.format(
+                    reaction.getObjectName(), kwargs['function'],
+                    [entry['usage'] + ': ' + entry['name'] for entry in missing]))
         
         info.writeBackToReaction(reaction)
         reaction.compile()
@@ -3079,6 +3091,7 @@ def _set_reaction(reaction, dm, **kwargs):
         reaction.setSBMLId(kwargs['sbml_id'])
 
     return changed
+
 
 def _get_parameter_mapping(info, missing_only=False):
     """ Returns mapping from the info object
@@ -3097,7 +3110,7 @@ def _get_parameter_mapping(info, missing_only=False):
         if missing_only and mapping != 'unknown':
             continue
 
-        mappings = [ s for s in info.getMappings(i)]
+        mappings = [s for s in info.getMappings(i)]
 
         result.append({
             'name': name,
@@ -3108,6 +3121,7 @@ def _get_parameter_mapping(info, missing_only=False):
             'index': i
         })
     return result
+
 
 def _validate_mapping(usage, param_name, mapped_value, c_model):
     """Validates whether the mapped value is correct for the function parameter
@@ -3127,13 +3141,14 @@ def _validate_mapping(usage, param_name, mapped_value, c_model):
     elif usage == "parameter":
         result = type(mapped_value) is str and c_model.getModelValue(mapped_value) is not None
     else:
-        result =  c_model.getMetabolite(mapped_value) is not None
+        result = c_model.getMetabolite(mapped_value) is not None
 
     if not result:
         logger.error('Invalid mapping provilded for {0} of type {1} (invalid value {2})'
-                      .format(param_name, usage, mapped_value))
+                     .format(param_name, usage, mapped_value))
 
     return result
+
 
 def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     if not reaction or not info or not dm:
@@ -3151,7 +3166,7 @@ def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     current_scheme = reaction.getReactionScheme()
     modifier_index = current_scheme.rfind(';')
 
-    old_modfiers = '' if modifier_index < 0 else  current_scheme[modifier_index+1:].strip()
+    old_modfiers = '' if modifier_index < 0 else current_scheme[modifier_index+1:].strip()
     old_scheme = current_scheme if modifier_index < 0 else current_scheme[:modifier_index].strip()
 
     new_modifiers = old_modfiers
@@ -3162,18 +3177,10 @@ def _valid_with_added_modifiers(reaction, info, function_name, mapping, dm):
     new_scheme = old_scheme + '; ' + new_modifiers.strip()
 
     # now apply and see if it works
-    # reaction.setReactionScheme(new_scheme)
-    # reaction.compile()
-    # info.init(reaction)
     info.setChemEqString(new_scheme, function_name)
-    #info.setFunctionAndDoMapping(function_name)
     if not info.isValid():
         # set back to old
-        #reaction.setReactionScheme(current_scheme)
-        #reaction.compile()
-        #info.init(reaction)
         info.setChemEqString(current_scheme, function_name)
-        #info.setFunctionAndDoMapping(function_name)
         return False
 
     return True
@@ -3328,7 +3335,7 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
 
                 if current_length != mapped_length:
                     logger.warning('Different length encountered when setting mapping for parameter {0}: {1} != {2}'
-                                    .format(p_name, current_length, mapped_length))
+                                   .format(p_name, current_length, mapped_length))
 
                 smallest = min(current_length, mapped_length)
                 for i in range(smallest):
@@ -3395,7 +3402,6 @@ def remove_species(name, **kwargs):
         return
 
     key = metab.getKey()
-    metab = None
     model.compileIfNecessary()
     model.removeMetabolite(key)
     model.setCompileFlag(True)
@@ -3426,7 +3432,6 @@ def remove_parameter(name, **kwargs):
         return
 
     key = mv.getKey()
-    mv = None
     model.compileIfNecessary()
     model.removeModelValue(key)
     model.setCompileFlag(True)
@@ -3457,7 +3462,6 @@ def remove_compartment(name, **kwargs):
         return
 
     key = comp.getKey()
-    comp = None
     model.compileIfNecessary()
     model.removeCompartment(key)
     model.setCompileFlag(True)
@@ -3487,7 +3491,6 @@ def remove_event(name, **kwargs):
         logger.warning('no such event {0}'.format(name))
         return
     key = ev.getKey()
-    ev = None
     model.compileIfNecessary()
     model.removeEvent(key)
     model.setCompileFlag(True)
@@ -3576,7 +3579,6 @@ def remove_reaction(name, **kwargs):
         return
 
     key = reaction.getKey()
-    reaction = None
     model.compileIfNecessary()
     model.removeReaction(key)
     model.setCompileFlag(True)
@@ -3703,6 +3705,8 @@ def set_time_unit(unit, **kwargs):
 
     if 'unit' in kwargs:
         model.setTimeUnit(kwargs['unit'])
+    else:
+        model.setTimeUnit(unit)
 
 
 def get_model_units(**kwargs):
@@ -3859,13 +3863,11 @@ def add_amount_expressions(**kwargs):
                 metab.getObjectDisplayName()))
             continue
 
-        if 'ignore_fixed' in kwargs \
-               and kwargs['ignore_fixed'] == True \
-               and metab.getStatus() == COPASI.CModelEntity.Status_FIXED:
+        if 'ignore_fixed' in kwargs and kwargs['ignore_fixed'] \
+                and metab.getStatus() == COPASI.CModelEntity.Status_FIXED:
             continue
 
-        if 'ignore_assignment' in kwargs \
-                and kwargs['ignore_assignment'] == True\
+        if 'ignore_assignment' in kwargs and kwargs['ignore_assignment'] \
                 and metab.getStatus() == COPASI.CModelEntity.Status_ASSIGNMENT:
             continue
 
@@ -4017,6 +4019,7 @@ def _tokenize_eqn(eqn):
     var_is_species = False
     var_is_initial = False
     is_ode = False
+    token = None
 
     while i < num_chars:
         c_0 = eqn[i]
@@ -4036,7 +4039,7 @@ def _tokenize_eqn(eqn):
                 var = eqn[i + 1:pos]
                 var_is_species = True
                 i = pos + 1
-                c_0 = eqn[i] if i  < num_chars else None
+                c_0 = eqn[i] if i < num_chars else None
                 c_1 = eqn[i + 1] if i + 1 < num_chars else None
 
                 if c_0 == '_' and c_1 == '0':
@@ -4071,7 +4074,7 @@ def _tokenize_eqn(eqn):
                     result['is_ode'] = is_ode
                     tokens.remove(token)
                     token = None
-                i+=1
+                i += 1
                 continue
 
             token = {
@@ -4150,7 +4153,7 @@ def _tokenize_eqn(eqn):
         i += 1
 
     if chunk != '':
-        if chunk in functions  or _is_number(chunk):
+        if chunk in functions or _is_number(chunk):
             if tokens and type(tokens[-1]) is dict:
                 tokens.append('*')
             tokens.append(chunk)
@@ -4398,7 +4401,8 @@ def get_jacobian_matrix(apply_initial_values=False, **kwargs):
             continue
         status = entity.getStatus()
 
-        if status == COPASI.CModelEntity.Status_ODE or (status == COPASI.CModelEntity.Status_REACTIONS and entity.isUsed()):
+        if status == COPASI.CModelEntity.Status_ODE or \
+                (status == COPASI.CModelEntity.Status_REACTIONS and entity.isUsed()):
             name_vector.append(entity.getObjectName())
 
     assert len(name_vector) == jacobian.numRows()
@@ -4707,7 +4711,8 @@ def _collect_data(names=None, cns=None, **kwargs):
             else:
                 if isinstance(obj, COPASI.CMetab):
                     value = _get_value_from_reference(obj.getConcentrationReference())
-                elif isinstance(obj, COPASI.CModelValue) or isinstance(obj, COPASI.CCompartment) or isinstance(obj, COPASI.CModel):
+                elif isinstance(obj, COPASI.CModelValue) or \
+                        isinstance(obj, COPASI.CCompartment) or isinstance(obj, COPASI.CModel):
                     value = _get_value_from_reference(obj.getValueReference())
                 elif isinstance(obj, COPASI.CReaction):
                     value = _get_value_from_reference(obj.getFluxReference())
@@ -4793,6 +4798,7 @@ def _get_named_value(obj, name):
 
     return value
 
+
 def _set_value_from_reference(obj, new_value):
     """ Utility function setting a value from the given reference object
 
@@ -4808,8 +4814,9 @@ def _set_value_from_reference(obj, new_value):
     if parent is None:
         return None
     name = obj.getObjectName()
-    value = _set_named_value(parent, name, new_value, obj)
-    return value
+    _set_named_value(parent, name, new_value, obj)
+    return
+
 
 def _set_named_value(obj, name, new_value, ref):
     """ Utility function that sets the value of the given copasi object
@@ -4882,6 +4889,9 @@ def set_value(name_or_reference, new_value, initial=False,  **kwargs):
     :param name_or_reference: display name of model element
     :type name_or_reference: str or COPASI.CDataObject
 
+    :param new_value: the new value to set
+    :type new_value: float
+
     :param initial: if True, an initial value will be set, rather than a transient one. If set to `None`, the
                     default reference will be returned and not coerced.
     :type initial: bool or None
@@ -4902,6 +4912,7 @@ def set_value(name_or_reference, new_value, initial=False,  **kwargs):
         return None
 
     return _set_value_from_reference(obj, new_value)
+
 
 def _get_object(name_or_reference, initial=False, **kwargs):
     """Returns the reference object for the given name
@@ -5182,7 +5193,8 @@ def as_dict(df):
 
     :param df: the data frame
     :type df: pd.DataFrame
-    :return: the contents of the dataframe as [{}] if there are multiple ones, otherwise the dictionary if just one, or None
+    :return: the contents of the dataframe as [{}] if there are multiple ones,
+             otherwise the dictionary if just one, or None
     :rtype: List[Dict] or Dict or None
     """
     if df is None:
@@ -5196,6 +5208,7 @@ def as_dict(df):
         return res[0]
 
     return res
+
 
 def get_parameter_sets(name=None, exact=False, values_only=False, **kwargs):
     """
@@ -5231,9 +5244,9 @@ def get_parameter_sets(name=None, exact=False, values_only=False, **kwargs):
 
     for i in range(sets.size()):
         pset = sets.get(i)
-        set_name  = pset.getObjectName()
+        set_name = pset.getObjectName()
 
-        if name and  name not in set_name:
+        if name and name not in set_name:
             continue
 
         if name and type(name) is str and exact and name != set_name:
@@ -5272,11 +5285,11 @@ def remove_parameter_sets(name=None, exact=False, **kwargs):
 
     num_sets = sets.size()
 
-    for i in  reversed(range(num_sets)):
+    for i in reversed(range(num_sets)):
         pset = sets.get(i)
-        set_name  = pset.getObjectName()
+        set_name = pset.getObjectName()
 
-        if name and  name not in set_name:
+        if name and name not in set_name:
             continue
 
         if name and type(name) is str and exact and name != set_name:
@@ -5317,8 +5330,8 @@ def add_parameter_set(name, param_set_dict=None, **kwargs):
 
     if param_set_dict is None:
         # create parameter set from current state
-        new_set = COPASI.CModelParameterSet(model.getActiveModelParameterSet(), None, False);
-        new_set.setObjectName(name);
+        new_set = COPASI.CModelParameterSet(model.getActiveModelParameterSet(), None, False)
+        new_set.setObjectName(name)
         sets.addAndOwn(new_set)
         return
 
@@ -5394,6 +5407,7 @@ def _set_parameter_set(p_set, param_set_dict, dm, remove_others, rename_set=Fals
 
     p_set.compile()
 
+
 def _update_paramgroup(param, group_dict, name, dm, remove_others):
     """ Updates the given model parameter group
 
@@ -5413,7 +5427,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
             value = current['value'] if 'value' in current else None
         else:
             value = float(current)
-        p_type = _group_to_ptype_int(name,current)
+        p_type = _group_to_ptype_int(name, current)
         s_type = _guess_simulation_type(p_type, current)
 
         obj = _get_object_by_ptype(p_type, key, dm)
@@ -5436,7 +5450,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
             continue
 
         if p_type == COPASI.CModelParameter.Type_Compartment:
-            new_param.setValue(value,COPASI.CCore.Framework_Concentration)
+            new_param.setValue(value, COPASI.CCore.Framework_Concentration)
             continue
 
         if p_type == COPASI.CModelParameter.Type_Species:
@@ -5473,6 +5487,7 @@ def _update_paramgroup(param, group_dict, name, dm, remove_others):
                 local_param.setCN(local_param_obj.getCN())
                 local_param.setValue(value)
                 local_param.setSimulationType(s_type)
+
 
 def apply_parameter_set(name, exact=False, **kwargs):
     """ Applies the parameter set with the given name to the model
@@ -5518,7 +5533,7 @@ def _run_functions_on_selected_parameter_sets(_name, _exact, _reversed, function
         this_range = reversed(this_range)
     for i in this_range:
         pset = sets.get(i)
-        set_name  = pset.getObjectName()
+        set_name = pset.getObjectName()
 
         if _name and _name not in set_name:
             continue
@@ -5547,6 +5562,7 @@ def update_parameter_set(name, exact=False, **kwargs):
         name, exact, False,
         lambda pset: pset.refreshFromModel(True), **kwargs)
 
+
 def _get_object_by_ptype(p_type, name, dm):
     if p_type == COPASI.CModelParameter.Type_Model:
         return dm.getModel()
@@ -5559,6 +5575,7 @@ def _get_object_by_ptype(p_type, name, dm):
     if p_type == COPASI.CModelParameter.Type_Reaction:
         return dm.getModel().getReaction(name)
     return None
+
 
 def _parametergroup_to_dict(pgroup, dm, values_only):
     result = {}
@@ -5589,6 +5606,7 @@ def _parametergroup_to_dict(pgroup, dm, values_only):
 
     return result
 
+
 def _group_to_ptype_int(group_name, value_or_dict):
     if isinstance(value_or_dict, dict):
         p_type = _parameter_type_to_int(value_or_dict['parameter_type']) if 'parameter_type' in value_or_dict else None
@@ -5605,6 +5623,7 @@ def _group_to_ptype_int(group_name, value_or_dict):
 
     return values.get(group_name, COPASI.CModelParameter.Type_Reaction)
 
+
 def _guess_simulation_type(p_type, value_or_dict):
     if isinstance(value_or_dict, dict):
         s_type = __status_to_int(value_or_dict['simulation_type']) if 'simulation_type' in value_or_dict else None
@@ -5619,6 +5638,7 @@ def _guess_simulation_type(p_type, value_or_dict):
         s_type = COPASI.CModelEntity.Status_FIXED
 
     return s_type
+
 
 def _parameter_type_to_string(p_type):
     # type: (int)->str
@@ -5635,6 +5655,7 @@ def _parameter_type_to_string(p_type):
     }
     return strings.get(p_type, 'unknown')
 
+
 def _parameter_type_to_int(p_type):
     # type: (str)->int
     values = {
@@ -5650,6 +5671,7 @@ def _parameter_type_to_int(p_type):
     }
     return values.get(p_type, COPASI.CModelParameter.Type_unknown)
 
+
 def _parameterset_to_dict(pset, dm, values_only):
     """
     Converts the given parameter set to a dictionary
@@ -5659,9 +5681,9 @@ def _parameterset_to_dict(pset, dm, values_only):
     :param dm: the datamodel
     :return: dictionary of the parameter set
     """
-    result = {}
-    result['name'] = pset.getObjectName()
-    result['description'] = pset.getNotes()
+
+    result = {'name': pset.getObjectName(),
+              'description': pset.getNotes()}
 
     for entry in [
         'Initial Time',
@@ -5670,7 +5692,8 @@ def _parameterset_to_dict(pset, dm, values_only):
         "Initial Global Quantities",
         "Kinetic Parameters"
     ]:
-        result[entry] = _parametergroup_to_dict(pset.getModelParameter(COPASI.CDataString(entry).getCN()), dm, values_only)
+        result[entry] = _parametergroup_to_dict(
+            pset.getModelParameter(COPASI.CDataString(entry).getCN()), dm, values_only)
 
     return result
 
@@ -5690,9 +5713,11 @@ def _simplify_name(name, drop=None):
         for substr in drop:
             name = name.replace(substr, '')
 
-    name = re.sub(r'[^a-zA-Z0-9_]', '_', name) # replace all non-alphanumeric characters with underscores
+    # replace all non-alphanumeric characters with underscores
+    name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
 
-    name = name.replace('__', '_') # remove double underscores
+    # remove double underscores
+    name = name.replace('__', '_')
 
     # remove trailing underscores
     while name.endswith('_'):
@@ -5843,8 +5868,7 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         for i in range(handler['handler'].getNumRowsDuring()):
             data.append(handler['handler'].getNthRow(i))
         handler['df'] = pd.DataFrame(data)
-        pass
-
+        if plots is not None:
+            plots.append(handler['df'])
+        
     # produce plots
-
-    pass

@@ -29,6 +29,8 @@ import datetime
 import sys
 import re
 
+from matplotlib import pyplot as plt
+
 logger = logging.getLogger(__name__)
 
 MIRIAM_XML = 'http://copasi.org/static/miriam.xml' # noqa
@@ -5781,6 +5783,42 @@ def run_scheduled_tasks(include_plots=True, plots=None, reports=None, **kwargs):
         run_task(name, include_plots, plots, reports, **kwargs)
 
 
+def _create_plot(plot_spec, data):
+    """
+    Creates a plot from the given plot specification and data
+
+    :param plot_spec: the plot specification as dictionary produced from get_plot_specification
+    :param data: pandas dataframe with the data for the plot
+    :return: figure and axes element as tuple
+    """
+    cn_to_index = {}
+    count = 0
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    for curve in plot_spec['curves']:
+        for channel in curve['channels']:
+            cn_to_index[channel] = count
+            count += 1
+
+        ax.plot(data[cn_to_index[curve['channels'][0]]].values, data[cn_to_index[curve['channels'][1]]].values,
+                 label=curve['name'])
+    if plot_spec['log_x']:
+        ax.set_xscale('log')
+    if plot_spec['log_y']:
+        ax.set_yscale('log')
+
+    fig.suptitle(plot_spec['name'])
+
+    # Shrink current axis's height by 10% on the bottom
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                     box.width, box.height * 0.9])
+    # add legend below
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+              fancybox=True, shadow=True, ncol=5)
+    return fig, ax
+
+
 def run_task(task_name, include_plots=True, include_general_plots=False, plots=None, reports=None, **kwargs):
     """
     Utility function that runs the named task and returns the result
@@ -5797,7 +5835,7 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
     :type plots: list[pandas.DataFrame] or None
     :param reports: optional list of report dataframes computed by the task
     :type reports: list[pandas.DataFrame] or None
-    :return: Figure produced if `include_plots` is true, otherwise None
+    :return: Figures produced if `include_plots` is true, otherwise None
     """
     dm = model_io.get_model_from_dict_or_default(kwargs)
 
@@ -5854,8 +5892,6 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         logger.error('No reports or plots for the task {}'.format(task_name))
         return
 
-    # workaround run over all handlers
-
     for handler in report_handlers + plot_handlers:
         dm.addInterface(handler['handler'])
 
@@ -5868,15 +5904,6 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
     for handler in report_handlers + plot_handlers:
         dm.removeInterface(handler['handler'])
 
-
-    # for handler in report_handlers + plot_handlers:
-    #     # run task
-    #     task = dm.getTask(task_name)
-    #     task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, handler['handler'])
-    #     task.processRaw(True)
-    #     task.restore()
-    #     dm.removeInterface(handler['handler'])
-
     # produce dataframes for reports and plots
     for handler in report_handlers:
         pass
@@ -5888,3 +5915,12 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         if plots is not None:
             plots.append(handler['df'])
     # produce plots
+    if not include_plots:
+        return
+
+    figures = []
+    for handler in plot_handlers:
+        fix, ax = _create_plot(handler['spec'], handler['df'])
+        figures.append(fix, ax)
+
+    return figures

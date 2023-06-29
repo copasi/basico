@@ -44,12 +44,17 @@ class TestTimeCourse(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_general_run(self):
-        from matplotlib import pyplot as plt
         dm = basico.load_example('bruss')
         plots = []
         basico.run_task(basico.T.TIME_COURSE, model=dm, plots=plots)
         self.assertEqual(len(plots), 2)
         basico.remove_datamodel(dm)
+
+    def test_general_run_sedml(self):
+        dm = basico.load_model(os.path.join(THIS_DIR, 'sedml.xml'))
+        plots = []
+        basico.run_scheduled_tasks(include_plots=False, include_general_plots=True, plots=plots, model=dm)
+        self.assertEqual(len(plots), 1)
 
 
 if __name__ == '__main__':

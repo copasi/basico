@@ -115,8 +115,12 @@ def _get_estimated_parameters(solution, petab_problem):
 
     """
     params = {}
-    estimated = basico.as_dict(solution)
-    for entry in basico.as_dict(petab_problem.parameter_df):
+    estimated = basico.as_dict(solution, fold_list=False)
+    for entry in basico.as_dict(petab_problem.parameter_df, fold_list=False):
+        # skip entries not to be computed
+        if 'estimate' in entry and entry['estimate'] == 0:
+            continue
+
         param_id = entry['parameterId']
         name = entry['parameterName'] if 'parameterName' in entry else None
         value = _get_value_for_parameter(estimated, param_id, name)
@@ -309,7 +313,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         for model in test_models:
             logger.info('{0} = {1}'.format(model.model_id, model.criteria))
 
-        chosen_model = selection_problem.get_best(test_models, compute_criterion=True)
+        chosen_model = selection_problem.get_best(test_models)
         if chosen_model is None:
             logger.warning('found no best model?')
 

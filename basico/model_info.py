@@ -5188,11 +5188,15 @@ def _get_name_for_object(obj, model):
     return name
 
 
-def as_dict(df):
+def as_dict(df, fold_list=True):
     """Convenience function returning the data frame as dictionary
 
     :param df: the data frame
     :type df: pd.DataFrame
+    :param fold_list: optional boolean indicating whether to fold lists into a single dictionary,
+                      if there is only one entry (defaults to true)
+    :type fold_list: bool
+
     :return: the contents of the dataframe as [{}] if there are multiple ones,
              otherwise the dictionary if just one, or None
     :rtype: List[Dict] or Dict or None
@@ -5204,7 +5208,7 @@ def as_dict(df):
     if not res:
         return None
 
-    if len(res) == 1:
+    if fold_list and len(res) == 1:
         return res[0]
 
     return res

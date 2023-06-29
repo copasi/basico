@@ -8,6 +8,9 @@ import pandas as pd
 import copasi_petab_importer
 import os
 
+logger = logging.getLogger(__name__)
+
+
 def transform_simulation_df(sim_df, observable_df):
     """ Reverses the transformation of the simulation results
 
@@ -26,15 +29,15 @@ def transform_simulation_df(sim_df, observable_df):
     result = sim_df.copy(True)
     obs_df = observable_df.reset_index()
 
-    if not 'observableTransformation' in obs_df.columns:
+    if 'observableTransformation' not in obs_df.columns:
         return result
 
-    if not 'simulation' in result.columns:
-        logging.warning('No simulation column found in simulation data frame')
+    if 'simulation' not in result.columns:
+        logger.warning('No simulation column found in simulation data frame')
         return result
 
-    if not 'observableId' in obs_df.columns:
-        logging.warning('No observableId column found in observable data frame')
+    if 'observableId' not in obs_df.columns:
+        logger.warning('No observableId column found in observable data frame')
         return result
 
     for _, row in obs_df.iterrows():
@@ -46,6 +49,7 @@ def transform_simulation_df(sim_df, observable_df):
                 np.power(10, result.loc[result['observableId'] == row['observableId'], 'simulation'])
 
     return result
+
 
 def create_simulation_df(measurement_df, simulation_results):
     """Creates a simulation data frame
@@ -104,7 +108,7 @@ def _update_df_from_simulation(petab_df, basico_df, experiment_name):
             # we only have certain times and will have to update them individually
             expected = petab_df.loc[
                 (petab_df.observableId == obs_id) & (petab_df.simulationConditionId == experiment_name)
-            ][['time', 'simulation']]
+                ][['time', 'simulation']]
             for index, row in expected.iterrows():
                 if row.time in sim_times and have_time:
                     basic_data = basico_df.loc[row.time, obs]

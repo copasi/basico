@@ -5770,17 +5770,18 @@ def simplify_names(**kwargs):
         gq.setObjectName(_simplify_name(gq.getObjectName(), drop))
 
 
-def run_scheduled_tasks(include_plots=True, plots=None, reports=None, **kwargs):
+def run_scheduled_tasks(include_plots=True, include_general_plots=False, plots=None, reports=None, **kwargs):
     """
     Runs all scheduled tasks, optionally producing plots and reports
 
     :param include_plots: boolean indicating whether to produce the plots associated with the task
+    :param include_general_plots: boolean indicating whether to produce the general plots
     :param plots: optional list of plot dataframes computed by the task
     :param reports: optional list of report dataframes computed by the task
     :return: Figure produced if `include_plots` is true, otherwise None
     """
     for name in get_scheduled_tasks():
-        run_task(name, include_plots, plots, reports, **kwargs)
+        run_task(name, include_plots, include_general_plots, plots, reports, **kwargs)
 
 
 def _create_plot(plot_spec, data):
@@ -5855,8 +5856,9 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         spec = get_plot_dict(i)
         if spec is None:
             continue
-        if not spec['tasks'] and not include_general_plots:
-            continue
+        if not spec['tasks']:
+            if not include_general_plots:
+                continue
         elif task_name not in spec['tasks']:
             continue
 

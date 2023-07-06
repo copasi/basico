@@ -317,16 +317,19 @@ def run_time_course(*args, **kwargs):
 
     task, use_initial_values = _setup_timecourse(args, kwargs)
 
+    # clear error log
+    num_messages_before = COPASI.CCopasiMessage.size()
+
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logger.error("Error while initializing the simulation: " +
-        COPASI.CCopasiMessage.getLastMessage().getText())
+        _get_messages(num_messages_before, 'No output'))
     else:
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
             logger.error("Error while running the simulation: " +
-            COPASI.CCopasiMessage.getLastMessage().getText())
+            _get_messages(num_messages_before))
 
     use_concentrations = kwargs.get('use_concentrations', True)
     if 'use_numbers' in kwargs and kwargs['use_numbers']:
@@ -403,3 +406,30 @@ def _setup_timecourse(args, kwargs):
     if 'settings' in kwargs:
         model_info.set_task_settings(task, kwargs['settings'])
     return task, use_initial_values
+
+
+def _get_messages(num_messages_before, filters=None):
+    """ Returns error messages that occurred while initializing or running the simulation
+
+    :param num_messages_before: number of messages before calling initialization or process
+    :param filters: optional list of filter expressions of what messages to ignore
+    :type filters: list of str or str or None
+
+    :return: error messages in form of a string
+
+    """
+    messages = []
+    if filters is None:
+        filters = []
+    if type(filters) == str:
+        filters = [filters]
+    while COPASI.CCopasiMessage.size() > num_messages_before:
+        message = COPASI.CCopasiMessage.getLastMessage()
+        skip = False
+        for filter_text in filters:
+            if filter_text in message.getText():
+                skip = True
+                break
+        if not skip:
+            messages.insert(0, message.getText())
+    return "".join(messages)

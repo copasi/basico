@@ -3932,8 +3932,11 @@ def have_miriam_resources():
         return False
 
 
-def get_miriam_resources():
+def get_miriam_resources(compact=True):
     """Retrieves the current MIRIAM resources from the configuration
+
+    :param compact: whether to return a compact version of the resources (default: True)
+    :type compact: bool
 
     :return: dataframe with the list of current miriam resources
     :rtype: pandas.DataFrame
@@ -3948,7 +3951,7 @@ def get_miriam_resources():
             resources.append({
                 'resource': res.getMIRIAMDisplayName(),
                 'is_citation': res.getMIRIAMCitation(),
-                'uri': res.getIdentifiersOrgURL()
+                'uri': res.getIdentifiersOrgURL(compact)
             })
     except AttributeError:
         logger.error("Couldn't retrieve list of miriam resources, please update the python-copasi version")

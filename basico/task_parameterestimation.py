@@ -678,6 +678,52 @@ def get_fit_parameters(model=None):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+def get_fit_constraints(model=None):
+    """Returns a data frame with all fit constraints
+
+    The resulting dataframe will have the following columns:
+
+    * `name`: the name of the fit parameter
+    * `lower`: the lower bound of the parameter
+    * `upper`: the upper bound of the parameter
+    * `start`: the start value
+    * | `affected`: a list of all experiments (names) the fit parameter should apply to. If empty the parameter should
+      | be varied for all experiments.
+    * `cn`: internal identifier
+
+    :param model: the model to get the fit parameters from
+    :type model: COPASI.CDataModel or None
+
+    :return: data frame with the fit parameters
+    :rtype: pandas.DataFrame
+    """
+    if model is None:
+        model = model_io.get_current_model()
+
+    pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    problem = pe_task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    data = []
+
+    for i in range(problem.getOptConstraintSize()):
+        item = problem.getOptConstraint(i).asFitConstraint()
+        obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
+        name = obj.getObjectDisplayName()
+        data.append({
+            'name': name,
+            'lower': item.getLowerBound(),
+            'upper': item.getUpperBound(),
+            'start': item.getStartValue(),
+            'affected': _get_affected_experiments(item),
+            'cn': item.getObjectCN(),
+        })
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
 
 def set_fit_parameters(fit_parameters, model=None):
     """Replaces all existing fit items with the ones provided
@@ -736,6 +782,86 @@ def set_fit_parameters(fit_parameters, model=None):
 
         fit_item = problem.addFitItem(cn)
         assert (isinstance(fit_item, COPASI.CFitItem))
+        if 'lower' in item:
+            fit_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+        if 'upper' in item:
+            fit_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+        if 'start' in item:
+            fit_item.setStartValue(float(item['start']))
+        if 'affected' in item:
+            affected = item['affected']
+            if type(affected) is str:
+                affected = [affected]
+            for name in affected:
+                if not name:
+                    continue
+
+                if name not in experiment_names:
+                    logger.warning('Invalid affected experiment name {0}'.format(name))
+                    continue
+
+                index = experiment_names.index(name)
+                fit_item.addExperiment(experiment_keys[index])
+
+
+def set_fit_constraints(fit_constraints, model=None):
+    """Replaces all existing fit constraints with the ones provided
+
+    :param fit_constraints: the fit parameters as pandas data frame of list of dictionaries with keys:
+
+           * 'name' str: the display name of the model element to map the column to.
+           * 'lower': the lower bound of the parameter
+           * 'upper': the upper bound of the parameter
+           * 'start' (float, optional): the start value
+           * 'affected' (list[str], optional): a list of affected experiment names.
+           * 'cn' (str, optional): internal identifier
+
+    :type fit_constraints: pandas.DataFrame or [{}]
+    :param model: the model or None
+    :type model: COPASI.CDataModel or None
+    :return: None
+    """
+    # type: (pandas.DataFrame, COPASI.CDataModel)
+    if model is None:
+        model = model_io.get_current_model()
+
+    if type(fit_constraints) is list:
+        fit_constraints = pandas.DataFrame(data=fit_constraints)
+
+    pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    problem = pe_task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    while problem.getOptConstraintSize() > 0:
+        problem.removeOptConstraint(0)
+
+    experiment_keys = _get_experiment_keys(model=model)
+    experiment_names = get_experiment_names(model=model)
+
+    if fit_constraints is None:
+        return
+
+    for i in range(len(fit_constraints)):
+        item = fit_constraints.iloc[i]
+        cn = None
+        name = None
+
+        if 'cn' in item:
+            cn = COPASI.CCommonName(item.cn)
+
+        elif 'name' in item:
+            name = item['name']
+            if not cn:
+                obj = basico.model_info._get_object(name, initial=False, model=model)
+                if obj:
+                    cn = obj.getCN()
+
+        if not cn:
+            logger.warning('object {0} not found'.format(name))
+            continue
+
+        fit_item = problem.addFitConstraint(cn)
+        assert (isinstance(fit_item, COPASI.CFitConstraint))
         if 'lower' in item:
             fit_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
         if 'upper' in item:
@@ -1468,6 +1594,8 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
         'f_evals': function_evaluations,
         'failed_evals_exception': problem.getFailedEvaluationsExc(),
         'failed_evals_nan': problem.getFailedEvaluationsNaN(),
+        'constraint_evals': problem.getConstraintEvaluations(),
+        'failed_constraint_evals': problem.geFailedConstraintCounter(),
         'cpu_time': problem.getExecutionTime(),
         'data_points': experiments.getDataPointCount(),
         'valid_data_points': experiments.getValidValueCount(),

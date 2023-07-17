@@ -143,6 +143,17 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertIsNone(fit_items_2)
         basico.set_fit_parameters(fit_items)
 
+    def test_constraints(self):
+        constraints = basico.get_fit_constraints()
+        self.assertIsNone(constraints)
+        # set constraint for concentration of 'S'
+        basico.set_fit_constraints([{'name': 'S', 'lower': 0.1, 'upper': 0.2}])
+        constraints = basico.as_dict(basico.get_fit_constraints())
+        self.assertIsNotNone(constraints)
+        self.assertEqual(constraints['name'], 'S')
+        self.assertEqual(constraints['lower'], '0.1')
+        self.assertEqual(constraints['upper'], '0.2')
+
     def test_save(self):
         cps_name = tempfile.mktemp()
         basico.save_model_and_data(cps_name, delete_data_on_exit=True)

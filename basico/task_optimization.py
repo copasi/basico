@@ -94,6 +94,48 @@ def get_opt_parameters(model=None):
 
     return pandas.DataFrame(data=data).set_index('name')
 
+def get_opt_constraints(model=None):
+    """Returns a data frame with all constraints to be adhered to during optimization
+
+    The resulting dataframe will have the following columns:
+
+    * `name`: the name of the fit parameter
+    * `lower`: the lower bound of the parameter
+    * `upper`: the upper bound of the parameter
+    * `start`: the start value
+    * `cn`: internal identifier
+
+    :param model: the model to get the optitems from
+    :type model: COPASI.CDataModel or None
+
+    :return: data frame with the constraints
+    :rtype: pandas.DataFrame
+    """
+    if model is None:
+        model = model_io.get_current_model()
+
+    pe_task = model.getTask(basico.T.OPTIMIZATION)
+    problem = pe_task.getProblem()
+    assert (isinstance(problem, COPASI.COptProblem))
+    
+    data = []
+
+    for i in range(problem.getOptConstraintSize()):
+        item = problem.getOptConstraint(i)
+        obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
+        name = obj.getObjectDisplayName()
+        data.append({
+            'name': name,
+            'lower': item.getLowerBound(),
+            'upper': item.getUpperBound(),
+            'start': item.getStartValue(),
+            'cn': item.getObjectCN(),
+        })
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
 
 def set_opt_parameters(opt_parameters, model=None):
     """Replaces all existing opt items with the ones provided
@@ -147,6 +189,64 @@ def set_opt_parameters(opt_parameters, model=None):
             continue
 
         opt_item = problem.addOptItem(cn)
+        assert (isinstance(opt_item, COPASI.COptItem))
+        if 'lower' in item:
+            opt_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+        if 'upper' in item:
+            opt_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+        if 'start' in item:
+            opt_item.setStartValue(float(item['start']))
+
+def set_opt_constraints(opt_constraints, model=None):
+    """Replaces all existing opt constraints with the ones provided
+
+    :param opt_constraints: the optimization parameters as pandas data frame of list of dictionaries with keys:
+
+           * 'name' str: the display name of the model element to map the column to.
+           * 'lower': the lower bound of the parameter
+           * 'upper': the upper bound of the parameter
+           * 'start' (float, optional): the start value
+           * 'cn' (str, optional): internal identifier
+
+    :type opt_constraints: pandas.DataFrame or [{}]
+    :param model: the model or None
+    :type model: COPASI.CDataModel or None
+    :return: None
+    """
+    # type: (pandas.DataFrame, COPASI.CDataModel)
+    if model is None:
+        model = model_io.get_current_model()
+
+    if type(opt_constraints) is list:
+        opt_constraints = pandas.DataFrame(data=opt_constraints)
+
+    task = model.getTask(basico.T.OPTIMIZATION)
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.COptProblem))
+    while problem.getOptConstraintSize() > 0:
+        problem.removeOptConstraint(0)
+
+    for i in range(len(opt_constraints)):
+        item = opt_constraints.iloc[i]
+        cn = None
+        name = None
+
+        if 'cn' in item:
+            cn = COPASI.CCommonName(item.cn)
+
+        if 'name' in item:
+            name = item['name']
+            if not cn:
+                obj = basico.model_info._get_object(name, initial=False, model=model)
+                if obj:
+                    cn = obj.getCN()
+
+
+        if not cn:
+            logger.warning('object {0} not found'.format(name))
+            continue
+
+        opt_item = problem.addOptConstraint(cn)
         assert (isinstance(opt_item, COPASI.COptItem))
         if 'lower' in item:
             opt_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
@@ -399,6 +499,8 @@ def get_opt_statistic(**kwargs):
         'f_evals': problem.getFunctionEvaluations(),
         'failed_evals_exception': problem.getFailedEvaluationsExc(),
         'failed_evals_nan': problem.getFailedEvaluationsNaN(),
+        'constraint_evals': problem.getConstraintEvaluations(),
+        'failed_constraint_evals': problem.geFailedConstraintCounter(),
         'cpu_time': problem.getExecutionTime(),
     }
     result['evals_per_sec'] = result['cpu_time'] / result['f_evals']

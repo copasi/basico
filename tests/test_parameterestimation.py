@@ -4,6 +4,7 @@ import os
 import sys
 import numpy as np
 import basico
+import COPASI
 import shutil
 
 class TestBasicoParamterEstimation(unittest.TestCase):
@@ -143,6 +144,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.assertIsNone(fit_items_2)
         basico.set_fit_parameters(fit_items)
 
+    @unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 41, 'Require 4.41 of COPASI')
     def test_constraints(self):
         constraints = basico.get_fit_constraints()
         self.assertIsNone(constraints)

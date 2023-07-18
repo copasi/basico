@@ -12,21 +12,21 @@ class TestBasicoModelManipulation(unittest.TestCase):
 
     def test_add_compartment(self):
         basico.add_compartment('c', 1.0)
-        c = basico.get_compartments('c')
-        self.assertAlmostEqual(float(c.initial_size), 1)
+        c = basico.as_dict(basico.get_compartments('c'))
+        self.assertAlmostEqual(c['initial_size'], 1)
         basico.set_compartment('c', initial_size=2)
-        c = basico.get_compartments('c')
-        self.assertAlmostEqual(float(c.initial_size), 2)
+        c = basico.as_dict(basico.get_compartments('c'))
+        self.assertAlmostEqual(c['initial_size'], 2)
 
     def test_add_species(self):
         basico.add_species('X')
-        s = basico.get_species('X')
-        self.assertAlmostEqual(float(s.initial_concentration), 1)
-        c = basico.get_compartments('compartment')
-        self.assertAlmostEqual(float(c.initial_size), 1)
+        s = basico.as_dict(basico.get_species('X'))
+        self.assertAlmostEqual(s['initial_concentration'], 1)
+        c = basico.as_dict(basico.get_compartments('compartment'))
+        self.assertAlmostEqual(c['initial_size'], 1)
         basico.set_species('X', initial_concentration=2)
-        s = basico.get_species('X')
-        self.assertAlmostEqual(float(s.initial_concentration), 2)
+        s = basico.as_dict(basico.get_species('X'))
+        self.assertAlmostEqual(s['initial_concentration'], 2)
 
     def test_add_event(self):
         basico.add_event('e0', 'Time > 10', [['X', '0']])

@@ -47,6 +47,25 @@ Documentation is continually updated at: <https://basico.readthedocs.org/>.
 
 Please use the [issue tracker](https://github.com/copasi/basico/issues) for bug reports and feature requests.
 
+### Run the tests
+
+basico comes with a number of unit tests based on pytest. To run them, change to the 
+root directory of this project and run: 
+
+    python3 -m pytest
+
+that will ensure that `basico` is in the python path, and the test run as expected. Some 
+tests require more data, that is not included in the repository, such as tests for PEtab 
+and petab select, for those, specify the environment variables to the directories where
+the files are for example: 
+
+    PETAB_BENCHMARK_MODELS=/path/to/petab/benchmark/models
+    PETAB_SELECT_MODELS=/path/to/petab/select/models
+
+for example: 
+
+    PETAB_BENCHMARK_MODELS=../Benchmark-Models-PEtab/Benchmark-Models PETAB_SELECT_MODELS=../petab_select/test_cases  python3 -m pytest
+
 ### Acknowledgements
 This project has been possible thanks to the BMBF funded de.NBI initiative (031L0104A):
 

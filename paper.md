@@ -108,7 +108,7 @@ BioModels Database [@BioModels2015b] or JWS Online [@JWS].
 ```
 
 Of course the wrappers for the REST API to JWS Online or the BioModels Database can also be readily used by other Python packages to
-obtain the SBML models. This is doen for example by SBMLtoODEjax [@sbmltoodejax]
+obtain the SBML models. This is done for example by SBMLtoODEjax [@sbmltoodejax]
 
 Once a model is loaded all of `COPASI`'s analysis methods can be used. Running simulations are a core feature of COPASI, so we started 
 We started `BASICO` with implementing time course simulations and steady state analysis. 

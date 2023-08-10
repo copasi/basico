@@ -29,8 +29,12 @@ questions such as predicting drug targets. `COPASI` is a powerful environment
 for creating, editing, simulating and analyzing computational models. It provides 
 a user-friendly GUI that is easy to use even by people who are not experts in the 
 field. At the same time its broad range of tasks, makes it attractive for more 
-advanced computational biologists. However, sometimes a more automated approach 
-is necessary for example for model identification. 
+advanced computational biologists. By using a scripting language in conjunction with 
+COPASI, scientists can automate tasks such as parameter estimation, sensitivity analysis, 
+optimization, and model fitting. They can also create custom scripts to perform complex 
+operations or analyses that are not available in COPASI's GUI, such as  model identification.
+Scripting languages can also facilitate the communication. documentation and reproducibility
+of computational models, by allowing scientists to share their code and results with others. 
 
 Here we introduce `BASICO`, a simplified Python interface to `COPASI`. It provides
 a set of functions that allow to create, edit, simulate and analyze models in a

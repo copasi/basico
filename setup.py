@@ -75,7 +75,7 @@ setup(name='copasi_basico',
       project_urls={
         "Github": "https://github.com/copasi/basico",
         "Issues": "https://github.com/copasi/basico/issues",
-        "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index.ipynb",
+        "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index_colab.ipynb",
       },
       test_suite='setup.basico_testsuite',
       extras_require={

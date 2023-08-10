@@ -1,5 +1,5 @@
 ---
-title: 'BASICO: A simplified python interface to COPASI'
+title: 'BASICO: A simplified Python interface to COPASI'
 tags:
   - Python
   - systems biology
@@ -32,7 +32,7 @@ field. At the same time its broad range of tasks, makes it attractive for more
 advanced computational biologists. However, sometimes a more automated approach 
 is necessary for example for model identification. 
 
-Here we introduce `BASICO`, a simplified python interface to `COPASI`. It provides
+Here we introduce `BASICO`, a simplified Python interface to `COPASI`. It provides
 a set of functions that allow to create, edit, simulate and analyze models in a
 more automated way. `BASICO` can be easily installed using: `pip install copasi-basico`.
 
@@ -47,7 +47,7 @@ little knowledge about mathematical backgrounds, it is very attractive for biolo
 It incorporates very powerful methods ranging from basic time series for both 
 deterministic and stochastic simulations, parameter estimation with a broad range 
 of implemented local and global optimization algorithms, to more complex tasks such 
-as time scale separation analysis, and lyapunov exponent calculations. 
+as time scale separation analysis, and Lyapunov exponent calculations. 
 SBML import and export are supported and allow a quick exchange of models with other 
 modeling environments [@Hucka_2003; @keating_sbml_2020].
 
@@ -55,14 +55,14 @@ To further the powerful application range of COPASI, files prepared in the GUI c
 scheduled in cluster environments. This is extremely helpful for running time 
 consuming tasks such as optimization runs or parameter estimations. Generating 
 these files for different parameterizations or versions of models and synchronizing 
-is a very tedious task. That is where it is extremely helpful to use python scripting 
+is a very tedious task. That is where it is extremely helpful to use Python scripting 
 to handle several model versions with different parameterizations, as it is often 
 required in systems biology. Here, task parameters can be pre-defined, along with which 
 task to run. The `COPASI` project uses SWIG [@SWIG] to automatically generate language 
 bindings for a variety of programming languages. These bindings however, require deep
 knowledge of `COPASI`'s architecture, which makes them hard to use. 
 
-`BASICO` is a pure python package, building on top of these automatically generated 
+`BASICO` is a pure Python package, building on top of these automatically generated 
 language bindings, in order to simplify using all of the features of `COPASI`. Thanks 
 to being hosted on [GitHub](https://github.com/copasi/basico) with its automated 
 processes, modifications and improvements of the software can be easily integrated, 

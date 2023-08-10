@@ -72,6 +72,14 @@ to being hosted on [GitHub](https://github.com/copasi/basico) with its automated
 processes, modifications and improvements of the software can be easily integrated, 
 and published to the community.
 
+Being an easily installable module, `BASICO` can readily integrated with other packages 
+or pipelines to create new functionality. For example, it would be difficult to use COPASI
+directly for approximate Bayesian computation (ABC), but through using `BASICO` in the 
+pyABC package [@pyABC] it can be done.
+
+As scripting module `BASICO` lends itself for constructing large networks, as is for example 
+done in the reproducibility study in [@mendes2023reproducibility].
+
 Documentation for `BASICO` along with many examples, in the form of Jupyter Notebooks
 can be found at [https://basico.readthedocs.io/](https://basico.readthedocs.io/). `BASICO`
 can be readily used in the cloud using [Google Colab](https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index.ipynb), 
@@ -85,7 +93,11 @@ biochemical reaction networks. It is easy installed using:
     pip install copasi-basico
 ```
 
-From there, models can be created from scratch, or loaded from COPASI, SBML / SED-ML or COMBINE Archive files. We  also provide functions, to directly access and search models from the 
+From there, models can be created from scratch, or loaded from COPASI, SBML / SED-ML or COMBINE Archive files [@bergmann2014combine]. Support for
+SED-ML and COMBINE Archive files is provided through libSEDML [@libSEDML] and libCOMBINE [@libCombine] that are used by the SWIG generated
+COPASI bindings.
+
+We also provide functions, to directly access and search models from the 
 BioModels Database [@BioModels2015b] or JWS Online [@JWS]. 
 
 ```python
@@ -94,6 +106,9 @@ BioModels Database [@BioModels2015b] or JWS Online [@JWS].
     load_biomodel(model_id) # loads models from the BioModels Database
 
 ```
+
+Of course the wrappers for the REST API to JWS Online or the BioModels Database can also be readily used by other Python packages to
+obtain the SBML models. This is doen for example by SBMLtoODEjax [@sbmltoodejax]
 
 Once a model is loaded all of `COPASI`'s analysis methods can be used. We started with 
 the implementation of time course simulations and steady state analysis. 
@@ -105,12 +120,16 @@ the implementation of time course simulations and steady state analysis.
 
 ```
 
-Here, `run_time_course` returns a `pandas.DataFrame` with the results of the simulation. We 
+Here, `run_time_course` returns a `pandas.DataFrame` [@pandas] with the results of the simulation. We 
 quickly received requests to add further analysis methods, and so we added parameter estimation,
 optimizations, sensitivity analysis and parameter scans. 
 
 Most recently we added the automation of profile likelihood calculations, that for a given
 parameter estimation result, automatically generates [profile likelihood plots](https://basico.readthedocs.io/en/latest/notebooks/Profile_likelihood.html). 
+This is another example, that would have been quite cumbersome to do without basico. Following the 
+approach of Schaber [@SCHABER2012183] `BASICO` generates parameter scans (running a local optimization 
+method) for each parameter to be estimated, can run these individual models in parallel, and generate 
+the likelihood plots from the generated data. 
 
 
 # Target Audience

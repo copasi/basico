@@ -28,7 +28,7 @@ used to gain a deeper understanding of the system or to answer more applied
 questions such as predicting drug targets. `COPASI` is a powerful environment 
 for creating, editing, simulating and analyzing computational models. It provides 
 a user-friendly GUI that is easy to use even by people who are not experts in the 
-field. At the same time its broad range of tasks, makes it attractive for more 
+field. At the same time, its broad range of tasks makes it attractive for more 
 advanced computational biologists. By using a scripting language in conjunction with 
 COPASI, scientists can automate tasks such as parameter estimation, sensitivity analysis, 
 optimization, and model fitting. They can also create custom scripts to perform complex 
@@ -78,7 +78,7 @@ directly for approximate Bayesian computation (ABC), but through using `BASICO` 
 pyABC package [@pyABC] it can be done.
 
 As scripting module `BASICO` lends itself for constructing large networks, as is for example 
-done in the reproducibility study in [@mendes2023reproducibility].
+done in the reproducibility study in @mendes2023reproducibility.
 
 Documentation for `BASICO` along with many examples, in the form of Jupyter Notebooks
 can be found at [https://basico.readthedocs.io/](https://basico.readthedocs.io/). `BASICO`
@@ -110,8 +110,8 @@ BioModels Database [@BioModels2015b] or JWS Online [@JWS].
 Of course the wrappers for the REST API to JWS Online or the BioModels Database can also be readily used by other Python packages to
 obtain the SBML models. This is done for example by SBMLtoODEjax [@sbmltoodejax]
 
-Once a model is loaded all of `COPASI`'s analysis methods can be used. Running simulations are a core feature of COPASI, so we started 
-We started `BASICO` with implementing time course simulations and steady state analysis. 
+Once a model is loaded all of `COPASI`'s analysis methods can be used. Running simulations are a core feature of COPASI, 
+so we started `BASICO` with implementing time course simulations and steady state analysis. 
 
 ```python
 
@@ -126,7 +126,7 @@ optimizations, sensitivity analysis and parameter scans.
 
 Most recently we added the automation of profile likelihood calculations, that for a given
 parameter estimation result, automatically generates [profile likelihood plots](https://basico.readthedocs.io/en/latest/notebooks/Profile_likelihood.html). 
-This is another example, that would have been quite cumbersome to do without basico. Following the 
+This is another example, that would have been quite cumbersome to do without `BASICO`. Following the 
 approach of Schaber [@SCHABER2012183] `BASICO` generates parameter scans (running a local optimization 
 method) for each parameter to be estimated, can run these individual models in parallel, and generate 
 the likelihood plots from the generated data. 

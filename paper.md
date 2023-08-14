@@ -82,7 +82,7 @@ done in the reproducibility study in @mendes2023reproducibility.
 
 Documentation for `BASICO` along with many examples, in the form of Jupyter Notebooks
 can be found at [https://basico.readthedocs.io/](https://basico.readthedocs.io/). `BASICO`
-can be readily used in the cloud using [Google Colab](https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index.ipynb), 
+can be readily used in the cloud using [Google Colab](https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index_colab.ipynb), 
 or [mybinder.org](https://mybinder.org/v2/gh/copasi/basico.git/HEAD?filepath=docs/notebooks/index.ipynb).
 
 # Features & Functionality
@@ -127,7 +127,7 @@ optimizations, sensitivity analysis and parameter scans.
 Most recently we added the automation of profile likelihood calculations, that for a given
 parameter estimation result, automatically generates [profile likelihood plots](https://basico.readthedocs.io/en/latest/notebooks/Profile_likelihood.html). 
 This is another example, that would have been quite cumbersome to do without `BASICO`. Following the 
-approach of Schaber [@SCHABER2012183] `BASICO` generates parameter scans (running a local optimization 
+approach of Schaber [@SCHABER2012183], `BASICO` generates parameter scans (running a local optimization 
 method) for each parameter to be estimated, can run these individual models in parallel, and generate 
 the likelihood plots from the generated data. 
 

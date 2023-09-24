@@ -47,13 +47,14 @@ more automated way. `BASICO` can be easily installed using: `pip install copasi-
 COmplex PAthway SImulator [`COPASI`; @hoops_2006; @bergmann_2017] is a widely used
 program for analyzing and generating systems biology models. Its graphic user 
 interface (GUI) makes it a quick and easy to learn tool. Since its operation requires
-little knowledge about mathematical backgrounds, it is very attractive for biologists. 
+little knowledge about mathematical concepts, it is very attractive for biologists. 
 It incorporates very powerful methods ranging from basic time series for both 
 deterministic and stochastic simulations, parameter estimation with a broad range 
 of implemented local and global optimization algorithms, to more complex tasks such 
 as time scale separation analysis, and Lyapunov exponent calculations. 
-SBML import and export are supported and allow a quick exchange of models with other 
-modeling environments [@Hucka_2003; @keating_sbml_2020].
+Import and export of models encoded in the Systems Biology Markup Language (SBML)
+allows a quick exchange of models with other modeling 
+environments [@Hucka_2003; @keating_sbml_2020].
 
 To further the powerful application range of COPASI, files prepared in the GUI can be
 scheduled in cluster environments. This is extremely helpful for running time 
@@ -72,12 +73,12 @@ to being hosted on [GitHub](https://github.com/copasi/basico) with its automated
 processes, modifications and improvements of the software can be easily integrated, 
 and published to the community.
 
-Being an easily installable module, `BASICO` can readily integrated with other packages 
+Being an easily installable module, `BASICO` can readily be integrated with other packages 
 or pipelines to create new functionality. For example, it would be difficult to use COPASI
 directly for approximate Bayesian computation (ABC), but through using `BASICO` in the 
-pyABC package [@pyABC] it can be done.
+pyABC package [@pyABC] it can be achieved.
 
-As scripting module `BASICO` lends itself for constructing large networks, as is for example 
+As a scripting module `BASICO` lends itself for constructing large networks, as is for example 
 done in the reproducibility study in @mendes2023reproducibility.
 
 Documentation for `BASICO` along with many examples, in the form of Jupyter Notebooks
@@ -93,9 +94,10 @@ biochemical reaction networks. It is easy installed using:
     pip install copasi-basico
 ```
 
-From there, models can be created from scratch, or loaded from COPASI, SBML / SED-ML or COMBINE Archive files [@bergmann2014combine]. Support for
-SED-ML and COMBINE Archive files is provided through libSEDML [@libSEDML] and libCOMBINE [@libCombine] that are used by the SWIG generated
-COPASI bindings.
+From there, models can be created from scratch, or loaded from COPASI, SBML, the Simulation 
+Experiment Description Markup Language (SED-ML) or COMBINE Archive files [@bergmann2014combine]. 
+Support for SED-ML and COMBINE Archive files is provided through libSEDML [@libSEDML] and 
+libCOMBINE [@libCombine] that are used by the SWIG generated COPASI bindings.
 
 We also provide functions, to directly access and search models from the 
 BioModels Database [@BioModels2015b] or JWS Online [@JWS]. 
@@ -120,11 +122,11 @@ so we started `BASICO` with implementing time course simulations and steady stat
 
 ```
 
-Here, `run_time_course` returns a `pandas.DataFrame` [@pandas] with the results of the simulation. We 
-quickly received feature requests to add further analysis methods, and so we added parameter estimation,
+Here, `run_time_course` returns a `pandas.DataFrame` [@pandas] with the results of the simulation. 
+Feature requests from the community led us to add further analysis methods, and so we added parameter estimation,
 optimizations, sensitivity analysis and parameter scans. 
 
-Most recently we added the automation of profile likelihood calculations, that for a given
+The most recent additions include the automation of profile likelihood calculations, that for a given
 parameter estimation result, automatically generates [profile likelihood plots](https://basico.readthedocs.io/en/latest/notebooks/Profile_likelihood.html). 
 This is another example, that would have been quite cumbersome to do without `BASICO`. Following the 
 approach of Schaber [@SCHABER2012183], `BASICO` generates parameter scans (running a local optimization 

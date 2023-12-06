@@ -13,6 +13,7 @@ Example:
 import COPASI
 from . import model_io
 from . import model_info
+from .callbacks import get_default_handler
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,14 +81,19 @@ def run_steadystate(**kwargs):
     if 'settings' in kwargs:
         model_info.set_task_settings(task, kwargs['settings'])
 
+    num_messages_before = COPASI.CCopasiMessage.size()
+
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logger.error("Error while initializing the simulation: " +
-                      COPASI.CCopasiMessage.getLastMessage().getText())
+        model_info.get_copasi_messages(num_messages_before, 'No output'))
     else:
+        task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
             logger.error("Error while running the simulation: " +
-                          COPASI.CCopasiMessage.getLastMessage().getText())
+            model_info.get_copasi_messages(num_messages_before))
+
+    task.restore()
 
     return task.getResult()

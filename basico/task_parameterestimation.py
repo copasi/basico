@@ -1177,24 +1177,23 @@ def run_parameter_estimation(**kwargs):
     if 'settings' in kwargs:
         basico.set_task_settings(task, kwargs['settings'])
 
+    num_messages_before = COPASI.CCopasiMessage.size()
+    
     task.setCallBack(get_default_handler())
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
-    can_run = True
     if not result:
-        message = COPASI.CCopasiMessage.getLastMessage().getText()
-        can_run = False
-        if message.endswith("CCopasiTask (5): No output file defined for report of task 'Parameter Estimation'."):
-            can_run = True
-        if not can_run:
-            logger.error("Error while initializing parameter estimation: " + message)
-
-    if can_run:
+        logger.error("Error while initializing parameter estimation: " +
+        basico.model_info.get_copasi_messages(num_messages_before, 'No output'))
+    else:
         result = task.processRaw(use_initial_values)
         if not result:
-            logger.error("Error while running parameter estimation: " +
-                          COPASI.CCopasiMessage.getLastMessage().getText())
-    task.setCallBack(None)
+            logger.error("Error while initializing parameter estimation: " +
+            basico.model_info.get_copasi_messages(num_messages_before))
+    
+    task.restore()
+
     problem.setCreateParameterSets(old_create_parameter_sets)
+
     if not write_report:
         task.getReport().setTarget(report_name)
 

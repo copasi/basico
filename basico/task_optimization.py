@@ -49,6 +49,9 @@ try:
 except ValueError:
     import model_io
 
+from . import model_info
+from .callbacks import get_default_handler
+
 logger = logging.getLogger(__name__)
 
 def get_opt_parameters(model=None):
@@ -458,12 +461,22 @@ def run_optimization(expression=None, output=None, settings=None, **kwargs):
         dh, cols = basico.task_timecourse.create_data_handler(output, after=output, model=model)
         model.addInterface(dh)
 
-    if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
-        logger.warning("Couldn't initialize optimization task")
-
+    num_messages_before = COPASI.CCopasiMessage.size()
     use_initial_values = kwargs.get('use_initial_values', True)
-    if not task.processRaw(use_initial_values):
-        logger.warning("Couldn't process optimization task")
+
+    task.setCallBack(get_default_handler())
+
+    result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+    if not result:
+        logger.error("Couldn't initialize optimization task: " +
+        model_info.get_copasi_messages(num_messages_before, 'No output'))
+    else:
+        result = task.processRaw(use_initial_values)
+        if not result:
+            logger.error("Couldn't process optimization task: " +
+            model_info.get_copasi_messages(num_messages_before))
+
+    task.restore()
 
     if dh:
         model.removeInterface(dh)
@@ -503,5 +516,8 @@ def get_opt_statistic(**kwargs):
         'failed_constraint_evals': problem.geFailedConstraintCounter(),
         'cpu_time': problem.getExecutionTime(),
     }
-    result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
+    if result['f_evals'] == 0: 
+        result['evals_per_sec'] = 0
+    else:
+        result['evals_per_sec'] = result['cpu_time'] / result['f_evals']
     return result

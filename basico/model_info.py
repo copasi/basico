@@ -2086,15 +2086,14 @@ def _set_event(event, dm, assignments, trigger, **kwargs):
 
     if assignments:
         for assignment in assignments:
-            ea = event.createAssignment()
-            assert (isinstance(ea, COPASI.CEventAssignment))
             target = dm.findObjectByDisplayName(assignment[0])
             if target is None:
                 logger.warning("Couldn't resolve target for event assignment {0}, skipping.".format(assignment[0]))
                 continue
             if target.getObjectType() == 'Reference':
                 target = target.getObjectParent()
-            ea.setTargetCN(target.getCN())
+            ea = event.createAssignment(target.getCN())
+            assert (isinstance(ea, COPASI.CEventAssignment))
             ea.setExpression(_replace_names_with_cns(assignment[1], model=dm))
 
         need_compile = True

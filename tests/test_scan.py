@@ -1,9 +1,30 @@
 import unittest
-
+from pathlib import Path
 import COPASI
 
 import basico
 
+@unittest.skipIf(COPASI.CVersion.VERSION.getVersionMinor() < 42, 'Require 4.42 of COPASI')
+class TestParameterSetScan(unittest.TestCase):
+    def setUp(self):
+        example_path = Path(__file__).parent / 'test_data' / 'oscli_ps_scan.cps'
+        basico.load_model(example_path)
+        self.assertEqual(basico.get_current_model().getModel().getObjectName(), 'Oscli (Heinrich model)')
+
+    def test_setttings(self):
+        items = basico.get_scan_items()
+        self.assertEqual(len(items), 1)
+        d = basico.task_scan._scan_item_to_dict(0)
+        self.assertEqual(d['type'], 'parameter_set')
+        self.assertListEqual(d['parameter_sets'], ['oscillating', 'steadystate'])
+
+        # set parameter sets to just 'steady_state'
+        basico.set_scan_items([{'type': 'parameter_set', 'parameter_sets': ['steadystate']}])
+        items = basico.get_scan_items()
+        self.assertEqual(len(items), 1)
+        d = basico.task_scan._scan_item_to_dict(0)
+        self.assertEqual(d['type'], 'parameter_set')
+        self.assertListEqual(d['parameter_sets'], ['steadystate'])
 
 class TestScan(unittest.TestCase):
     def setUp(self):
@@ -38,15 +59,15 @@ class TestScan(unittest.TestCase):
                                  'scan_items':
                                      [
                                          {
-                                               'type': 'scan',
-                                               'num_steps': 10,
-                                               'log': False,
-                                               'min': 0.5,
-                                               'max': 2.0,
-                                               'values': '',
-                                               'use_values': False,
-                                               'item': '(R1).k1',
-                                               'cn': 'CN=Root,Model=The Brusselator,Vector=Reactions[R1],ParameterGroup=Parameters,Parameter=k1,Reference=Value'
+                                            'type': 'scan',
+                                            'num_steps': 10,
+                                            'log': False,
+                                            'min': 0.5,
+                                            'max': 2.0,
+                                            'values': '',
+                                            'use_values': False,
+                                            'item': '(R1).k1',
+                                            'cn': 'CN=Root,Model=The Brusselator,Vector=Reactions[R1],ParameterGroup=Parameters,Parameter=k1,Reference=Value'
                                          }
                                      ]
                              })

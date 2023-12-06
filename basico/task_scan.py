@@ -12,8 +12,12 @@ import pandas as pd
 
 import basico
 from . import model_io
+from . import model_info
+from .callbacks import get_default_handler
 
 logger = logging.getLogger(__name__)
+
+_have_parameter_sets = COPASI.CVersion.VERSION.getVersionDevel() >= 284
 
 def _scan_type_to_name(type):
     names = {
@@ -21,6 +25,10 @@ def _scan_type_to_name(type):
         COPASI.CScanProblem.SCAN_REPEAT: 'repeat',
         COPASI.CScanProblem.SCAN_RANDOM: 'random',
     }
+
+    if _have_parameter_sets:
+        names[COPASI.CScanProblem.SCAN_PARAMETER_SET] = 'parameter_set'
+
     return names.get(type, 'scan')
 
 
@@ -30,6 +38,10 @@ def _name_to_scan_type(name):
         'repeat': COPASI.CScanProblem.SCAN_REPEAT,
         'random': COPASI.CScanProblem.SCAN_RANDOM,
     }
+
+    if _have_parameter_sets:
+        types['parameter_set'] = COPASI.CScanProblem.SCAN_PARAMETER_SET
+
     return types.get(name, COPASI.CScanProblem.SCAN_LINEAR)
 
 
@@ -158,7 +170,20 @@ def _scan_item_to_dict(item, model=None):
         current['values'] = values
         current['use_values'] = use_values
 
-    if cn:
+    elif _have_parameter_sets and int_type == COPASI.CScanProblem.SCAN_PARAMETER_SET:
+        assert (isinstance(item, COPASI.CCopasiParameterGroup))
+        cn_group = item.getGroup('ParameterSet CNs')
+        assert (isinstance(cn_group, COPASI.CCopasiParameterGroup))
+        parameter_sets = []
+        for i in range(cn_group.size()):
+            cn = cn_group.getParameter(i).getCNValue()
+            # resolve cn to name
+            obj = model.getObject(cn)
+            if obj:
+                parameter_sets.append(obj.getObjectName())
+        current['parameter_sets'] = parameter_sets
+
+    if cn and int_type != COPASI.CScanProblem.SCAN_PARAMETER_SET:
         obj = model.getObject(COPASI.CCommonName(cn))
         if not obj:
             logger.warning('missing object in scan item: {0}'.format(cn))
@@ -283,7 +308,7 @@ def add_scan_item(**kwargs):
           | the one from :func:`.get_current_model` will be taken)
 
         - | `type (str)`: the type for the scan item can be one of `scan`,
-          | `repeat` or `random`. If not specified `scan` will be used.
+          | `repeat`, `random` or `parameter_set`. If not specified `scan` will be used.
 
         - | `cn (str)`: the cn of the element to use in the scan item (use when
           | no suitable display names for the item you are interested in exist)
@@ -296,6 +321,9 @@ def add_scan_item(**kwargs):
         - | `values(str or [float])`: if you want to scan over specific values,
           | rather than a range, specify them here e.g.: `[0.1, 0.5, 1, 2]`. Using
           | this parameter also sets `use_values` to `True`
+
+        - | `parameter_sets([str])`: if you want to scan over parameter sets, add the
+          | list of parameter set names here.
 
         - | `use_values (bool)`: indicates that the values specified should be used
           | rather than the min / max range
@@ -326,6 +354,10 @@ def add_scan_item(**kwargs):
     if 'item' in scan_item:
         obj = model.findObjectByDisplayName(scan_item['item'])
 
+    if 'parameter_sets' in scan_item and 'type' not in scan_item:
+        scan_item['type'] = 'parameter_set'
+        scan_item['num_steps'] = len(scan_item['parameter_sets'])
+
     copasi_item = problem.addScanItem(_name_to_scan_type(scan_item['type'] if 'type' in scan_item else 'scan'),
                                       scan_item['num_steps'] if 'num_steps' in scan_item else 0,
                                       obj)
@@ -339,6 +371,29 @@ def add_scan_item(**kwargs):
 
         _set_parameter_from_value(copasi_item.getParameter('Values'), values)
         _set_parameter_from_value(copasi_item.getParameter('Use Values'), True)
+
+    if 'parameter_sets' in scan_item:
+        psets = model.getModel().getModelParameterSets()
+        cn_group = copasi_item.getGroup('ParameterSet CNs')
+        assert (isinstance(cn_group, COPASI.CCopasiParameterGroup))
+        if not cn_group:
+            cn_group = copasi_item.addGroup('ParameterSet CNs')
+            assert (isinstance(cn_group, COPASI.CCopasiParameterGroup))
+        else: 
+            cn_group.clear()
+
+        for index, cn in enumerate(scan_item['parameter_sets']):
+            # verify that we have a paramter set for the cn
+            if not isinstance(cn, COPASI.CCommonName):
+                pset = psets.getByName(cn)
+                if not pset:
+                    logger.error('No parameter set {0}'.format(cn))
+                    continue
+                cn = pset.getCN()
+            cn_group.addParameter(str(index), COPASI.CCopasiParameter.Type_CN)
+            p = cn_group.getParameter(str(index))
+            assert (isinstance(p, COPASI.CCopasiParameter))
+            p.setCNValue(cn)
 
     _set_parameter_from_dict(copasi_item.getParameter('Use Values'), scan_item, 'use_values')
     _set_parameter_from_dict(copasi_item.getParameter('Minimum'), scan_item, 'min')
@@ -478,12 +533,19 @@ def run_scan(**kwargs):
     task = model.getTask('Scan')
     assert (isinstance(task, COPASI.CScanTask))
 
-    if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
-        logger.warning("Couldn't initialize scan task")
-
+    num_messages_before = COPASI.CCopasiMessage.size()
     use_initial_values = kwargs.get('use_initial_values', True)
-    if not task.processRaw(use_initial_values):
-        logger.warning("Couldn't process scan task")
+
+    result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+    if not result:
+        logger.error("Couldn't initialize scan task: " + model_info.get_copasi_messages(num_messages_before, 'No output'))
+    else:
+        task.setCallBack(get_default_handler())
+        result = task.processRaw(use_initial_values)
+        if not result:
+            logger.error("Error while running the scan: " + model_info.get_copasi_messages(num_messages_before))
+
+    task.setCallBack(COPASI.CProcessReport())
 
     if dh:
         model.removeInterface(dh)

@@ -271,14 +271,26 @@ def load_model(location, remove_user_defined_functions=False):
     if os.path.isfile(location):
         location = os.path.abspath(location)
         if zipfile.is_zipfile(location):
-            if model.openCombineArchive(location):
+            try:
+                if model.openCombineArchive(location):
+                    return set_current_model(model)
+            except COPASI.CCopasiException:
+                pass
+        try:
+            if model.importSBML(location):  
                 return set_current_model(model)
-        if model.importSBML(location):
-            return set_current_model(model)
-        if model.loadModel(location):
-            return set_current_model(model)
-        if model.importSEDML(location):
-            return set_current_model(model)
+        except COPASI.CCopasiException:
+            pass
+        try:
+            if model.loadModel(location):
+                return set_current_model(model)
+        except COPASI.CCopasiException:
+            pass
+        try:
+            if model.importSEDML(location):
+                return set_current_model(model)
+        except COPASI.CCopasiException:
+            pass
 
     remove_datamodel(model)
 

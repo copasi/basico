@@ -19,8 +19,8 @@ get_ipython().magic(u'matplotlib inline')
 from basico import *
 
 
-# now we are ready to load a model, just adjust the file_name variable, to match yours. 
-# The file can be a COPASI or SBML file. For this example, the filename lies in the folder where i started the notebook from. 
+# now we are ready to load a model, just adjust the file_name variable, to match yours.
+# The file can be a COPASI or SBML file. For this example, the filename lies in the folder where i started the notebook from.
 
 # In[3]:
 
@@ -34,7 +34,7 @@ file_name = './brusselator.cps'
 model = load_model(file_name)
 
 
-# now we are ready to simulate. Calling `run_time_course` will run the simulation as specified in the COPASI file and return a pandas dataframe for it. 
+# now we are ready to simulate. Calling `run_time_course` will run the simulation as specified in the COPASI file and return a pandas dataframe for it.
 
 # In[5]:
 
@@ -52,8 +52,8 @@ df.plot()
 
 
 # ## The run_time_course command
-# you can change different options for the time course by adding named parameters into the `run_time_course_command`. Supported are: 
-# 
+# you can change different options for the time course by adding named parameters into the `run_time_course_command`. Supported are:
+#
 # * `model`: incase you want to use another model than the one last loaded
 # * `scheduled`: to mark the model as scheduled
 # * `update_model`: to update the initial state after the simulation is run
@@ -62,7 +62,7 @@ df.plot()
 # * `output_event`: in case you would like to have the event values before and after the event hit listed
 # * `start_time`: to change the start time
 # * `step_number` or `interals`: to overwrite the number of steps being used
-# 
+#
 
 # so lets run two simulations that will be different slightly, as we will use the `update_model` flag:
 
@@ -79,7 +79,7 @@ df2 = run_time_course(update_model=True)
 df1.plot(), df2.plot()
 
 
-# And now you could plot the difference between them too: 
+# And now you could plot the difference between them too:
 
 # In[9]:
 

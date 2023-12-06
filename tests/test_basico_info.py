@@ -99,9 +99,9 @@ class TestBasicoIO_Brus(unittest.TestCase):
         notes = basico.model_info.get_notes()
         self.assertTrue('The famous Brusselator' in notes)
         basico.model_info.set_notes("""
-        
+
         New Multiline Comment
-        
+
         """)
         new_notes = basico.model_info.get_notes()
         self.assertTrue('Multiline' in new_notes)

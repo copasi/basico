@@ -9,7 +9,7 @@
 import sys
 if '..' not in sys.path:
     sys.path.append('..')
-    
+
 import basico.biomodels as biomodels
 
 
@@ -19,7 +19,7 @@ import basico.biomodels as biomodels
 
 
 glycolysis_models = biomodels.search_for_model('glycolysis')
-for model in glycolysis_models: 
+for model in glycolysis_models:
     print ('Id: %s' % model['id'])
     print ('Name: %s' % model['name'])
     print ('Format: %s' % model['format'])
@@ -55,7 +55,7 @@ first_entry = info['files']['main'][0]
 print ("Main FileName is: '{0}' and has size {1} kb".format(first_entry['name'], first_entry['fileSize']))
 
 
-# to actually get hold of the model itself, you can use the `get_content_for_model` function, that takes a model id, as well as an optional filename. If the filename is not given, the first main content will be chosen automatically. So to download the model of biomodel #206, once could simply call: 
+# to actually get hold of the model itself, you can use the `get_content_for_model` function, that takes a model id, as well as an optional filename. If the filename is not given, the first main content will be chosen automatically. So to download the model of biomodel #206, once could simply call:
 
 # In[7]:
 
@@ -69,7 +69,7 @@ sbml = biomodels.get_content_for_model(206)
 print(sbml[:1000])  # just printing the first couple of lines
 
 
-# of course you can simply call `load_biomodel(206)` to load a biomodel into basico. 
+# of course you can simply call `load_biomodel(206)` to load a biomodel into basico.
 
 # ## JWS Online
 # we also provide access to models from JWS online.
@@ -86,7 +86,7 @@ import basico.jws_online as jws
 
 
 atp_models = jws.get_models_for_species('atp')
-for model in atp_models: 
+for model in atp_models:
     print(model['slug'])
 
 

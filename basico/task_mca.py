@@ -58,9 +58,9 @@ def run_mca(**kwargs):
 def get_mca_matrix(matrix, scaled=True, run_first=False, **kwargs):
     """Returns the specified mca matrix as pandas data frame
 
-    :param matrix: the matrix to be returned, as string, one of `elasticities`, 
+    :param matrix: the matrix to be returned, as string, one of `elasticities`,
                    `flux_control_coefficients` or `concentration_control_coefficients`
-    :param scaled: boolean flag indicating whether the scaled matrix should be returned 
+    :param scaled: boolean flag indicating whether the scaled matrix should be returned
                    defaults to True
 
     :param run_first: boolean flag indicating that the task should be run first (defaults to false)
@@ -81,7 +81,7 @@ def get_mca_matrix(matrix, scaled=True, run_first=False, **kwargs):
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
 
-    if run_first: 
+    if run_first:
         run_mca(**kwargs)
 
     task = model.getTask(basico.T.MCA)
@@ -93,12 +93,12 @@ def get_mca_matrix(matrix, scaled=True, run_first=False, **kwargs):
         return basico.model_info._annotated_matrix_to_df(
             method.getScaledElasticitiesAnn() if scaled else method.getUnscaledElasticitiesAnn()
         )
-    
+
     if matrix == 'concentration_control_coefficients':
         return basico.model_info._annotated_matrix_to_df(
             method.getScaledConcentrationCCAnn() if scaled else method.getUnscaledConcentrationCCAnn()
         )
-    
+
     if matrix == 'flux_control_coefficients':
         return basico.model_info._annotated_matrix_to_df(
             method.getScaledFluxCCAnn() if scaled else method.getUnscaledFluxCCAnn()
@@ -111,7 +111,7 @@ def get_mca_matrix(matrix, scaled=True, run_first=False, **kwargs):
 def get_elasticities(scaled=True, run_first=False, **kwargs):
     """Returns the elasticity matrix as pandas data frame
 
-    :param scaled: boolean flag indicating whether the scaled matrix should be returned 
+    :param scaled: boolean flag indicating whether the scaled matrix should be returned
                    defaults to True
 
     :param run_first: boolean flag indicating that the task should be run first (defaults to false)
@@ -133,7 +133,7 @@ def get_elasticities(scaled=True, run_first=False, **kwargs):
 def get_flux_control_coefficients(scaled=True, run_first=False, **kwargs):
     """Returns the flux control coefficient matrix as pandas data frame
 
-    :param scaled: boolean flag indicating whether the scaled matrix should be returned 
+    :param scaled: boolean flag indicating whether the scaled matrix should be returned
                    defaults to True
 
     :param run_first: boolean flag indicating that the task should be run first (defaults to false)
@@ -155,7 +155,7 @@ def get_flux_control_coefficients(scaled=True, run_first=False, **kwargs):
 def get_concentration_control_coefficients(scaled=True, run_first=False, **kwargs):
     """Returns the concentration control coefficient matrix as pandas data frame
 
-    :param scaled: boolean flag indicating whether the scaled matrix should be returned 
+    :param scaled: boolean flag indicating whether the scaled matrix should be returned
                    defaults to True
 
     :param run_first: boolean flag indicating that the task should be run first (defaults to false)

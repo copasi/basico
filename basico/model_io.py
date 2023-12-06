@@ -138,7 +138,7 @@ def get_num_loaded_models():
 
 def new_model(**kwargs):
     """Creates a new model and sets it as current.
-    
+
     :param kwargs: optional arguments
 
     - `name` (str): the name for the new model
@@ -277,7 +277,7 @@ def load_model(location, remove_user_defined_functions=False):
             except COPASI.CCopasiException:
                 pass
         try:
-            if model.importSBML(location):  
+            if model.importSBML(location):
                 return set_current_model(model)
         except COPASI.CCopasiException:
             pass
@@ -619,7 +619,7 @@ def save_model_and_data(filename, **kwargs):
         new_name = old_names.get(experiment.getFileNameOnly(), '')
         if not new_name:
             continue
-        
+
         # set relative path
         experiment.setFileName(os.path.relpath(new_name, data_dir))
 

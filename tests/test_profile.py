@@ -70,7 +70,7 @@ class TestProfile(unittest.TestCase):
         basico.new_model(name='Schaber Example', notes="""
         The example from the supplement, originally described in
 
-        Schaber, J. and Klipp, E. (2011) Model-based inference of biochemical parameters and 
+        Schaber, J. and Klipp, E. (2011) Model-based inference of biochemical parameters and
         dynamic properties of microbial signal transduction networks, Curr Opin Biotechnol, 22, 109-
         116 (https://doi.org/10.1016/j.copbio.2010.09.014)
 

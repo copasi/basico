@@ -103,12 +103,12 @@ class TqmdCallback(COPASI.CProcessReport):
 
     def addItem(self, *args, **kwargs):
         self.count += 1
-        self.ptrs[self.count] = { 'type': args[1], 'value': args[2], 'end': args[3] }
+        self.ptrs[self.count] = {'type': args[1], 'value': args[2], 'end': args[3]}
         initial = self._get_current_value(self.ptrs[self.count])
         if np.isinf(initial):
-            initial = 0;
+            initial = 0
         total = self._get_end_value(self.ptrs[self.count])
-        self.handlers[self.count] = tqmd_lib.tqdm(desc=args[0], total=total, initial=initial,  **self.args)
+        self.handlers[self.count] = tqmd_lib.tqdm(desc=args[0], total=total, initial=initial, **self.args)
         return self.count
 
     def finishItem(self, handle):
@@ -131,7 +131,6 @@ class TqmdCallback(COPASI.CProcessReport):
         return self.proceed()
 
     def setName(self, name):
-        #print(name)
         return self.proceed()
 
 

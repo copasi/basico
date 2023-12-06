@@ -61,7 +61,7 @@ class PetabTestCase(unittest.TestCase):
         result_df = mes_df.copy(True)
         result_df = result_df.rename(columns={"measurement": "simulation"})
         basico.petab.core._update_df_from_simulation(result_df, sim_df, 'model1_data1')
-        result_df.to_csv('out_df.csv', index=False)        
+        result_df.to_csv('out_df.csv', index=False)
         os.remove('out_df.csv')
         self.assertEqual(mes_df.shape[0], result_df.shape[0])
         self.assertEqual(mes_df.shape[1], result_df.shape[1])

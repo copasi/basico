@@ -16,12 +16,12 @@ import matplotlib.pyplot as plt
 def worker(args):
     """This is the worker function
 
-    :param args: the tuple with the arguments for the worker, that is expected 
-                 to consist of the seed to be used, as well as the model 
-                 string, that should be loaded in case no model is loaded yet. 
+    :param args: the tuple with the arguments for the worker, that is expected
+                 to consist of the seed to be used, as well as the model
+                 string, that should be loaded in case no model is loaded yet.
     :type args: (int, str)
 
-    :return: tuple of: (initial concentration of cysteine, and adomed used, 
+    :return: tuple of: (initial concentration of cysteine, and adomed used,
                         flux of CGS, and TS)
     :rtype: (float, float, float, float)
     """
@@ -30,12 +30,12 @@ def worker(args):
     # we set the seed for reproducibility purposes only
     # you probably wouldnt do that normally
     random.seed(seed)
-    
-    
+
+
     # check if a model is already loaded into the worker
     # since the workers are being reused, and we are just sampling
-    # here, we dont want to reload the model multiple times. 
-    
+    # here, we dont want to reload the model multiple times.
+
     if get_num_loaded_models() == 0:
         # no model is loaded, so we load the model string
         m = load_model_from_string(model_string)
@@ -45,9 +45,9 @@ def worker(args):
 
     # we sample the model as described in Mendes (2009)
     cysteine = 0.3 * 10 ** random.uniform(0, 3)
-    adomed = random.uniform(0, 100)    
-    
-    # set the sampled initial concentration. 
+    adomed = random.uniform(0, 100)
+
+    # set the sampled initial concentration.
     set_species('Cysteine', initial_concentration=cysteine, model=m)
     set_species('S-adenosylmethionine', initial_concentration=adomed, model=m)
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     # download biomodel #68
     bm = load_biomodel(68);
 
-    # save it to string (that way we can easily pass it to any worker, no matter 
+    # save it to string (that way we can easily pass it to any worker, no matter
     # whether the pool is local or MPI is used)
     cps_model_string = save_model_to_string()
 
@@ -109,12 +109,12 @@ if __name__ == "__main__":
 
     # measure computation time
     start = timer()
-    
+
     # compute results
     result = run_in_parallel(cps_model_string)
 
     # print how long the computation took
     print('calculation took {0}'.format(timer() - start))
-    
+
     # plot results
     plot_result(result)

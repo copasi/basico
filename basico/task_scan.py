@@ -379,7 +379,7 @@ def add_scan_item(**kwargs):
         if not cn_group:
             cn_group = copasi_item.addGroup('ParameterSet CNs')
             assert (isinstance(cn_group, COPASI.CCopasiParameterGroup))
-        else: 
+        else:
             cn_group.clear()
 
         for index, cn in enumerate(scan_item['parameter_sets']):

@@ -120,7 +120,7 @@ def get_opt_constraints(model=None):
     pe_task = model.getTask(basico.T.OPTIMIZATION)
     problem = pe_task.getProblem()
     assert (isinstance(problem, COPASI.COptProblem))
-    
+
     data = []
 
     for i in range(problem.getOptConstraintSize()):
@@ -398,7 +398,7 @@ def get_opt_solution(model=None):
     assert (isinstance(problem, COPASI.COptProblem))
     solution = problem.getSolutionVariables()
     items = problem.getOptItemList()
-    assert(solution.size() == len(items))
+    assert (solution.size() == len(items))
     data = []
 
     for i in range(solution.size()):
@@ -516,7 +516,7 @@ def get_opt_statistic(**kwargs):
         'failed_constraint_evals': problem.geFailedConstraintCounter(),
         'cpu_time': problem.getExecutionTime(),
     }
-    if result['f_evals'] == 0: 
+    if result['f_evals'] == 0:
         result['evals_per_sec'] = 0
     else:
         result['evals_per_sec'] = result['cpu_time'] / result['f_evals']

@@ -70,19 +70,19 @@ get_species(name = 'E')['initial_concentration']
 
 #         if 'name' in kwargs:
 #             metab.setObjectName(kwargs['name'])
-# 
+#
 #         if 'unit' in kwargs:
 #             metab.setUnitExpression(kwargs['unit'])
-# 
+#
 #         if 'initial_concentration' in kwargs:
 #             metab.setInitialConcentration(kwargs['initial_concentration']),
-# 
+#
 #         if 'initial_particle_number' in kwargs:
 #             metab.setInitialValue(kwargs['initial_particle_number']),
-# 
+#
 #         if 'initial_expression' in kwargs:
 #             metab.setInitialExpression(kwargs['initial_expression'])
-# 
+#
 #         if 'expression' in kwargs:
 #             metab.setExpression(kwargs['expression'])
 

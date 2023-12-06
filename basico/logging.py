@@ -4,7 +4,7 @@ Logging
 
 Logging convenience functions.
 
-Originally from the `pypesto` package, see 
+Originally from the `pypesto` package, see
 https://github.com/ICB-DCM/pyPESTO
 """
 

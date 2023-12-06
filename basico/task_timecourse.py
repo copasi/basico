@@ -60,7 +60,7 @@ def __build_result_from_ts(time_series, use_concentrations=True, use_sbml_id=Fal
     concentrations = numpy.empty([row_count, col_count])
     for i in range(row_count):
         for j in range(col_count):
-            if use_concentrations: 
+            if use_concentrations:
                 concentrations[i, j] = time_series.getConcentrationData(i, j)
             else:
                 concentrations[i, j] = time_series.getData(i, j)
@@ -341,7 +341,7 @@ def run_time_course(*args, **kwargs):
         use_concentrations = False
 
     use_sbml_id = kwargs.get('use_sbml_id', False)
-    
+
     return __build_result_from_ts(task.getTimeSeries(), use_concentrations, use_sbml_id, model)
 
 

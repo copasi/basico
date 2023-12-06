@@ -54,7 +54,7 @@ def default_evaluation():
     basico.run_parameter_estimation(method=basico.PE.GENETIC_ALGORITHM_SR, update_model=True,
                                     settings={'method': {
                                         'Number of Generations': 30,
-                                        'Population Size': 10, 
+                                        'Population Size': 10,
                                         'Stop after # Stalled Generations': 30
                                         }})
     logger.debug('running nl, 1000 iterations')

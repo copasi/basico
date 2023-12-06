@@ -774,7 +774,7 @@ def set_plot_curves(plot_spec, curves, **kwargs):
               |                                  or `spectogram`)
               |    'channels': ['[X]', '[Y]'], # display names of all the items to be plotted
               |    'color': 'auto',            # color as hex rgb value (i.e '#ff0000' for red) or 'auto'
-              |    'line_type': 'lines',       # the line type (one of `lines`, `points`, `symbols` or 
+              |    'line_type': 'lines',       # the line type (one of `lines`, `points`, `symbols` or
               |                                  `lines_and_symbols`)
               |    'line_subtype': 'solid',    #  line subtype (one of `solid`, `dotted`, `dashed`, `dot_dash` or
               |                                   `dot_dot_dash`)
@@ -902,7 +902,7 @@ def add_default_plot(name, **kwargs):
 
     :param name: name of the default plot
     :type name: str
-    
+
 
     :param kwargs: optional arguments
 
@@ -947,10 +947,10 @@ _default_plots = {}
 
 def get_default_plot_names(filter=None, **kwargs):
     """Returns a list of default plot names
-    
+
     :param filter: optional filter of substring to be in the name
-    :param kwargs: 
-    :return: 
+    :param kwargs:
+    :return:
     """
     ids = COPASI.COutputAssistant.getListOfDefaultOutputDescriptions()
     global _default_plots
@@ -1067,12 +1067,12 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
                     print_headers=True, header=None, body=None, footer=None, task=None,
                     comment=None, add_separator=None, **kwargs):
     """Sets properties of the named report definition.
-    
+
         Examples:
-        
+
         The following would set a report definition 'Time Course' to include Time and the concentration
-        of S, in a report that is separated by tabs. 
-        
+        of S, in a report that is separated by tabs.
+
         >>> set_report_dict('Time Course', body=['Time', '[S]']
 
         The following defines a report for the Steady State concentration of S. To disambiguate, that the
@@ -1091,10 +1091,10 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
         :type separator: Optional[str]
 
         :param table: a list of CNs or display names of elements to collect in a table. If `table` is specified
-              the header, body, footer argument will be ignored. Note that setting table elements is only 
+              the header, body, footer argument will be ignored. Note that setting table elements is only
               useful for tasks that generate output *during* the task. If that is not the case, you will have
               to specify the footer and header element directly.
-        
+
         :type table: [str]
 
         :param print_headers: optional arguments, indicating whether table headers will be printed (only applies
@@ -1115,7 +1115,7 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
 
         :param comment: a documentation string for the report (can bei either string, or xhtml string)
         :type comment: Optional[str]
-        
+
         :param add_separator: an optional boolean flag, to automatically add seprators between header, body and
             footer entries since this is not necessary for table entries.
         :type add_separator: Optional[bool]
@@ -1312,7 +1312,7 @@ def _replace_cns_with_names(expression, **kwargs):
     words = _split_by_cn(expression)
     skip = -1
     for i in range(len(words)):
-        if i < skip: 
+        if i < skip:
             continue
 
         word = words[i]
@@ -1321,7 +1321,7 @@ def _replace_cns_with_names(expression, **kwargs):
             cn = word
             word = ''
         elif word.startswith('<CN'):
-            cn = word[1:] 
+            cn = word[1:]
             i = i + 1
             while not words[i].endswith('>'):
                 cn += ' ' + words[i]
@@ -1333,10 +1333,10 @@ def _replace_cns_with_names(expression, **kwargs):
         elif word.startswith('CN='):
             cn = word
             word = ''
-        else: 
+        else:
             cn = None
 
-        if cn is not None: 
+        if cn is not None:
             obj = dm.getObject(COPASI.CCommonName(cn))
             if obj is not None:
                 word = obj.getObjectDisplayName()
@@ -1770,7 +1770,7 @@ def add_function(name, infix, type='general', mapping=None, **kwargs):
 
     if mapping is None:
         mapping = {}
-    
+
     if db.findLoadFunction(name) is not None:
         logger.error('A function with name "' + name + '" already exists')
         return
@@ -1784,11 +1784,11 @@ def add_function(name, infix, type='general', mapping=None, **kwargs):
     fun.setReversible(__function_type_to_int(type))
 
     variables = fun.getVariables()
-    assert(isinstance(variables, COPASI.CFunctionParameters))
+    assert (isinstance(variables, COPASI.CFunctionParameters))
 
     for i in range(variables.size()):
         param = variables.getParameter(i)
-        assert(isinstance(param, COPASI.CFunctionParameter))
+        assert (isinstance(param, COPASI.CFunctionParameter))
         usage = __usage_to_int(mapping.get(param.getObjectName(), 'parameter'))
         param.setUsage(usage)
 
@@ -1811,10 +1811,10 @@ def remove_function(name, **kwargs):
     root = COPASI.CRootContainer.getRoot()
     assert (isinstance(root, COPASI.CRootContainer))
     db = root.getFunctionList()
-    assert(isinstance(db, COPASI.CFunctionDB))
+    assert (isinstance(db, COPASI.CFunctionDB))
 
     fun = db.findFunction(name)
-    assert(isinstance(fun, COPASI.CFunction))
+    assert (isinstance(fun, COPASI.CFunction))
     if fun is None:
         logger.warning('A function with name "' + name + '" does not exists')
         return
@@ -1834,7 +1834,7 @@ def remove_user_defined_functions():
     root = COPASI.CRootContainer.getRoot()
     assert (isinstance(root, COPASI.CRootContainer))
     db = root.getFunctionList()
-    assert(isinstance(db, COPASI.CFunctionDB))
+    assert (isinstance(db, COPASI.CFunctionDB))
     funs = db.loadedFunctions()
 
     to_be_deleted = []
@@ -2188,7 +2188,7 @@ def get_compartments(name=None, exact=False, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     compartments = model.getCompartments()
-    assert(isinstance(compartments, COPASI.CompartmentVectorNS))
+    assert (isinstance(compartments, COPASI.CompartmentVectorNS))
 
     num_compartments = compartments.size()
     data = []
@@ -2263,7 +2263,7 @@ def get_parameters(name=None, exact=False, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     parameters = model.getModelValues()
-    assert(isinstance(parameters, COPASI.ModelValueVectorN))
+    assert (isinstance(parameters, COPASI.ModelValueVectorN))
 
     num_params = parameters.size()
     data = []
@@ -2349,7 +2349,7 @@ def get_functions(name=None, **kwargs):
         if suitable_for is None:
             logger.error('No reaction {0} found'.format(kwargs['suitable_for']))
             return None
-        assert(isinstance(suitable_for, COPASI.CReaction))
+        assert (isinstance(suitable_for, COPASI.CReaction))
         eqn = suitable_for.getChemEq()
         num_substrates = eqn.getSubstrates().size()
         num_products = eqn.getProducts().size()
@@ -2488,7 +2488,7 @@ def get_reaction_parameters(name=None, **kwargs):
             if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
                 continue
             parameter = parameter_group.getParameter(fun_parameter.getObjectName())
-            if parameter is None: 
+            if parameter is None:
                 continue
 
             current_param = param_objects[j][0] if param_objects[j] else None
@@ -2661,7 +2661,7 @@ def set_compartment(name=None, exact=False, **kwargs):
 
         if name and type(name) is str and exact and name != current_name:
             continue
-            
+
         if 'name' in kwargs and kwargs['name'] not in current_name:
             continue
 
@@ -2801,7 +2801,7 @@ def set_parameters(name=None, exact=False, **kwargs):
 
         if name and type(name) is str and exact and name != current_name and name != display_name:
             continue
-            
+
         if 'name' in kwargs and (kwargs['name'] not in current_name and kwargs['name'] != display_name):
             continue
 
@@ -2906,7 +2906,7 @@ def set_reaction_parameters(name=None, **kwargs):
             if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
                 continue
             param = parameter_group.getParameter(fun_parameter.getObjectName())
-            if param is None: 
+            if param is None:
                 continue
             current_param = param_objects[j][0] if param_objects[j] else None
             cn = current_param.getCN() if current_param else None
@@ -2972,9 +2972,9 @@ def set_reaction(name=None, exact=False, **kwargs):
         - | `scheme`: the reaction scheme, new species will be created automatically
 
         - | `function`: the function from the function database to set
-        
+
         - | `mapping`: an optional dictionary that maps model elements to the function
-          |            parameters. (can be any volume, species, modelvalue or in case of 
+          |            parameters. (can be any volume, species, modelvalue or in case of
           |            local parameters a value)
 
         - | `notes`: sets notes for the reaction (either plain text, or valid xhtml)
@@ -2998,7 +2998,7 @@ def set_reaction(name=None, exact=False, **kwargs):
 
     for i in range(num_reactions):
         reaction = reactions.get(i)
-        assert(isinstance(reaction, COPASI.CReaction))
+        assert (isinstance(reaction, COPASI.CReaction))
 
         current_name = reaction.getObjectName()
 
@@ -3077,7 +3077,7 @@ def _set_reaction(reaction, dm, **kwargs):
                 'valid and cannot be applied. (missing mapping(s) for {2})'.format(
                     reaction.getObjectName(), kwargs['function'],
                     [entry['usage'] + ': ' + entry['name'] for entry in missing]))
-        
+
         info.writeBackToReaction(reaction)
         reaction.compile()
         changed = True
@@ -3761,7 +3761,7 @@ def set_element_name(element, new_name, **kwargs):
         if not element.setObjectName(new_name):
             logger.warning("couldn't change name of the element")
         return
-    
+
     dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
 
@@ -3908,7 +3908,7 @@ def remove_amount_expressions(**kwargs):
 
     keys = []
     for mv in model.getModelValues():
-        assert(isinstance(mv, COPASI.CModelValue))
+        assert (isinstance(mv, COPASI.CModelValue))
         if mv.getNotes().startswith('Amount ex'):
             keys.append(mv.getKey())
 
@@ -4289,7 +4289,7 @@ def add_equation(eqn, time_symbol='t', **kwargs):
 
 
 def _annotated_matrix_to_df_1d(ann_matrix):
-    assert(isinstance(ann_matrix, COPASI.CDataArray))
+    assert (isinstance(ann_matrix, COPASI.CDataArray))
     dim = ann_matrix.dimensionality()
     if dim != 1:
         logger.error('only one dimensional matrices are supported by this method')
@@ -4314,8 +4314,8 @@ def _annotated_matrix_to_df(ann_matrix):
     :return: a pandas dataframe representing the matrix
     :rtype: pd.DataFrame
     """
-    assert(isinstance(ann_matrix, COPASI.CDataArray))
-    dim = ann_matrix.dimensionality() 
+    assert (isinstance(ann_matrix, COPASI.CDataArray))
+    dim = ann_matrix.dimensionality()
     if dim != 2:
         if dim == 1:
             return _annotated_matrix_to_df_1d(ann_matrix)
@@ -4697,7 +4697,7 @@ def _collect_data(names=None, cns=None, **kwargs):
                 # couldn't find that object in the model
                 logger.warning('No object for cn: {0}'.format(str(cn)))
                 continue
-            assert(isinstance(obj, COPASI.CDataObject))
+            assert (isinstance(obj, COPASI.CDataObject))
             value = _get_value_from_reference(obj)
 
             data.append({'name': obj.getObjectDisplayName(), 'value': value})
@@ -4887,7 +4887,7 @@ def _set_named_value(obj, name, new_value, ref):
             model.updateInitialValues(ref)
 
 
-def set_value(name_or_reference, new_value, initial=False,  **kwargs):
+def set_value(name_or_reference, new_value, initial=False, **kwargs):
     """Gets the value of the named element or nones
 
     :param name_or_reference: display name of model element
@@ -5069,8 +5069,8 @@ def assign_report(name, task, filename='', append=True, confirm_overwrite=True, 
     if not report_definition:
         logger.error('No report definition: {0}'.format(name))
 
-    assert(isinstance(report_definition, COPASI.CReportDefinition))
-    assert(isinstance(task, COPASI.CCopasiTask))
+    assert (isinstance(report_definition, COPASI.CReportDefinition))
+    assert (isinstance(task, COPASI.CCopasiTask))
 
     r = task.getReport()
     assert (isinstance(r, COPASI.CReport))
@@ -5147,7 +5147,7 @@ def set_scheduled_tasks(task_name, **kwargs):
         task_name = [task_name]
 
     for c_task in model.getTaskList():
-        assert(isinstance(c_task, COPASI.CCopasiTask))
+        assert (isinstance(c_task, COPASI.CCopasiTask))
         c_task.setScheduled(c_task.getObjectName() in task_name)
 
 
@@ -5248,7 +5248,7 @@ def get_parameter_sets(name=None, exact=False, values_only=False, **kwargs):
     result = []
 
     sets = model.getModelParameterSets()
-    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
 
     for i in range(sets.size()):
         pset = sets.get(i)
@@ -5289,7 +5289,7 @@ def remove_parameter_sets(name=None, exact=False, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     sets = model.getModelParameterSets()
-    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
 
     num_sets = sets.size()
 
@@ -5804,7 +5804,7 @@ def _create_plot(plot_spec, data):
             count += 1
 
         ax.plot(data[cn_to_index[curve['channels'][0]]].values, data[cn_to_index[curve['channels'][1]]].values,
-                 label=curve['name'])
+                label=curve['name'])
     if plot_spec['log_x']:
         ax.set_xscale('log')
     if plot_spec['log_y']:

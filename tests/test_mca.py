@@ -13,7 +13,7 @@ class TestMCA(unittest.TestCase):
         self.assertTrue(settings['method']['Use Reder'])
         self.assertTrue(settings['method']['Use Smallbone'])
 
-    
+
     def test_run(self):
         basico.run_mca()
         elasticities = basico.get_elasticities()

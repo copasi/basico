@@ -398,7 +398,7 @@ def _get_experiment_file(experiment, **kwargs):
     raise_error = kwargs.get('raise_error', True)
     if raise_error:
         raise ValueError('Experiment file {0} does not exist'.format(file_name_only))
-    
+
     if return_relative and directory and os.path.exists(file_name_only):
         try:
             return os.path.relpath(file_name_only, directory)
@@ -926,7 +926,7 @@ def get_parameters_solution(model=None):
     assert (isinstance(problem, COPASI.CFitProblem))
     solution = problem.getSolutionVariables()
     items = problem.getOptItemList()
-    assert(solution.size() == len(items))
+    assert (solution.size() == len(items))
     data = []
 
     for i in range(solution.size()):
@@ -1049,7 +1049,7 @@ def add_experiment(name, data, **kwargs):
             if obj is None:
                 logger.warning("Can't find model element for {0}".format(current))
             else:
-                assert(isinstance(obj, COPASI.CDataObject))
+                assert (isinstance(obj, COPASI.CDataObject))
                 if obj.getObjectType() != 'Reference':
                     try:
                         obj = obj.getValueReference()
@@ -1178,7 +1178,7 @@ def run_parameter_estimation(**kwargs):
         basico.set_task_settings(task, kwargs['settings'])
 
     num_messages_before = COPASI.CCopasiMessage.size()
-    
+
     task.setCallBack(get_default_handler())
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
@@ -1189,7 +1189,7 @@ def run_parameter_estimation(**kwargs):
         if not result:
             logger.error("Error while initializing parameter estimation: " +
             basico.model_info.get_copasi_messages(num_messages_before))
-    
+
     task.restore()
 
     problem.setCreateParameterSets(old_create_parameter_sets)
@@ -1277,7 +1277,7 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
             steady_state_task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
             steady_state_task.processRaw(True)
             data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
-            
+
             for j in range(1, num_independent_points):
                 container.applyInitialValues()
                 container.updateSimulatedValues(False)
@@ -1893,7 +1893,7 @@ def load_experiments_from_yaml(experiment_description, **kwargs):
 
     :return:
     """
-        
+
     if os.path.exists(experiment_description):
         with open(experiment_description, 'r') as stream:
             experiments = yaml.safe_load(stream)
@@ -2009,7 +2009,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
         names = _get_nth_line_from_file(abs_data_file_name, int(exp_dict['header_row']), int(exp_dict['last_row']))
     if names is not None:
         names = names.split(exp_dict['separator'])
-    else: 
+    else:
         names = [i for i in range(columnNumber)]
 
     max_col = min(len(names), len(exp_dict['mapping']))

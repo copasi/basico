@@ -165,13 +165,13 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logger.error("Error while initializing the simulation: " +
-        model_info.get_copasi_messages(num_messages_before, 'No output'))
+                     model_info.get_copasi_messages(num_messages_before, 'No output'))
     else:
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
             logger.error("Error while running the simulation: " +
-            model_info.get_copasi_messages(num_messages_before))
+                         model_info.get_copasi_messages(num_messages_before))
 
     task.restore()
     df = get_data_from_data_handler(dh, columns)
@@ -328,13 +328,13 @@ def run_time_course(*args, **kwargs):
     result = task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
     if not result:
         logger.error("Error while initializing the simulation: " +
-        model_info.get_copasi_messages(num_messages_before, 'No output'))
+                     model_info.get_copasi_messages(num_messages_before, 'No output'))
     else:
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
         if not result:
             logger.error("Error while running the simulation: " +
-            model_info.get_copasi_messages(num_messages_before))
+                         model_info.get_copasi_messages(num_messages_before))
 
     use_concentrations = kwargs.get('use_concentrations', True)
     if 'use_numbers' in kwargs and kwargs['use_numbers']:

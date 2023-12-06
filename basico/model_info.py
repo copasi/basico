@@ -350,7 +350,7 @@ def get_species(name=None, exact=False, **kwargs):
     model.compileIfNecessary()
 
     metabs = model.getMetabolites()
-    assert(isinstance(metabs, COPASI.MetabVector))
+    assert (isinstance(metabs, COPASI.MetabVector))
 
     num_metabs = metabs.size()
     data = []
@@ -5332,16 +5332,16 @@ def add_parameter_set(name, param_set_dict=None, **kwargs):
     assert (isinstance(model, COPASI.CModel))
 
     sets = model.getModelParameterSets()
-    assert(isinstance(sets, COPASI.ModelParameterSetVectorN))
+    assert (isinstance(sets, COPASI.ModelParameterSetVectorN))
 
     if sets.getByName(name) is not None:
         raise ValueError('Parameter set with name "{}" already exists'.format(name))
 
     if param_set_dict is None:
         # create parameter set from current state
-        new_set = COPASI.CModelParameterSet(model.getActiveModelParameterSet(), None, False)
-        new_set.setObjectName(name)
+        new_set = COPASI.CModelParameterSet(name)
         sets.addAndOwn(new_set)
+        new_set.createFromModel()
         return
 
     new_set = COPASI.CModelParameterSet(name)
@@ -5929,3 +5929,30 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
         figures.append((fig, ax))
 
     return figures
+
+
+def get_copasi_messages(num_messages_before, filters=None):
+    """ Returns error messages that occurred while initializing or running the simulation
+
+    :param num_messages_before: number of messages before calling initialization or process
+    :param filters: optional list of filter expressions of what messages to ignore
+    :type filters: list of str or str or None
+
+    :return: error messages in form of a string
+
+    """
+    messages = []
+    if filters is None:
+        filters = []
+    if type(filters) == str:
+        filters = [filters]
+    while COPASI.CCopasiMessage.size() > num_messages_before:
+        message = COPASI.CCopasiMessage.getLastMessage()
+        skip = False
+        for filter_text in filters:
+            if filter_text in message.getText():
+                skip = True
+                break
+        if not skip:
+            messages.insert(0, message.getText())
+    return "".join(messages)

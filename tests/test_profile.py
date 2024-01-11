@@ -103,8 +103,8 @@ class TestProfile(unittest.TestCase):
         basico.save_model_and_data(temp_file)
 
         sol = basico.run_parameter_estimation(method=basico.PE.HOOKE_JEEVES, update_model=True)
-        self.assertAlmostEqual(sol['sol'][0], 2.27, places=2)
-        self.assertAlmostEqual(sol['sol'][1], 1.43, places=2)
+        self.assertAlmostEqual(sol['sol'].iloc[0], 2.27, places=2)
+        self.assertAlmostEqual(sol['sol'].iloc[1], 1.43, places=2)
 
         temp_file = os.path.join(temp_dir, 'test.cps')
         basico.save_model_and_data(temp_file)

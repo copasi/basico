@@ -275,7 +275,7 @@ class TestReportManipulation(unittest.TestCase):
         basico.add_reaction('R1', 'S1 + S2 -> S3; I', function='MassAction_inhibited')
         r = basico.get_reactions('R1')
         self.assertTrue(r is not None)
-        self.assertEqual(r['function'][0], 'MassAction_inhibited')
+        self.assertEqual(r['function'].iloc[0], 'MassAction_inhibited')
         basico.remove_datamodel(m)
 
     def test_parameter_mapping(self):
@@ -288,21 +288,21 @@ class TestReportManipulation(unittest.TestCase):
         self.assertTrue(len(params) == 1)
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
-        self.assertTrue(params2.type[0] == 'local')
+        self.assertTrue(params2.type.iloc[0] == 'local')
         basico.set_reaction(r, mapping={'k1': 'k_global'})
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
-        self.assertTrue(params2.type[0] == 'global')
+        self.assertTrue(params2.type.iloc[0] == 'global')
 
         basico.set_reaction(r, mapping={'k1': 1.0})
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
-        self.assertTrue(params2.type[0] == 'local')
+        self.assertTrue(params2.type.iloc[0] == 'local')
 
         basico.set_reaction_parameters('(R).k1', mapped_to='k_global')
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
-        self.assertTrue(params2.type[0] == 'global')
+        self.assertTrue(params2.type.iloc[0] == 'global')
 
 
 if __name__ == '__main__':

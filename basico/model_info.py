@@ -5336,6 +5336,10 @@ def add_parameter_set(name, param_set_dict=None, **kwargs):
     if sets.getByName(name) is not None:
         raise ValueError('Parameter set with name "{}" already exists'.format(name))
 
+    # if we are here, the parameter set does not exist yet, unfortunately
+    # the test added a message, so lets remove it
+    COPASI.CCopasiMessage.getLastMessage()
+
     if param_set_dict is None:
         # create parameter set from current state
         new_set = COPASI.CModelParameterSet(name)

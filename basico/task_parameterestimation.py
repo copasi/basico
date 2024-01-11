@@ -1177,6 +1177,12 @@ def run_parameter_estimation(**kwargs):
     if 'settings' in kwargs:
         basico.set_task_settings(task, kwargs['settings'])
 
+    # the parameter estimation task will not run if errors have not been
+    # cleared from the error log. So we clear them here if necessary
+    if COPASI.CCopasiMessage.getHighestSeverity() > COPASI.CCopasiMessage.WARNING:
+        logger.warning("Uncaptured Errors: " +
+        basico.model_info.get_copasi_messages(0, 'No output'))        
+
     num_messages_before = COPASI.CCopasiMessage.size()
 
     task.setCallBack(get_default_handler())

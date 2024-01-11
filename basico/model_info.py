@@ -5338,7 +5338,8 @@ def add_parameter_set(name, param_set_dict=None, **kwargs):
 
     # if we are here, the parameter set does not exist yet, unfortunately
     # the test added a message, so lets remove it
-    COPASI.CCopasiMessage.getLastMessage()
+    if COPASI.CCopasiMessage.peekLastMessage().getNumber() == 5501:
+        COPASI.CCopasiMessage.getLastMessage()
 
     if param_set_dict is None:
         # create parameter set from current state

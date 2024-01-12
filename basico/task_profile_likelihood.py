@@ -124,7 +124,7 @@ def plot_data(data_dir, problem_size=None, **kwargs):
         if problem_size:
             m, n = problem_size
             scale_mode = kwargs.get('scale_mode', 3)
-            log_level = kwargs.get('log_level', logger.INFO)
+            log_level = kwargs.get('log_level', logging.INFO)
             if type(log_level) is str:
                 log_level = logger.getLevelName(log_level.upper())
 

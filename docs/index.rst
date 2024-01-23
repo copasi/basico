@@ -42,6 +42,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/Working_with_ParameterSets
    notebooks/Profile_likelihood
    notebooks/MCA
+   notebooks/Working_with_Widgets
 
 .. toctree::
    :maxdepth: 2

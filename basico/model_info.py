@@ -4058,7 +4058,10 @@ def _tokenize_eqn(eqn):
 
             if chunk.startswith('d'):
                 chunk = chunk[1:]
-                continue
+
+            # remove trailing whitespace
+            while i < num_chars and eqn[i] == ' ':
+                i += 1
 
             continue
 

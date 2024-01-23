@@ -186,6 +186,16 @@ class TestBasicoModelManipulation(unittest.TestCase):
 
         self.assertTrue(True)
 
+    def test_lorenz_with_spaces(self):
+        dm = basico.new_model(name='Lorenz', volume_unit='ml', quantity_unit='mmol')
+        basico.add_equation('d[X]/dt = sigma * ( [Y] - [X] )')
+        basico.add_equation('d[Y]/dt    =   [X]  *  (  rho  -  [Z] ) - [Y]')
+        basico.add_equation('d[Z]/dt =    [X]  *   [Y]    -    beta * [Z] ')
+        species = basico.as_dict(basico.get_species())
+        self.assertEqual(species[0]['expression'], 'Values[sigma] * ( [Y] - [X] )')
+        self.assertEqual(species[1]['expression'], '[X] * ( Values[rho] - [Z] ) - [Y]')
+        self.assertEqual(species[2]['expression'], '[X] * [Y] - Values[beta] * [Z]')
+
 
 class TestReportManipulation(unittest.TestCase):
 

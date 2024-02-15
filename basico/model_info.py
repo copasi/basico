@@ -3227,11 +3227,15 @@ def get_reaction_mapping(reaction, **kwargs):
             continue
 
         objs = info.getMappings(j)
-        if objs.size() == 1:
+        obj_size = objs.size()
+        if obj_size == 1:
             result[p_name] = objs[0]
             continue
 
-        result[p_name] = list(objs)
+        obj_list = []
+        for i in range(obj_size):
+            obj_list.append(objs[i])
+        result[p_name] = obj_list
 
     return result
 
@@ -3708,6 +3712,23 @@ def set_time_unit(unit, **kwargs):
         model.setTimeUnit(kwargs['unit'])
     else:
         model.setTimeUnit(unit)
+
+def get_model_name(**kwargs):
+    """Returns the name of the current model.
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: the name of the model
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+    return model.getObjectName()
 
 
 def get_model_units(**kwargs):
@@ -4643,6 +4664,16 @@ def set_task_settings(task, settings, **kwargs):
     if 'problem' in settings:
         problem = task.getProblem()
         _set_group_from_dict(problem, settings['problem'])
+
+        if isinstance(problem, COPASI.CTrajectoryProblem):            
+            if 'Duration' in settings['problem']:
+                problem.setDuration(float(settings['problem']['Duration']))
+            if 'StepSize' in settings['problem']:
+                problem.setStepSize(float(settings['problem']['StepSize']))
+            if 'intervals' in settings['problem']:
+                problem.setStepNumber(int(settings['problem']['intervals']))
+            if 'StepNumber' in settings['problem']:
+                problem.setStepNumber(int(settings['problem']['StepNumber']))
 
     if 'method' in settings:
         method = task.getMethod()

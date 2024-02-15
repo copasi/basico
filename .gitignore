@@ -131,6 +131,8 @@ $RECYCLE.BIN/
 /docs/notebooks/*.yaml
 /docs/notebooks/output/
 /docs/notebooks/temp_selection/
+/docs/notebooks/famos_dir/
+/docs/notebooks/model_selection/
 /tests/temp_selection/
 /tests/output/
 /tests/test_private.py

@@ -135,6 +135,20 @@ def get_num_loaded_models():
     """
     return COPASI.CRootContainer.getDatamodelList().size()
 
+def remove_loaded_models():
+    """Removes all loaded models
+
+    :return: None
+    """
+
+    while COPASI.CRootContainer.getDatamodelList().size() > 0:
+        model = COPASI.CRootContainer.getDatamodelList().get(0)
+        COPASI.CRootContainer.removeDatamodel(model)
+
+    global __current_model
+    global __model_list
+    __model_list = []
+    __current_model = None
 
 def new_model(**kwargs):
     """Creates a new model and sets it as current.

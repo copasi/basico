@@ -4555,18 +4555,21 @@ def _set_group_from_dict(group, values):
         assert (isinstance(param, COPASI.CCopasiParameter))
         param_type = param.getType()
 
-        if param_type == COPASI.CCopasiParameter.Type_STRING:
-            param.setStringValue(str(values[key]))
-        elif param_type == COPASI.CCopasiParameter.Type_INT:
-            param.setIntValue(int(values[key]))
-        elif param_type == COPASI.CCopasiParameter.Type_UINT:
-            param.setUIntValue(int(values[key]))
-        elif param_type == COPASI.CCopasiParameter.Type_DOUBLE:
-            param.setDblValue(float(values[key]))
-        elif param_type == COPASI.CCopasiParameter.Type_UDOUBLE:
-            param.setUDblValue(float(values[key]))
-        elif param_type == COPASI.CCopasiParameter.Type_BOOL:
-            param.setBoolValue(bool(values[key]))
+        try:
+            if param_type == COPASI.CCopasiParameter.Type_STRING:
+                param.setStringValue(str(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_INT:
+                param.setIntValue(int(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_UINT:
+                param.setUIntValue(int(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_DOUBLE:
+                param.setDblValue(float(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_UDOUBLE:
+                param.setUDblValue(float(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_BOOL:
+                param.setBoolValue(bool(values[key]))
+        except TypeError:
+            logger.error('could not set value {0} for parameter {1}'.format(values[key], key))
 
 
 def get_task_settings(task, basic_only=True, **kwargs):

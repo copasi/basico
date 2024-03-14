@@ -1,4 +1,5 @@
 import logging
+from math import exp
 import sys
 import unittest
 import basico
@@ -518,6 +519,18 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
         basico.remove_datamodel(dm)
 
+    def test_retrieval_from_multiple_models(self):
+        dm1 = basico.load_example('bruss')
+        basico.add_parameter('xy_sum', expression='[X] + [Y]', type='assignment')
+        basico.add_parameter('xy_initial_half', expression='Values[xy_sum].InitialValue / 2', type='assignment')
+        param1 =  basico.as_dict(basico.get_parameters())
+        dm2 = basico.new_model(name='empty')
+        param2 = basico.as_dict(basico.get_parameters(model=dm1))
+        self.assertEqual(len(param1), len(param2))
+        self.assertEqual(param1[0]['expression'], param2[0]['expression'])
+        self.assertEqual(param1[1]['expression'], param2[1]['expression'])
+        basico.remove_datamodel(dm1)
+        basico.remove_datamodel(dm2)
 
 if __name__ == "__main__":
     unittest.main()

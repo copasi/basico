@@ -377,7 +377,9 @@ def get_species(name=None, exact=False, **kwargs):
             'rate': metab.getConcentrationRate(),
             'particle_number_rate': metab.getRate(),
             'key': metab.getKey(),
-            'sbml_id': metab.getSBMLId()
+            'sbml_id': metab.getSBMLId(),
+            'transition_time': metab.getTransitionTime(),
+            'display_name': metab.getObjectDisplayName(),
         }
 
         display_name = metab.getObjectDisplayName()
@@ -2212,7 +2214,8 @@ def get_compartments(name=None, exact=False, **kwargs):
             'size': compartment.getValue(),
             'rate': compartment.getRate(),
             'key': compartment.getKey(),
-            'sbml_id': compartment.getSBMLId()
+            'sbml_id': compartment.getSBMLId(),
+            'display_name': compartment.getObjectDisplayName(),
         }
 
         if name and exact and name != comp_data['name']:
@@ -2286,7 +2289,8 @@ def get_parameters(name=None, exact=False, **kwargs):
             'value': param.getValue(),
             'rate': param.getRate(),
             'key': param.getKey(),
-            'sbml_id': param.getSBMLId()
+            'sbml_id': param.getSBMLId(),
+            'display_name': param.getObjectDisplayName(),
         }
 
         display_name = param.getObjectDisplayName()
@@ -2572,7 +2576,8 @@ def get_reactions(name=None, exact=False, **kwargs):
             'particle_flux': reaction.getParticleFlux(),
             'function': reaction.getFunction().getObjectName(),
             'key': reaction.getKey(),
-            'sbml_id': reaction.getSBMLId()
+            'sbml_id': reaction.getSBMLId(),
+            'display_name': reaction.getObjectDisplayName(),
         }
 
         if name and exact and name != reaction_data['name']:

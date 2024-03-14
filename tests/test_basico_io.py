@@ -71,6 +71,41 @@ class TestBasicoIO(unittest.TestCase):
         self.assertEqual(params.shape[0], 176)
         basico.remove_datamodel(dm)
 
+    def test_load_and_reconstruct(self):
+        dm = basico.load_biomodel(64)
+        species = basico.as_dict(basico.get_species())
+        params = basico.as_dict(basico.get_parameters())
+        basico.remove_datamodel(dm)
+        dm = basico.new_model()
+
+        # ensure we have all species
+        for s in species:
+            basico.add_species(s['name'], s['compartment'])
+
+        for p in params:
+            basico.add_parameter(p['name'], p['value'])
+
+        # now set all values as we had them
+        for s in species:
+            basico.set_species(exact=True, **s)
+
+        for p in params:
+            basico.set_parameters(exact=True, **p)
+
+        # now we should have the same expressions in both 
+        species2 = basico.as_dict(basico.get_species())
+        params2 = basico.as_dict(basico.get_parameters())
+
+        self.assertListEqual(
+            [ s['expression']  for s in species if s['expression'] != ''], 
+            [ s['expression']  for s in species2 if s['expression'] != ''])
+
+        self.assertListEqual(
+            [ p['expression']  for s in params if s['expression'] != ''], 
+            [ s['expression']  for s in params2 if s['expression'] != ''])
+
+        basico.remove_datamodel(dm)
+
     def test_search_biomodels(self):
         models = basico.biomodels.search_for_model('Hodgkin')
         model_ids = [model['id'] for model in models]

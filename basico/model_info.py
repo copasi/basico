@@ -1228,6 +1228,25 @@ def wrap_copasi_string(text):
     """
     return 'String=' + COPASI.CCommonName.escape(text)
 
+def _is_known_reference_start(text):
+    if text.startswith('['):
+        return True
+    if text.startswith('Values['):
+        return True
+    if text.startswith('('):
+        return True
+    return False
+
+def _is_known_reference_end(text):
+    for end in [']', 
+                '].InitialValue', 
+                '].Value',
+                '].Rate',
+                '].InitialConcentration',
+                ]:
+        if text.endswith(end):
+            return True
+    return False
 
 def _replace_names_with_cns(expression, **kwargs):
     """ replaces all names in the given expression with cns
@@ -1246,9 +1265,32 @@ def _replace_names_with_cns(expression, **kwargs):
     resulting_expression = ''
     expression = expression.replace('{', ' {')
     expression = expression.replace('}', '} ')
+    current_word = None
+
     for word in expression.split():
         if word.startswith('{') and word.endswith('}'):
+            if current_word is not None:
+                resulting_expression += ' ' + current_word
+                current_word = None
             word = word[1:-1]
+        else:
+            is_known = dm.findObjectByDisplayName(word)
+            if _is_known_reference_start(word) and not is_known:
+                if current_word is not None:
+                    resulting_expression += ' ' + current_word
+                current_word = word
+                continue
+
+            if current_word is not None:
+                current_word += ' ' + word
+                if _is_known_reference_end(word):
+                    word = current_word
+                    current_word = None
+                elif dm.findObjectByDisplayName(word) is not None:
+                    word = current_word
+                    current_word = None
+                else:
+                    continue
 
         obj = dm.findObjectByDisplayName(word)
         if obj is not None:
@@ -1886,6 +1928,8 @@ def add_species(name, compartment_name='', initial_concentration=1.0, **kwargs):
         if model.getNumCompartments() == 0:
             model.createCompartment('compartment', 1)
         compartment_name = model.getCompartment(0).getObjectName()
+    elif not model.getCompartment(compartment_name):
+        model.createCompartment(compartment_name, 1)
 
     species = model.createMetabolite(name, compartment_name, initial_concentration)
     if species is None:
@@ -2703,14 +2747,14 @@ def _set_compartment(compartment, c_model, **kwargs):
         if transient in kwargs:
             compartment.setValue(float(kwargs[transient]))
     if 'initial_expression' in kwargs:
-        _set_initial_expression(compartment, kwargs['initial_expression'])
+        _set_initial_expression(compartment, kwargs['initial_expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
     if 'status' in kwargs:
         compartment.setStatus(__status_to_int(kwargs['status']))
     if 'type' in kwargs:
         compartment.setStatus(__status_to_int(kwargs['type']))
     if 'expression' in kwargs:
-        _set_expression(compartment, kwargs['expression'])
+        _set_expression(compartment, kwargs['expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
     if 'dimensionality' in kwargs:
         compartment.setDimensionality(kwargs['dimensionality'])
@@ -2720,43 +2764,46 @@ def _set_compartment(compartment, c_model, **kwargs):
         compartment.setSBMLId(kwargs['sbml_id'])
 
 
-def _set_initial_expression(element, expression):
+def _set_initial_expression(element, expression, model=None):
     """Utility function to safely set an initial expression
 
         :param element: model element
-        :type element: COPASI.CModelEntity
+        :type element: COPASI.CModelEntity        
 
         :param expression: infix expression to set
+        :param model: the data model to use
         :return: None
         """
     if element is None:
         return
 
-    _set_safe(element.setInitialExpression, expression)
+    _set_safe(element.setInitialExpression, expression, model)
 
 
-def _set_expression(element, expression):
+def _set_expression(element, expression, model=None):
     """Utility function to safely set an ODE / assignment expression
 
     :param element: model element
     :type element: COPASI.CModelEntity
 
     :param expression: infix expression to set
+    :param model: the data model to use
     :return: None
     """
     if element is None:
         return
-    _set_safe(element.setExpression, expression)
+    _set_safe(element.setExpression, expression, model=model)
 
 
-def _set_safe(fun, expression):
+def _set_safe(fun, expression, model=None):
     """Calls the given function that is supposed to return a COPASI.CIssue
 
     :param fun: function to call
     :param expression: infic expression
+    :param model: the data model to use
     :return:
     """
-    result = fun(_replace_names_with_cns(expression))
+    result = fun(_replace_names_with_cns(expression, model=model))
     if result.isError():
         logger.error('Invalid expression: {0}'.format(expression))
         # set to empty string avoid crash
@@ -2846,7 +2893,7 @@ def _set_parameter(param, c_model, **kwargs):
         param.setValue(float(kwargs['value']))
 
     if 'initial_expression' in kwargs:
-        _set_initial_expression(param, kwargs['initial_expression'])
+        _set_initial_expression(param, kwargs['initial_expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
 
     if 'status' in kwargs:
@@ -2858,7 +2905,7 @@ def _set_parameter(param, c_model, **kwargs):
         c_model.setCompileFlag(True)
 
     if 'expression' in kwargs:
-        _set_expression(param, kwargs['expression'])
+        _set_expression(param, kwargs['expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
 
     if 'notes' in kwargs:
@@ -3681,14 +3728,14 @@ def _set_species(metab, c_model, **kwargs):
     if 'particle_number' in kwargs:
         metab.setValue(float(kwargs['particle_number']))
     if 'initial_expression' in kwargs:
-        _set_initial_expression(metab, kwargs['initial_expression'])
+        _set_initial_expression(metab, kwargs['initial_expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
     if 'status' in kwargs:
         metab.setStatus(__status_to_int(kwargs['status']))
     if 'type' in kwargs:
         metab.setStatus(__status_to_int(kwargs['type']))
     if 'expression' in kwargs:
-        _set_expression(metab, kwargs['expression'])
+        _set_expression(metab, kwargs['expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
     if 'notes' in kwargs:
         metab.setNotes(kwargs['notes'])

@@ -1228,21 +1228,38 @@ def wrap_copasi_string(text):
     """
     return 'String=' + COPASI.CCommonName.escape(text)
 
-def _is_known_reference_start(text):
+def _is_known_reference_start(text, additional_list=None, reaction_list=None):
     if text.startswith('['):
-        return True
+        return 1, ']'
     if text.startswith('Values['):
-        return True
-    if text.startswith('('):
-        return True
-    return False
+        return len('Values['), ']'
+    if text.startswith('Compartments['):
+        return len('Compartments['), ']'
+    if reaction_list:
+        for r in reaction_list:
+            if text.startswith(f'({r}).'):
+                return len(f'({r}).'), ' '
+    if additional_list:
+        for s in additional_list:
+            if text.startswith(f'[{s}]'):
+                return len(f'[{s}]'), ' '
+            if text.startswith(f'{s}.'):
+                return len(f'{s}.'), ' '
+    
+    return None
 
 def _is_known_reference_end(text):
     for end in [']', 
+                ']_0',
                 '].InitialValue', 
                 '].Value',
                 '].Rate',
                 '].InitialConcentration',
+                '].Flux',
+                '].InitialParticleNumber',
+                '].ParticleFlux',
+                '].ParticleNumberRate',
+                '].InitialVolume',
                 ]:
         if text.endswith(end):
             return True
@@ -1262,44 +1279,95 @@ def _replace_names_with_cns(expression, **kwargs):
 
     dm = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(dm, COPASI.CDataModel))
+
+    species_names = [s.getObjectName() for s in dm.getModel().getMetabolites()]
+    reaction_names = [r.getObjectName() for r in dm.getModel().getReactions()]
+
     resulting_expression = ''
     expression = expression.replace('{', ' {')
     expression = expression.replace('}', '} ')
+    expression += ' '
     current_word = None
 
-    for word in expression.split():
-        if word.startswith('{') and word.endswith('}'):
-            if current_word is not None:
-                resulting_expression += ' ' + current_word
-                current_word = None
-            word = word[1:-1]
-        else:
-            is_known = dm.findObjectByDisplayName(word)
-            if _is_known_reference_start(word) and not is_known:
-                if current_word is not None:
-                    resulting_expression += ' ' + current_word
-                current_word = word
-                continue
-
-            if current_word is not None:
-                current_word += ' ' + word
-                if _is_known_reference_end(word):
-                    word = current_word
-                    current_word = None
-                elif dm.findObjectByDisplayName(word) is not None:
-                    word = current_word
-                    current_word = None
-                else:
-                    continue
-
+    def _get_reference(dm, word):
         obj = dm.findObjectByDisplayName(word)
         if obj is not None:
             if isinstance(obj, COPASI.CModel):
                 obj = obj.getValueReference()
-            resulting_expression += ' <{0}>'.format(obj.getCN())
-        else:
-            resulting_expression += ' ' + word
+            return ' <{0}>'.format(obj.getCN())
+        return ' ' + word
 
+    num_chars = len(expression)
+    i = 0
+    while i < num_chars:
+        cur_char = expression[i]
+        c_next = expression[i + 1] if (i + 1) < num_chars else None
+        c_2 = expression[i + 2] if (i + 2) < num_chars else None
+        c_3 = expression[i + 3] if (i + 3) < num_chars else None
+        substr = expression[i:]
+
+        if cur_char == '<' and c_next == 'C' and c_2 == 'N' and c_3 == '=':
+            end = expression.find('>', i)
+            cn = expression[i: end+1]
+            resulting_expression += ' ' + cn
+            i = end +1
+            if i == 0:
+                break
+            continue
+
+        if cur_char == '{':
+            end = expression.find('}', i)
+            reference = expression[i+1: end]
+            resulting_expression += _get_reference(dm, reference)
+            i = end +1
+            if i == 0:
+                break
+            continue
+
+        found = _is_known_reference_start(substr, species_names, reaction_names)
+        if found is not None:
+            end = expression.find(found[1], i + found[0])
+            reference = expression[i: end+1].strip()
+            if end != -1 and end + 1 < num_chars and expression[end + 1] == '.':
+                end = expression.find(' ', end + 1)
+                if end == -1:
+                    end = num_chars
+                reference = expression[i: end]
+            elif end != -1 and end + 1 < num_chars and expression[end + 1] == '_':
+                end = expression.find(' ', end + 1)
+                if end == -1:
+                    end = num_chars
+                reference = expression[i: end]
+            resulting_expression += _get_reference(dm, reference)
+            i = end +1
+
+            if i == 0:
+                break
+            continue
+
+        if cur_char in '/*+-()^%<>!=&|':
+            if current_word is not None:
+                resulting_expression += ' ' + current_word
+                current_word = None
+            resulting_expression += cur_char
+        elif cur_char != ' ':
+            if current_word is None:
+                current_word = cur_char
+            else:
+                current_word += cur_char
+        else:
+            if current_word is not None:
+                is_known = dm.findObjectByDisplayName(current_word)
+                if is_known:
+                    resulting_expression += ' <{0}>'.format(is_known.getCN())
+                elif _is_known_reference_start(current_word, species_names) and not is_known:
+                    resulting_expression += ' ' + current_word
+                else:
+                    resulting_expression += ' ' + current_word
+                current_word = None
+
+        i += 1
+        
     return resulting_expression.strip()
 
 
@@ -2799,7 +2867,7 @@ def _set_safe(fun, expression, model=None):
     """Calls the given function that is supposed to return a COPASI.CIssue
 
     :param fun: function to call
-    :param expression: infic expression
+    :param expression: infix expression
     :param model: the data model to use
     :return:
     """
@@ -3468,8 +3536,14 @@ def remove_species(name, **kwargs):
 def remove_parameter(name, **kwargs):
     """Deletes the named global parameter
 
+    This will also delete any model element that uses this parameter, 
+    so if it appears in any model expression, the elements using these 
+    expressions will also be deleted. To prevent that, use the recursive
+    parameter.
+    
     :param name: the name of a parameter in the model
-    :type name: str
+    :type name: str | List[str]
+
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3483,15 +3557,21 @@ def remove_parameter(name, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    mv = model.getModelValue(name)
-    if mv is None:
-        logger.warning('no such global parameter {0}'.format(name))
-        return
-
-    key = mv.getKey()
     model.compileIfNecessary()
-    model.removeModelValue(key)
-    model.setCompileFlag(True)
+
+    if type(name) is str:
+        name = [name]
+
+    for n in name:
+        mv = model.getModelValue(n)
+        if mv is None:
+            logger.warning('no such global parameter {0}'.format(n))
+            continue
+
+        key = mv.getKey()
+        model.removeModelValue(key)
+        model.setCompileFlag(True)
+
     model.compileIfNecessary()
 
 

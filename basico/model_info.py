@@ -4625,7 +4625,7 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
     return pd.DataFrame(data, columns=name_vector, index=name_vector)
 
 
-def _get_group_as_dict(group, basic_only=True):
+def _get_group_as_dict(group, basic_only=True, dm=None):
     """Returns the values from the given parameter group as dictionary
 
     :param group: the copasi parameter group
@@ -4634,6 +4634,9 @@ def _get_group_as_dict(group, basic_only=True):
     :param basic_only: boolean indicating, whether only basic parameters should be returned (default)
     :type basic_only: bool
 
+    :param dm: the data model to be used for resolving CN values
+    :type dm: COPASI.CDataModel or None
+    
     :return: dictionary with the values
     """
     result = {}
@@ -4665,17 +4668,30 @@ def _get_group_as_dict(group, basic_only=True):
             result[name] = param.getUDblValue()
         elif param_type == COPASI.CCopasiParameter.Type_BOOL:
             result[name] = param.getBoolValue()
+        elif param_type == COPASI.CCopasiParameter.Type_CN:
+            cn = param.getCNValue()
+            if dm is not None: 
+                obj = dm.getObject(cn)
+                if obj is not None:
+                    named = obj.getObjectDisplayName()
+                    if dm.findObjectByDisplayName(named) is not None:
+                        cn = named
+                else:
+                    logger.warning('could not find object with CN {0}'.format(cn))
+            result[name] = cn
 
     return result
 
 
-def _set_group_from_dict(group, values):
+def _set_group_from_dict(group, values, dm=None):
     """Changes settings in the given parameter group to the values specified in the values dictionary
 
     :param group: the copasi parameter group to update
     :type group: COPASI.CCopasiParameterGroup
     :param values: dictionary with new values
     :type values: dict
+    :param dm: the data model to be used for resolving CN values
+    :type dm: COPASI.CDataModel or None
     :return:
     """
     for key in values:
@@ -4702,6 +4718,18 @@ def _set_group_from_dict(group, values):
                 param.setUDblValue(float(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_BOOL:
                 param.setBoolValue(bool(values[key]))
+            elif param_type == COPASI.CCopasiParameter.Type_CN:
+                name_or_cn = str(values[key])
+                if dm is not None:
+                    obj = dm.getObject(name_or_cn)
+                    if obj is None:
+                        obj = dm.findObjectByDisplayName(name_or_cn)
+                    
+                    if obj is not None:
+                        name_or_cn = obj.getCN()
+                    else:
+                        logger.warning('could not find object with name or CN {0}'.format(name_or_cn))
+                param.setCNValue(name_or_cn)
         except TypeError:
             logger.error('could not set value {0} for parameter {1}'.format(values[key], key))
 
@@ -4741,10 +4769,10 @@ def get_task_settings(task, basic_only=True, **kwargs):
     }
 
     problem = task.getProblem()
-    result['problem'] = _get_group_as_dict(problem, basic_only)
+    result['problem'] = _get_group_as_dict(problem, basic_only, dm=dm)
 
     method = task.getMethod()
-    result['method'] = _get_group_as_dict(method, basic_only)
+    result['method'] = _get_group_as_dict(method, basic_only, dm=dm)
     result['method']['name'] = method.getObjectName()
 
     report = task.getReport()
@@ -4800,7 +4828,7 @@ def set_task_settings(task, settings, **kwargs):
 
     if 'problem' in settings:
         problem = task.getProblem()
-        _set_group_from_dict(problem, settings['problem'])
+        _set_group_from_dict(problem, settings['problem'], dm=dm)
 
         if isinstance(problem, COPASI.CTrajectoryProblem):            
             if 'Duration' in settings['problem']:
@@ -4821,7 +4849,7 @@ def set_task_settings(task, settings, **kwargs):
                 task.setMethodType(COPASI.CCopasiMethod.TypeNameToEnum(name))
                 method = task.getMethod()
 
-        _set_group_from_dict(method, m_dict)
+        _set_group_from_dict(method, m_dict, dm=dm)
 
     if 'report' in settings:
         r_dict = settings['report']

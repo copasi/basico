@@ -1452,6 +1452,8 @@ def _replace_cns_with_names(expression, **kwargs):
             obj = dm.getObject(COPASI.CCommonName(cn))
             if obj is not None:
                 word = obj.getObjectDisplayName()
+                if ' ' in word:
+                    word = '{' + word + '}'
         resulting_expression += ' ' + word
 
     return resulting_expression.strip()
@@ -4939,16 +4941,17 @@ def _get_named_value(obj, name):
 
     elif is_metab:
         value = {
-            'ParticleNumber': obj.getValue(),
-            'ParticleNumberRate': obj.getRate(),
-            'InitialParticleNumber': obj.getInitialValue(),
-            'InitialConcentration': obj.getInitialConcentration(),
             'Concentration': obj.getConcentration(),
+            'ParticleNumber': obj.getValue(),
             'Rate': obj.getConcentrationRate(),
+            'ParticleNumberRate': obj.getRate(),
+            'InitialConcentration': obj.getInitialConcentration(),
+            'InitialParticleNumber': obj.getInitialValue(),            
         }.get(name, None)
 
     elif is_model:
         value = {
+            'Initial Time': obj.getInitialTime(),
             'Time': obj.getValue(),
         }.get(name, None)
 
@@ -5016,14 +5019,15 @@ def _set_named_value(obj, name, new_value, ref):
 
     elif is_metab:
         set_function = {
+            'Concentration': obj.setConcentration,
             'ParticleNumber': obj.setValue,
             'InitialParticleNumber': obj.setInitialValue,
             'InitialConcentration': obj.setInitialConcentration,
-            'Concentration': obj.setConcentration,
         }.get(name, None)
 
     elif is_model:
         set_function = {
+            'Initial Time': obj.setInitialTime,
             'Time': obj.setValue,
         }.get(name, None)
 

@@ -4670,7 +4670,7 @@ def _get_group_as_dict(group, basic_only=True, dm=None):
             result[name] = param.getBoolValue()
         elif param_type == COPASI.CCopasiParameter.Type_CN:
             cn = param.getCNValue()
-            if dm is not None: 
+            if cn.getString() != '' and dm is not None: 
                 obj = dm.getObject(cn)
                 if obj is not None:
                     named = obj.getObjectDisplayName()
@@ -4678,6 +4678,8 @@ def _get_group_as_dict(group, basic_only=True, dm=None):
                         cn = named
                 else:
                     logger.warning('could not find object with CN {0}'.format(cn))
+            if isinstance(cn, COPASI.CCommonName):
+                cn = cn.getString()
             result[name] = cn
 
     return result
@@ -4721,7 +4723,7 @@ def _set_group_from_dict(group, values, dm=None):
             elif param_type == COPASI.CCopasiParameter.Type_CN:
                 name_or_cn = str(values[key])
                 if dm is not None:
-                    obj = dm.getObject(name_or_cn)
+                    obj = dm.getObject(COPASI.CCommonName(name_or_cn))
                     if obj is None:
                         obj = dm.findObjectByDisplayName(name_or_cn)
                     

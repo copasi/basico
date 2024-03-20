@@ -1265,6 +1265,38 @@ def _is_known_reference_end(text):
             return True
     return False
 
+def _ends_in_start_e_notation(text):
+    # go through the string from reverse and check if it ends <number>e|E<space>
+    num_chars = len(text)
+    i = num_chars - 1
+    found_e = False
+    had_numbers = False
+    while i >= 0:
+        cur_char = text[i]
+        if cur_char in 'eE':
+            if found_e: 
+                return False
+            found_e = True
+            i -= 1
+            continue
+
+        if not found_e and cur_char == ' ':
+            i -= 1
+            continue
+        
+        if found_e and had_numbers and cur_char == ' ':
+            return True
+        
+        if not cur_char.isdigit():  # not a number            
+            if cur_char == '.':
+                i-=1
+                continue
+            return False
+
+        had_numbers = True
+        i -= 1
+    return had_numbers and found_e
+
 def _replace_names_with_cns(expression, **kwargs):
     """ replaces all names in the given expression with cns
 
@@ -1349,6 +1381,20 @@ def _replace_names_with_cns(expression, **kwargs):
             if current_word is not None:
                 resulting_expression += ' ' + current_word
                 current_word = None
+
+            # fix an issue with number in e-notation
+            if (cur_char == '-' or cur_char == '+') and _ends_in_start_e_notation(resulting_expression):
+                # remove trailing space                                
+                if resulting_expression[-1] == ' ':
+                    resulting_expression = resulting_expression[:-1]
+                resulting_expression += cur_char
+                i += 1
+                # read next characters while they are numbers
+                while i < num_chars and expression[i].isdigit():
+                    resulting_expression += expression[i]
+                    i += 1
+                continue
+            
             resulting_expression += cur_char
         elif cur_char != ' ':
             if current_word is None:
@@ -1394,6 +1440,12 @@ def _split_by_cn(expression):
 
         if cur_char in '/*+-()^%<>!=&|':
 
+            if cur_char == '+' or cur_char == '-':
+                if current and _ends_in_start_e_notation(current):
+                    current += cur_char
+                    pos += 1
+                    continue
+
             if current:
                 result.append(current)
                 current = ''
@@ -1401,6 +1453,13 @@ def _split_by_cn(expression):
             if pos + 1 < num_chars and expression[pos + 1] == '=':
                 cur_char += '='
                 pos += 1
+            
+            # fix an issue with || and &&
+            for c in ['|', '&']:
+                if pos + 1 < num_chars and expression[pos + 1] == c and cur_char == c:
+                    cur_char += c
+                    pos += 1
+
             result.append(cur_char)
 
         elif cur_char != ' ':

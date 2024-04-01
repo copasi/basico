@@ -998,6 +998,10 @@ def add_experiment(name, data, **kwargs):
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
+
+    # compile the model if needed, so that the math model is up to date
+    model.getModel().compileIfNecessary()
+
     task = model.getTask(TASK_PARAMETER_ESTIMATION)
     assert (isinstance(task, COPASI.CFitTask))
     problem = task.getProblem()
@@ -1039,28 +1043,36 @@ def add_experiment(name, data, **kwargs):
     obj_map = exp.getObjectMap()
     num_cols = len(columns)
     obj_map.setNumCols(num_cols)
+
+    num_messages = COPASI.CCopasiMessage.size()
+
     for i in range(num_cols):
         role = COPASI.CExperiment.ignore
         current = columns[i]
         if current.lower() == 'time':
             role = COPASI.CExperiment.time
+            obj_map.setRole(i, role)
+            continue
+
+        obj = model.findObjectByDisplayName(current)
+        if obj is None:
+            logger.warning("Can't find model element for {0}".format(current))
         else:
-            obj = model.findObjectByDisplayName(current)
-            if obj is None:
-                logger.warning("Can't find model element for {0}".format(current))
-            else:
-                assert (isinstance(obj, COPASI.CDataObject))
-                if obj.getObjectType() != 'Reference':
-                    try:
-                        obj = obj.getValueReference()
-                    except AttributeError:
-                        logger.warning("Cannot map the element {0}".format(current))
-                role = _get_role_for_reference(obj.getObjectName())
-                obj_map.setObjectCN(i, str(obj.getCN()))
+            assert (isinstance(obj, COPASI.CDataObject))
+            if obj.getObjectType() != 'Reference':
+                try:
+                    obj = obj.getValueReference()
+                except AttributeError:
+                    logger.error("Cannot map the element {0}".format(current))
+            role = _get_role_for_reference(obj.getObjectName())
+            if not obj_map.setObjectCN(i, str(obj.getCN())):
+                logger.error("Error while mapping data for for {0}".format(current))
         obj_map.setRole(i, role)
 
     exp.calculateWeights()
-    exp_set.compile(model.getModel().getMathContainer())
+    if not exp_set.compile(model.getModel().getMathContainer()):
+        logger.error('Failed to add experiment {0}'.format(name))
+        logger.error(basico.model_info.get_copasi_messages(num_messages, 'No output'))
 
     return file_name
 
@@ -1181,7 +1193,7 @@ def run_parameter_estimation(**kwargs):
     # cleared from the error log. So we clear them here if necessary
     if COPASI.CCopasiMessage.getHighestSeverity() > COPASI.CCopasiMessage.WARNING:
         logger.warning("Uncaptured Errors: " +
-        basico.model_info.get_copasi_messages(0, 'No output'))        
+        basico.model_info.get_copasi_messages(0, 'No output'))
 
     num_messages_before = COPASI.CCopasiMessage.size()
 

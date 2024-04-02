@@ -429,7 +429,7 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     problem2.clearScanItems()
     problem2.addScanItem(1, Arguments["scan_interval"])
     scan_item = problem2.getScanItem(0)
-    scan_item.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
+    scan_item.getParameter("Object").setCNValue(COPASI.CCommonName(item["cn"]))
 
     start_value = item["start_value"]
     param_sd = kwargs.get('param_sds', {}).get(item["name"], None)

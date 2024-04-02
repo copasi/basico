@@ -243,13 +243,13 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
             columns.append(name)
 
         if during is None or (during is not None and name in during):
-            dh.addDuringName(COPASI.CRegisteredCommonName(cn))
+            dh.addDuringName(model_info._get_registered_common_name(cn, dm=model))
 
         if after and name in after:
-            dh.addAfterName(COPASI.CRegisteredCommonName(cn))
+            dh.addAfterName(model_info._get_registered_common_name(cn, dm=model))
 
         if before and name in before:
-            dh.addAfterName(COPASI.CRegisteredCommonName(cn))
+            dh.addBeforeName(model_info._get_registered_common_name(cn, dm=model))
     return dh, columns
 
 

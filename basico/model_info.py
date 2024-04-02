@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 MIRIAM_XML = 'http://copasi.org/static/miriam.xml' # noqa
 
+_copasi_build = COPASI.CVersion.VERSION.getVersionDevel()
+
 try:
     from collections.abc import Iterable  # noqa
 except ImportError:
@@ -1175,6 +1177,15 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
             _set_report_vector(spec.getFooterAddr(), footer, dm, seprator)
             spec.setIsTable(False)
 
+def _get_registered_common_name(cn, dm):
+    if isinstance(cn, COPASI.CRegisteredCommonName):\
+        return cn
+    
+    if _copasi_build < 286:
+        return COPASI.CRegisteredCommonName(cn)
+    
+    return COPASI.CRegisteredCommonName(cn, dm)
+
 
 def _set_report_vector(vec, list_of_cns, dm, separator=None):
     """ Sets the given vector to the elements of the list
@@ -1196,25 +1207,25 @@ def _set_report_vector(vec, list_of_cns, dm, separator=None):
 
     for item in list_of_cns:
         if item.startswith('CN'):
-            vec.append(COPASI.CRegisteredCommonName(item))
+            vec.append(_get_registered_common_name(item, dm))
             if separator:
-                vec.append(COPASI.CRegisteredCommonName(separator))
+                vec.append(_get_registered_common_name(separator, dm))
             continue
 
         obj = dm.findObjectByDisplayName(item)
         if obj:
             if obj.getObjectType() != 'Reference':
                 obj = obj.getValueReference()
-            vec.append(COPASI.CRegisteredCommonName(obj.getCN()))
+            vec.append(_get_registered_common_name(obj.getCN(), dm))
             if separator:
-                vec.append(COPASI.CRegisteredCommonName(separator))
+                vec.append(_get_registered_common_name(separator, dm))
             continue
 
         if not item.startswith('String=') and not item.startswith('Separator='):
             item = wrap_copasi_string(item)
-        vec.append(COPASI.CRegisteredCommonName(item))
+        vec.append(_get_registered_common_name(item, dm))
         if separator:
-            vec.append(COPASI.CRegisteredCommonName(separator))
+            vec.append(_get_registered_common_name(separator, dm))
 
     if separator:
         vec.pop()
@@ -4768,6 +4779,7 @@ def _set_group_from_dict(group, values, dm=None):
 
         try:
             if param_type == COPASI.CCopasiParameter.Type_STRING:
+                print('setting str', name_or_cn)
                 param.setStringValue(str(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_INT:
                 param.setIntValue(int(values[key]))
@@ -4781,6 +4793,7 @@ def _set_group_from_dict(group, values, dm=None):
                 param.setBoolValue(bool(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_CN:
                 name_or_cn = str(values[key])
+                print('setting cn', name_or_cn)
                 if dm is not None:
                     obj = dm.getObject(COPASI.CCommonName(name_or_cn))
                     if obj is None:
@@ -6151,7 +6164,7 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
             if curve['activity'] != 'during':
                 continue
             for channel in curve['channels']:
-                dh.addDuringName(COPASI.CRegisteredCommonName(channel))
+                dh.addDuringName(_get_registered_common_name(channel, dm))
             pass
         plot_handlers.append({
             'handler': dh,

@@ -1042,7 +1042,6 @@ def add_experiment(name, data, **kwargs):
 
     obj_map = exp.getObjectMap()
     num_cols = len(columns)
-    exp.setNumberOfColumns(num_cols)
     obj_map.setNumCols(num_cols)
 
     num_messages = COPASI.CCopasiMessage.size()

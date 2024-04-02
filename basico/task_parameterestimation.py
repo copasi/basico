@@ -783,9 +783,9 @@ def set_fit_parameters(fit_parameters, model=None):
         fit_item = problem.addFitItem(cn)
         assert (isinstance(fit_item, COPASI.CFitItem))
         if 'lower' in item:
-            fit_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+            fit_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
         if 'upper' in item:
-            fit_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+            fit_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
         if 'start' in item:
             fit_item.setStartValue(float(item['start']))
         if 'affected' in item:
@@ -863,9 +863,9 @@ def set_fit_constraints(fit_constraints, model=None):
         fit_item = problem.addFitConstraint(cn)
         assert (isinstance(fit_item, COPASI.CFitConstraint))
         if 'lower' in item:
-            fit_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+            fit_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
         if 'upper' in item:
-            fit_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+            fit_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
         if 'start' in item:
             fit_item.setStartValue(float(item['start']))
         if 'affected' in item:
@@ -1042,6 +1042,7 @@ def add_experiment(name, data, **kwargs):
 
     obj_map = exp.getObjectMap()
     num_cols = len(columns)
+    exp.setNumberOfColumns(num_cols)
     obj_map.setNumCols(num_cols)
 
     num_messages = COPASI.CCopasiMessage.size()

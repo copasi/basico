@@ -194,9 +194,9 @@ def set_opt_parameters(opt_parameters, model=None):
         opt_item = problem.addOptItem(cn)
         assert (isinstance(opt_item, COPASI.COptItem))
         if 'lower' in item:
-            opt_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+            opt_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
         if 'upper' in item:
-            opt_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+            opt_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
         if 'start' in item:
             opt_item.setStartValue(float(item['start']))
 
@@ -252,9 +252,9 @@ def set_opt_constraints(opt_constraints, model=None):
         opt_item = problem.addOptConstraint(cn)
         assert (isinstance(opt_item, COPASI.COptItem))
         if 'lower' in item:
-            opt_item.setLowerBound(COPASI.CCommonName(str(item['lower'])))
+            opt_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
         if 'upper' in item:
-            opt_item.setUpperBound(COPASI.CCommonName(str(item['upper'])))
+            opt_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
         if 'start' in item:
             opt_item.setStartValue(float(item['start']))
 

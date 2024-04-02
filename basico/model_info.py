@@ -1178,7 +1178,7 @@ def set_report_dict(spec, precision=None, separator=None, table=None,
             spec.setIsTable(False)
 
 def _get_registered_common_name(cn, dm):
-    if isinstance(cn, COPASI.CRegisteredCommonName):\
+    if isinstance(cn, COPASI.CRegisteredCommonName):
         return cn
     
     if _copasi_build < 286:

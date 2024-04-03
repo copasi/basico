@@ -429,7 +429,7 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     problem2.clearScanItems()
     problem2.addScanItem(1, Arguments["scan_interval"])
     scan_item = problem2.getScanItem(0)
-    scan_item.getParameter("Object").setCNValue(COPASI.CCommonName(item["cn"]))
+    scan_item.getParameter("Object").setCNValue(COPASI.CRegisteredCommonName(item["cn"]))
 
     start_value = item["start_value"]
     param_sd = kwargs.get('param_sds', {}).get(item["name"], None)
@@ -462,7 +462,8 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     report.setConfirmOverwrite(False)
     logger.debug("... Generate Plot")
     plot = COPASI.COutputAssistant.createDefaultOutput(251, scan_task, _DataModel)
-    plot.setObjectName('{0} = {1}'.format('opt', start_value))
+    if plot is not None: 
+        plot.setObjectName('{0} = {1}'.format('opt', start_value))
     out_file = os.path.abspath("{0}/{1}_{2:05d}_{3}.cps".format(data_dir, Arguments['prefix'], index, middle))
     logger.debug(f"Writing '{out_file}'.")
     _DataModel.saveModel(out_file, True)

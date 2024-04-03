@@ -137,6 +137,7 @@ def _scan_item_to_dict(item, model=None):
     int_type = item.getParameter('Type').getIntValue()
     type_name = _scan_type_to_name(int_type)
     cn = item.getParameter('Object').getCNValue().getString() if item.getParameter('Object') else None
+    cn = model_info._get_cn_string(cn)
     num_steps = item.getParameter('Number of steps').getIntValue() if item.getParameter('Number of steps') else None
     min_val = item.getParameter('Minimum').getDblValue() if item.getParameter('Minimum') else None
     max_val = item.getParameter('Maximum').getDblValue() if item.getParameter('Maximum') else None
@@ -176,9 +177,11 @@ def _scan_item_to_dict(item, model=None):
         assert (isinstance(cn_group, COPASI.CCopasiParameterGroup))
         parameter_sets = []
         for i in range(cn_group.size()):
-            cn = cn_group.getParameter(i).getCNValue()
+            _cn = model_info._get_cn_string(cn_group.getParameter(i).getCNValue())
+            if not _cn:
+                continue
             # resolve cn to name
-            obj = model.getObject(cn)
+            obj = model.getObject(COPASI.CCommonName(_cn))
             if obj:
                 parameter_sets.append(obj.getObjectName())
         current['parameter_sets'] = parameter_sets

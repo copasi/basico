@@ -4943,6 +4943,10 @@ def set_task_settings(task, settings, **kwargs):
                 if r_def is not None:
                     report.setReportDefinition(r_def)
 
+def _get_cn_string(cn):
+    if isinstance(cn, COPASI.CCommonName):
+        return cn.getString()
+    return str(cn)
 
 def _collect_data(names=None, cns=None, **kwargs):
     """Collects data from the model, returning it as dataframe

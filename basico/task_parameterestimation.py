@@ -19,6 +19,7 @@ Example:
 
 """
 import shutil
+import sys
 
 import pandas
 import COPASI
@@ -30,6 +31,8 @@ import logging
 import yaml
 
 import basico
+
+from . import model_info
 from basico.callbacks import get_default_handler
 
 logger = logging.getLogger(__name__)
@@ -631,7 +634,6 @@ def get_fit_item_template(include_local=False, include_global=False, default_lb=
 
     return result
 
-
 def get_fit_parameters(model=None):
     """Returns a data frame with all fit parameters
 
@@ -666,11 +668,11 @@ def get_fit_parameters(model=None):
         name = obj.getObjectDisplayName()
         data.append({
             'name': name,
-            'lower': item.getLowerBound(),
-            'upper': item.getUpperBound(),
+            'lower': model_info._get_cn_string(item.getLowerBound()),
+            'upper': model_info._get_cn_string(item.getUpperBound()),
             'start': item.getStartValue(),
             'affected': _get_affected_experiments(item),
-            'cn': item.getObjectCN(),
+            'cn': model_info._get_cn_string(item.getObjectCN()),
         })
 
     if not data:
@@ -712,11 +714,11 @@ def get_fit_constraints(model=None):
         name = obj.getObjectDisplayName()
         data.append({
             'name': name,
-            'lower': item.getLowerBound(),
-            'upper': item.getUpperBound(),
+            'lower': model_info._get_cn_string(item.getLowerBound()),
+            'upper': model_info._get_cn_string(item.getUpperBound()),
             'start': item.getStartValue(),
             'affected': _get_affected_experiments(item),
-            'cn': item.getObjectCN(),
+            'cn': model_info._get_cn_string(item.getObjectCN()),
         })
 
     if not data:
@@ -767,9 +769,15 @@ def set_fit_parameters(fit_parameters, model=None):
         name = None
 
         if 'cn' in item:
-            cn = COPASI.CCommonName(item.cn)
+            if isinstance(item.cn, COPASI.CRegisteredCommonName):
+                cn_string = item.cn.getString()
+            else:
+                cn_string = str(item.cn)
 
-        elif 'name' in item:
+            if cn_string:
+                cn = COPASI.CRegisteredCommonName(cn_string)
+
+        if 'name' in item and cn is None:
             name = item['name']
             if not cn:
                 obj = basico.model_info._get_object(name, initial=True, model=model)
@@ -940,8 +948,8 @@ def get_parameters_solution(model=None):
         name = obj.getObjectDisplayName()
         data.append({
             'name': name,
-            'lower': item.getLowerBound(),
-            'upper': item.getUpperBound(),
+            'lower': model_info._get_cn_string(item.getLowerBound()),
+            'upper': model_info._get_cn_string(item.getUpperBound()),
             'sol': sol,
             'affected': _get_affected_experiments(item),
         })
@@ -1065,7 +1073,7 @@ def add_experiment(name, data, **kwargs):
                 except AttributeError:
                     logger.error("Cannot map the element {0}".format(current))
             role = _get_role_for_reference(obj.getObjectName())
-            if not obj_map.setObjectCN(i, str(obj.getCN())):
+            if not obj_map.setObjectCN(i, obj.getCN()):
                 logger.error("Error while mapping data for for {0}".format(current))
         obj_map.setRole(i, role)
 
@@ -1363,7 +1371,12 @@ def _get_value_from_bound(bound):
     :rtype: float
     """
     try:
-        value = float(bound)
+        if isinstance(bound, COPASI.CRegisteredCommonName):
+            value = basico.get_value(bound)
+            if value is None: 
+                value = bound.getString()
+        else:
+            value = float(bound)
     except ValueError:
         value = basico.get_value(bound)
     return value

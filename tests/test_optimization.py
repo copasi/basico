@@ -13,6 +13,9 @@ class TestOptimization(unittest.TestCase):
         basico.add_parameter('f', type='assignment',
                              expression='({Values[x].InitialValue}^2+{Values[y].InitialValue}-11)^2+({Values[x].InitialValue}+{Values[y].InitialValue}^2-7)^2')
 
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
+
     def test_optitems(self):
         self.assertIsNone(basico.get_opt_parameters())
         template = basico.get_opt_item_template(include_global=True)

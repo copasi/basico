@@ -4779,7 +4779,6 @@ def _set_group_from_dict(group, values, dm=None):
 
         try:
             if param_type == COPASI.CCopasiParameter.Type_STRING:
-                print('setting str', name_or_cn)
                 param.setStringValue(str(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_INT:
                 param.setIntValue(int(values[key]))
@@ -4793,7 +4792,6 @@ def _set_group_from_dict(group, values, dm=None):
                 param.setBoolValue(bool(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_CN:
                 name_or_cn = str(values[key])
-                print('setting cn', name_or_cn)
                 if dm is not None:
                     obj = dm.getObject(COPASI.CCommonName(name_or_cn))
                     if obj is None:

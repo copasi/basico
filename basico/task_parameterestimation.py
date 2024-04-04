@@ -665,21 +665,34 @@ def get_fit_parameters(model=None):
 
     for i in range(len(items)):
         item = items[i]
-        obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
-        name = obj.getObjectDisplayName()
-        data.append({
+        data.append(_get_opt_item_dict(item, model))
+
+    if not data:
+        return None
+
+    return pandas.DataFrame(data=data).set_index('name')
+
+def _get_opt_item_dict(item, model):
+    """Converts an opt item / constraint to a dictionary
+
+    :param item: the item to convert
+
+    :param model: the model to use
+
+    :return: dictionary with the item data
+    """
+    obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
+    name = obj.getObjectDisplayName()
+    item_dict = {
             'name': name,
             'lower': model_info._get_cn_string(item.getLowerBound()),
             'upper': model_info._get_cn_string(item.getUpperBound()),
             'start': item.getStartValue(),
             'affected': _get_affected_experiments(item),
             'cn': model_info._get_cn_string(item.getObjectCN()),
-        })
-
-    if not data:
-        return None
-
-    return pandas.DataFrame(data=data).set_index('name')
+        }
+    
+    return item_dict
 
 def get_fit_constraints(model=None):
     """Returns a data frame with all fit constraints
@@ -711,16 +724,7 @@ def get_fit_constraints(model=None):
 
     for i in range(problem.getOptConstraintSize()):
         item = problem.getOptConstraint(i).asFitConstraint()
-        obj = model.getObject(COPASI.CCommonName(item.getObjectCN())).toObject().getObjectParent()
-        name = obj.getObjectDisplayName()
-        data.append({
-            'name': name,
-            'lower': model_info._get_cn_string(item.getLowerBound()),
-            'upper': model_info._get_cn_string(item.getUpperBound()),
-            'start': item.getStartValue(),
-            'affected': _get_affected_experiments(item),
-            'cn': model_info._get_cn_string(item.getObjectCN()),
-        })
+        data.append(_get_opt_item_dict(item, model))
 
     if not data:
         return None
@@ -770,10 +774,7 @@ def set_fit_parameters(fit_parameters, model=None):
         name = None
 
         if 'cn' in item:
-            if isinstance(item.cn, COPASI.CRegisteredCommonName):
-                cn_string = item.cn.getString()
-            else:
-                cn_string = str(item.cn)
+            cn_string = model_info._get_cn_string(item.cn)
 
             if cn_string:
                 cn = COPASI.CRegisteredCommonName(cn_string)
@@ -791,26 +792,29 @@ def set_fit_parameters(fit_parameters, model=None):
 
         fit_item = problem.addFitItem(cn)
         assert (isinstance(fit_item, COPASI.CFitItem))
-        if 'lower' in item:
-            fit_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
-        if 'upper' in item:
-            fit_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
-        if 'start' in item:
-            fit_item.setStartValue(float(item['start']))
-        if 'affected' in item:
-            affected = item['affected']
-            if type(affected) is str:
-                affected = [affected]
-            for name in affected:
-                if not name:
-                    continue
+        _set_fit_item(experiment_keys, experiment_names, item, fit_item)
 
-                if name not in experiment_names:
-                    logger.warning('Invalid affected experiment name {0}'.format(name))
-                    continue
+def _set_fit_item(experiment_keys, experiment_names, item, fit_item):
+    if 'lower' in item:
+        fit_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
+    if 'upper' in item:
+        fit_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
+    if 'start' in item:
+        fit_item.setStartValue(float(item['start']))
+    if 'affected' in item:
+        affected = item['affected']
+        if type(affected) is str:
+            affected = [affected]
+        for name in affected:
+            if not name:
+                continue
 
-                index = experiment_names.index(name)
-                fit_item.addExperiment(experiment_keys[index])
+            if name not in experiment_names:
+                logger.warning('Invalid affected experiment name {0}'.format(name))
+                continue
+
+            index = experiment_names.index(name)
+            fit_item.addExperiment(experiment_keys[index])
 
 
 def set_fit_constraints(fit_constraints, model=None):
@@ -871,26 +875,7 @@ def set_fit_constraints(fit_constraints, model=None):
 
         fit_item = problem.addFitConstraint(cn)
         assert (isinstance(fit_item, COPASI.CFitConstraint))
-        if 'lower' in item:
-            fit_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
-        if 'upper' in item:
-            fit_item.setUpperBound(COPASI.CRegisteredCommonName(str(item['upper'])))
-        if 'start' in item:
-            fit_item.setStartValue(float(item['start']))
-        if 'affected' in item:
-            affected = item['affected']
-            if type(affected) is str:
-                affected = [affected]
-            for name in affected:
-                if not name:
-                    continue
-
-                if name not in experiment_names:
-                    logger.warning('Invalid affected experiment name {0}'.format(name))
-                    continue
-
-                index = experiment_names.index(name)
-                fit_item.addExperiment(experiment_keys[index])
+        _set_fit_item(experiment_keys, experiment_names, item, fit_item)
 
 
 def _get_name_for_key(key):

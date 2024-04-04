@@ -1271,7 +1271,10 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
             if type(solution) is dict or type(solution) is list:
                 solution = pd.DataFrame(data=solution)
         else:
-            solution = run_parameter_estimation(method='Current Solution Statistics', write_report=False)
+            settings = basico.get_task_settings(basico.T.PARAMETER_ESTIMATION, model=dm)
+            solution = run_parameter_estimation(method='Current Solution Statistics', write_report=False, randomize_start_values=False, model=dm)
+            # restore settings
+            basico.set_task_settings(basico.T.PARAMETER_ESTIMATION, settings)
 
     exp_data = []
     sim_data = []

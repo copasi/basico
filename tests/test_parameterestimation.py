@@ -13,6 +13,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         self.model = basico.load_example('LM')
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'Kinetics of a  Michaelian enzyme measured spectrophotometrically')
+        basico.add_parameter_set('initial_state')
 
     def tearDown(self):
         basico.remove_datamodel(self.model)
@@ -135,6 +136,21 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         sol = basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
         self.assertTrue(sol is not None)
         self.assertAlmostEqual(sol.loc['(R1).k2'].sol, 1.0, places=2)
+
+    def test_current_solution(self):
+        before = basico.get_simulation_results()
+        # ensure the results are the same, even if randomize values
+        # is activated
+        settings = basico.get_task_settings('Parameter Estimation')
+        settings['problem']['Randomize Start Values'] = True
+        basico.set_task_settings('Parameter Estimation', settings)
+
+        # now run again
+        after = basico.get_simulation_results()
+
+        # ensure that the results are the same
+        self.assertTrue(np.allclose(before[1][0].values, after[1][0].values))
+
 
     def test_remove(self):
         fit_items = basico.get_fit_parameters()

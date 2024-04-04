@@ -269,7 +269,9 @@ def _set_parameter_from_value(parameter, value):
         return
 
     if parameter.getType() == COPASI.CCopasiParameter.Type_CN:
-        parameter.setCNValue(COPASI.CCommonName(str(value)))
+        if isinstance(value, COPASI.CCommonName):
+            value = value.getString()
+        result = parameter.setCNValue(COPASI.CRegisteredCommonName(str(value)))
         return
 
     if parameter.getType() == COPASI.CCopasiParameter.Type_FILE:

@@ -319,6 +319,7 @@ def _get_experiment_mapping_dict(experiment, **kwargs):
     for i in range(max_col):
         role = obj_map.getRole(i)
         cn = obj_map.getObjectCN(i)
+        cn = model_info._get_cn_string(cn)
         obj = ''
         if cn:
             obj = experiment.getObjectDataModel().getObject(COPASI.CCommonName(cn))
@@ -2058,7 +2059,7 @@ def add_experiment_from_dict(exp_dict, **kwargs):
                 basico.model_info.get_cn(mapping['object'], initial=need_initial ) if 'object' in mapping else \
                 None
         if cn is not None:
-            obj_map.setObjectCN(i, str(cn))
+            obj_map.setObjectCN(i, COPASI.CRegisteredCommonName(cn))
         if role == COPASI.CExperiment.dependent and 'weight' in mapping:
             obj_map.setScale(i, float(mapping['weight']))
 

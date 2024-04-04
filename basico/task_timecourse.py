@@ -222,6 +222,9 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
     dh = COPASI.CDataHandler()
     columns = []
     for name in output_selection:
+        if isinstance(name, COPASI.CCommonName):
+            name = name.getString()
+            
         if name.startswith('CN='):
             obj = model.getObject(COPASI.CCommonName(name))
             if not obj:

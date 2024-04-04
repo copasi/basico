@@ -28,8 +28,11 @@ class TestParameterSetScan(unittest.TestCase):
 
 class TestScan(unittest.TestCase):
     def setUp(self):
-        basico.load_example('brusselator')
+        self.dm = basico.load_example('brusselator')
         self.assertEqual(basico.get_current_model().getModel().getObjectName(), 'The Brusselator')
+
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
 
     def test_simulation(self):
         result = basico.run_time_course(duration=10)

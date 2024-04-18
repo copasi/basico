@@ -350,8 +350,25 @@ class TestBasicoModelConstruction(unittest.TestCase):
         self.assertEqual(v['type'], 'assignment')
         self.assertEqual(v['expression'], 'Time')
         self.assertEqual(v['initial_expression'], '')
+        self.assertEqual(v['dimensionality'], 3)
+
+
+        # change dimensions to two
+        basico.set_compartment('v', exact=True, dimensionality=2)
+        v_df = basico.get_compartments('v')
+        v = basico.as_dict(v_df)
+        self.assertEqual(v['dimensionality'], 2)
+
+        basico.set_compartment('v', exact=True, dimensionality=v['dimensionality'])
+        basico.set_compartment('v', exact=True, dimensionality=v_df.iloc[0]['dimensionality'])
+
+        # apply all recorded changes
+        basico.set_compartment(exact=True, **v)
+        
+
         basico.remove_compartment('v')
         self.assertIsNone(basico.get_compartments('v', exact=True))
+
 
     def test_global_parameters(self):
         basico.add_parameter('p', initial_value=3)
@@ -531,6 +548,30 @@ class TestBasicoModelConstruction(unittest.TestCase):
         self.assertEqual(param1[1]['expression'], param2[1]['expression'])
         basico.remove_datamodel(dm1)
         basico.remove_datamodel(dm2)
+
+    def test_expresssions(self):
+        dm = basico.new_model(name='Test Model');
+        basico.add_species('X');
+        basico.add_species('Y');
+        basico.add_parameter('a', initial_value=1);
+
+        basico.add_parameter('b', initial_value=1);
+        basico.set_parameters('b', exact=True, expression='{Values[a].InitialValue}/2', status='assignment')
+        params1 = basico.as_dict(basico.get_parameters(type='assignment'))
+        basico.set_parameters('b', exact=True, expression='Values[a].InitialValue/2', status='assignment')
+        params2 = basico.as_dict(basico.get_parameters(type='assignment'))
+
+        basico.add_parameter('c', initial_value=1);
+        basico.set_parameters('c', exact=True, expression='{[X]}+{[Y]}', status='assignment')
+        params31 = basico.as_dict(basico.get_parameters(type='assignment'))
+        basico.set_parameters('c', exact=True, expression=' {[X]} + {[Y]}', status='assignment')
+        params3 = basico.as_dict(basico.get_parameters(type='assignment'))
+        basico.set_parameters('c', exact=True, expression=' [X] + [Y]', status='assignment')
+        params4 = basico.as_dict(basico.get_parameters(type='assignment'))
+        params = basico.as_dict(basico.get_parameters(type='assignment'))
+
+
+        basico.remove_datamodel(dm);
 
 if __name__ == "__main__":
     unittest.main()

@@ -2897,7 +2897,7 @@ def _set_compartment(compartment, c_model, **kwargs):
         _set_expression(compartment, kwargs['expression'], model=c_model.getObjectDataModel())
         c_model.setCompileFlag(True)
     if 'dimensionality' in kwargs:
-        compartment.setDimensionality(kwargs['dimensionality'])
+        compartment.setDimensionality(int(kwargs['dimensionality']))
     if 'notes' in kwargs:
         compartment.setNotes(kwargs['notes'])
     if 'sbml_id' in kwargs:

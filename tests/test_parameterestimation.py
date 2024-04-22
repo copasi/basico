@@ -48,6 +48,18 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         # get statstic
         stat = basico.get_fit_statistic(include_parameters=True, include_fitted=True)
 
+        initial_fit_titems = basico.get_fit_parameters()
+        # test mixed affected experiments
+        names = basico.get_experiment_names()
+        fit_items = [
+            {'name': "Values[offset]", 'lower': 1e05, 'upper': 1e09, 'affected': ['Experiment']},
+            {"name": "Values[offset]", 'lower': 1e-05, 'upper': 1e04}
+        ]
+        basico.set_fit_parameters(fit_items)
+        items_after = basico.as_dict( basico.get_fit_parameters())
+        self.assertEqual(items_after[0]['affected'], ['Experiment'])
+        basico.set_fit_parameters(initial_fit_titems)
+
         # remove data
         basico.remove_experiments()
 
@@ -60,7 +72,9 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         basico.remove_experiments()
 
         # since we have affected experiments, reset them
-        basico.set_fit_parameters(basico.get_fit_parameters())
+        items = basico.get_fit_parameters()
+        basico.set_fit_parameters(items)
+
 
         # save to temp file
         main_file = tempfile.mktemp()
@@ -74,6 +88,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         for file in files_to_delete:
             os.remove(file)
         os.remove(main_file)
+
 
 
     def test_mapping(self):

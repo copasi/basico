@@ -803,8 +803,17 @@ def _set_fit_item(experiment_keys, experiment_names, item, fit_item):
         fit_item.setStartValue(float(item['start']))
     if 'affected' in item:
         affected = item['affected']
+
+        if type(affected) is float and np.isnan(affected):
+            affected = []
+
         if type(affected) is str:
             affected = [affected]
+
+        if type(affected) is not list:
+            logger.warning('affected should be a list or str')
+            return
+    
         for name in affected:
             if not name:
                 continue

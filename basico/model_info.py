@@ -365,10 +365,37 @@ def get_species(name=None, exact=False, **kwargs):
         if not unit:
             unit = model.getQuantityUnit() + '/' + model.getVolumeUnit()
 
+        current_name = metab.getObjectName()
+        display_name = metab.getObjectDisplayName()
+        if 'name' in kwargs and not kwargs['name'] in current_name:
+            continue
+
+        if name and type(name) is str and exact and name != current_name and name != display_name:
+            continue
+
+        if name and type(name) is str and name not in current_name and name not in display_name:
+            continue
+
+        if name and isinstance(name, Iterable) and name not in current_name and display_name not in name:
+            continue
+
+        current_compartment = metab.getCompartment().getObjectName()
+
+        if 'compartment' in kwargs and not kwargs['compartment'] in current_compartment:
+            continue
+
+        current_type = __status_to_string(metab.getStatus())
+        if 'type' in kwargs and kwargs['type'] not in current_type:
+            continue
+
+        sbml_id = metab.getSBMLId()
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != sbml_id:
+            continue
+
         metab_data = {
-            'name': metab.getObjectName(),
-            'compartment': metab.getCompartment().getObjectName(),
-            'type': __status_to_string(metab.getStatus()),
+            'name': current_name,
+            'compartment': current_compartment,
+            'type': current_type,
             'unit': unit,
             'initial_concentration': metab.getInitialConcentration(),
             'initial_particle_number': metab.getInitialValue(),
@@ -379,33 +406,10 @@ def get_species(name=None, exact=False, **kwargs):
             'rate': metab.getConcentrationRate(),
             'particle_number_rate': metab.getRate(),
             'key': metab.getKey(),
-            'sbml_id': metab.getSBMLId(),
+            'sbml_id': sbml_id,
             'transition_time': metab.getTransitionTime(),
             'display_name': metab.getObjectDisplayName(),
         }
-
-        display_name = metab.getObjectDisplayName()
-
-        if 'name' in kwargs and not kwargs['name'] in metab_data['name']:
-            continue
-
-        if name and type(name) is str and exact and name != metab_data['name'] and name != display_name:
-            continue
-
-        if name and type(name) is str and name not in metab_data['name'] and name not in display_name:
-            continue
-
-        if name and isinstance(name, Iterable) and name not in metab_data['name'] and display_name not in name:
-            continue
-
-        if 'compartment' in kwargs and not kwargs['compartment'] in metab_data['compartment']:
-            continue
-
-        if 'type' in kwargs and kwargs['type'] not in metab_data['type']:
-            continue
-
-        if 'sbml_id' in kwargs and kwargs['sbml_id'] != metab_data['sbml_id']:
-            continue
 
         data.append(metab_data)
 
@@ -1442,11 +1446,14 @@ def _split_by_cn(expression):
             next_3 = expression[pos:pos+4]
 
             if next_3.startswith('<CN='):
+                if current:
+                    result.append(current)
+                    current = ''
+
                 end = expression.find('>', pos)
                 cn = expression[pos+1: end]
                 result.append(cn)
                 pos = end + 1
-                current = ''
                 continue
 
         if cur_char in '/*+-()^%<>!=&|':
@@ -2463,9 +2470,29 @@ def get_parameters(name=None, exact=False, **kwargs):
         if 'unit' in kwargs and not kwargs['unit'] in unit:
             continue
 
+        current_name = param.getObjectName()
+        display_name = param.getObjectDisplayName()
+
+        if name and exact and name != current_name and name != display_name:
+            continue
+
+        if 'name' in kwargs and (kwargs['name'] not in current_name and kwargs['name'] != display_name):
+            continue
+
+        if name and (name not in current_name and name != display_name):
+            continue
+
+        current_type = __status_to_string(param.getStatus())
+        if 'type' in kwargs and kwargs['type'] not in current_type:
+            continue
+
+        sbml_id = param.getSBMLId()
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != sbml_id:
+            continue
+
         param_data = {
-            'name': param.getObjectName(),
-            'type': __status_to_string(param.getStatus()),
+            'name': current_name,
+            'type': current_type,
             'unit': unit,
             'initial_value': param.getInitialValue(),
             'initial_expression': _replace_cns_with_names(param.getInitialExpression(), model=dm),
@@ -2473,26 +2500,9 @@ def get_parameters(name=None, exact=False, **kwargs):
             'value': param.getValue(),
             'rate': param.getRate(),
             'key': param.getKey(),
-            'sbml_id': param.getSBMLId(),
+            'sbml_id': sbml_id,
             'display_name': param.getObjectDisplayName(),
         }
-
-        display_name = param.getObjectDisplayName()
-
-        if name and exact and name != param_data['name'] and name != display_name:
-            continue
-
-        if 'name' in kwargs and (kwargs['name'] not in param_data['name'] and kwargs['name'] != display_name):
-            continue
-
-        if name and (name not in param_data['name'] and name != display_name):
-            continue
-
-        if 'type' in kwargs and kwargs['type'] not in param_data['type']:
-            continue
-
-        if 'sbml_id' in kwargs and kwargs['sbml_id'] != param_data['sbml_id']:
-            continue
 
         data.append(param_data)
 

@@ -452,6 +452,21 @@ def get_events(name=None, exact=False, **kwargs):
         event = events.get(i)
         assert (isinstance(event, COPASI.CEvent))
 
+        current_name = event.getObjectName()
+
+        if name and exact and name != current_name:
+            continue
+
+        if 'name' in kwargs and not kwargs['name'] in current_name:
+            continue
+
+        if name and name not in current_name:
+            continue
+
+        sbml_id = event.getSBMLId()
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != sbml_id:
+            continue
+
         assignments = []
         for j in range(event.getNumAssignments()):
             ea = event.getAssignment(j)
@@ -466,7 +481,7 @@ def get_events(name=None, exact=False, **kwargs):
                 })
 
         event_data = {
-            'name': event.getObjectName(),
+            'name': current_name,
             'trigger': _replace_cns_with_names(event.getTriggerExpression(), model=dm),
             'delay': _replace_cns_with_names(event.getDelayExpression(), model=dm),
             'assignments': assignments,
@@ -475,20 +490,8 @@ def get_events(name=None, exact=False, **kwargs):
             'persistent': event.getPersistentTrigger(),
             'delay_calculation': event.getDelayAssignment(),
             'key': event.getKey(),
-            'sbml_id': event.getSBMLId()
+            'sbml_id': sbml_id
         }
-
-        if name and exact and name != event_data['name']:
-            continue
-
-        if 'name' in kwargs and not kwargs['name'] in event_data['name']:
-            continue
-
-        if name and name not in event_data['name']:
-            continue
-
-        if 'sbml_id' in kwargs and kwargs['sbml_id'] != event_data['sbml_id']:
-            continue
 
         data.append(event_data)
 
@@ -2394,9 +2397,27 @@ def get_compartments(name=None, exact=False, **kwargs):
         if not unit:
             unit = model.getVolumeUnit()
 
+        current_name = compartment.getObjectName()
+        if name and exact and name != current_name:
+            continue
+
+        if 'name' in kwargs and kwargs['name'] not in current_name:
+            continue
+
+        if name and name not in current_name:
+            continue
+
+        current_type = __status_to_string(compartment.getStatus())
+        if 'type' in kwargs and kwargs['type'] not in current_type:
+            continue
+
+        sbml_id = compartment.getSBMLId()
+        if 'sbml_id' in kwargs and kwargs['sbml_id'] != sbml_id:
+            continue
+
         comp_data = {
-            'name': compartment.getObjectName(),
-            'type': __status_to_string(compartment.getStatus()),
+            'name': current_name,
+            'type': current_type,
             'unit': unit,
             'initial_size': compartment.getInitialValue(),
             'initial_expression': _replace_cns_with_names(compartment.getInitialExpression(), model=dm),
@@ -2405,24 +2426,9 @@ def get_compartments(name=None, exact=False, **kwargs):
             'size': compartment.getValue(),
             'rate': compartment.getRate(),
             'key': compartment.getKey(),
-            'sbml_id': compartment.getSBMLId(),
+            'sbml_id': sbml_id,
             'display_name': compartment.getObjectDisplayName(),
         }
-
-        if name and exact and name != comp_data['name']:
-            continue
-
-        if 'name' in kwargs and kwargs['name'] not in comp_data['name']:
-            continue
-
-        if name and name not in comp_data['name']:
-            continue
-
-        if 'type' in kwargs and kwargs['type'] not in comp_data['type']:
-            continue
-
-        if 'sbml_id' in kwargs and kwargs['sbml_id'] != comp_data['sbml_id']:
-            continue
 
         data.append(comp_data)
 

@@ -305,6 +305,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_species(self):
         basico.add_species('A', initial_concentration=10)
+
+        # set and get notes
+        basico.set_notes('Notes on the species A', name='A')
+        notes = basico.get_notes(name='A')
+        self.assertTrue('Notes on the species A' in notes)
+
         a = basico.as_dict(basico.get_species('A'))
         self.assertIsNotNone(a)
         self.assertAlmostEqual(a['initial_concentration'], 10)
@@ -339,6 +345,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_compartment(self):
         basico.add_compartment('v',  initial_size=2)
+
+        # set and get notes
+        basico.set_notes('Notes on the compartment v', name='v')
+        notes = basico.get_notes(name='v')
+        self.assertTrue('Notes on the compartment v' in notes)
+
         v = basico.get_compartments('v', exact=True)
         self.assertIsNotNone(v)
         basico.set_compartment('v',  size=3)
@@ -385,6 +397,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_functions(self):
         basico.add_function('fun', infix='v * S / (k + S)', mapping={'S': 'substrate'})
+
+        # set and get notes
+        basico.set_notes('Notes on the function fun', name='fun')
+        notes = basico.get_notes(name='fun')
+        self.assertTrue('Notes on the function fun' in notes)
+
         fun = basico.as_dict(basico.get_functions('fun', exact=True))
         self.assertIsNotNone(fun)
         self.assertEqual(fun['reversible'], False)
@@ -398,6 +416,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
         basico.add_parameter('p0', initial_value=10)
         basico.add_event('e0', trigger='Time > 10', assignments=[('Values[p0]', 1)],
                          fire_at_initial_time=True, persistent=True, delay_calculation=False)
+        
+        # set and get notes
+        basico.set_notes('Notes on the event e0', name='e0')
+        notes = basico.get_notes(name='e0')
+        self.assertTrue('Notes on the event e0' in notes)
+
         e = basico.as_dict(basico.get_events('e0', exact=True))
         self.assertIsNotNone(e)
         self.assertEqual(e['trigger'], 'Time > 10')
@@ -412,6 +436,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
     def test_reactions(self):
         basico.add_reaction('r0', 'A -> B')
+
+        # set and get notes
+        basico.set_notes('Notes on the reaction r0', name='r0')
+        notes = basico.get_notes(name='r0')
+        self.assertTrue('Notes on the reaction r0' in notes)
+
         r0 = basico.as_dict(basico.get_reactions('r0', exact=True))
         self.assertIsNotNone(r0)
         self.assertEqual(r0['scheme'], 'A -> B')

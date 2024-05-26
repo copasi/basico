@@ -1562,7 +1562,8 @@ def set_notes(notes, **kwargs):
     if 'element' in kwargs:
         element = kwargs['element']
     elif 'name' in kwargs:
-        element = dm.findObjectByDisplayName(kwargs['name'])
+        element = _get_object_by_name(kwargs['name'], dm)
+
         if element is None:
             logger.warning("Couldn't find element {0} to set notes.".format(kwargs['name']))
             return
@@ -1581,6 +1582,30 @@ def set_notes(notes, **kwargs):
     else:
         logger.warning("Unsupported element type for setting notes.")
 
+def _get_object_by_name(name, dm):
+    """Helper function to get an object by its display name."""
+    model = dm.getModel()
+    if model.getObjectName() == name:
+        return model
+    result = model.getModelValue(name)
+    if result:
+        return result
+    result = model.getMetabolite(name)
+    if result:
+        return result
+    result = model.getCompartment(name)
+    if result:
+        return result
+    result = model.getReaction(name)
+    if result:
+        return result
+    result = model.getEvent(name)
+    if result:
+        return result
+    result = dm.findObjectByDisplayName(name)
+    if result:
+        return result
+    return _get_function(name)
 
 def get_notes(**kwargs):
     """Returns all notes on the element or model.
@@ -1603,7 +1628,8 @@ def get_notes(**kwargs):
     if 'element' in kwargs:
         element = kwargs['element']
     elif 'name' in kwargs:
-        element = dm.findObjectByDisplayName(kwargs['name'])
+        element = _get_object_by_name(kwargs['name'], dm)
+
         if element is None:
             logger.warning("Couldn't find element {0} to get notes.".format(kwargs['name']))
             return None
@@ -1670,7 +1696,8 @@ def get_miriam_annotation(**kwargs):
     if 'element' in kwargs:
         element = kwargs['element']
     elif 'name' in kwargs:
-        element = dm.findObjectByDisplayName(kwargs['name'])
+        element = _get_object_by_name(kwargs['name'], dm)
+
         if element is None:
             logger.warning("Couldn't find element {0} to get annotations.".format(kwargs['name']))
             return None
@@ -1796,7 +1823,7 @@ def set_miriam_annotation(created=None, creators=None, references=None, descript
     if 'element' in kwargs:
         element = kwargs['element']
     elif 'name' in kwargs:
-        element = dm.findObjectByDisplayName(kwargs['name'])
+        element = _get_object_by_name(kwargs['name'], dm)
         if element is None:
             logger.warning("Couldn't find element {0} to set annotations.".format(kwargs['name']))
             return

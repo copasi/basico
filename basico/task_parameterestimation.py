@@ -1322,10 +1322,13 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
             # run time course (getting only the data from the experiment)
             duration = df.iloc[-1].Time
             cols = ['Time'] + mapping[mapping.type == 'dependent']['cn'].to_list()
+            tc_settings = basico.get_task_settings(basico.T.TIME_COURSE, model=dm)
             if values_only:
                 data = basico.run_time_course_with_output(output_selection=cols, values=df.Time.to_list(), start_time=df.iloc[0].Time)
             else:
                 data = basico.run_time_course_with_output(output_selection=cols,duration=duration)
+            # restore setttings
+            basico.set_task_settings(basico.T.TIME_COURSE, tc_settings)
 
         exp_data.append(df)
         sim_data.append(data)

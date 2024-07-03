@@ -3,9 +3,9 @@ import unittest
 import os
 import sys
 import numpy as np
+import pandas as pd
 import basico
 import COPASI
-import shutil
 
 class TestBasicoParamterEstimation(unittest.TestCase):
 
@@ -165,6 +165,22 @@ class TestBasicoParamterEstimation(unittest.TestCase):
 
         # ensure that the results are the same
         self.assertTrue(np.allclose(before[1][0].values, after[1][0].values))
+
+        # issue #54
+        # Run function output, looking only at times
+        function_output = basico.get_simulation_results(values_only=False)
+        df_first_false = pd.concat([df for df in function_output[1]])['Time'].unique()
+
+        # Run again, changing values_only to True
+        function_output = basico.get_simulation_results(values_only=True)
+        df_first_true = pd.concat([df for df in function_output[1]])['Time'].unique()
+
+        # Run again, changing values_only back to False
+        function_output = basico.get_simulation_results(values_only=False)
+        df_second_false = pd.concat([df for df in function_output[1]])['Time'].unique()
+
+        # Ensure that the results are the same
+        self.assertTrue(np.allclose(df_first_false, df_second_false))
 
 
     def test_remove(self):

@@ -3522,6 +3522,8 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
                 try:
                     value = float(mapped_to)
                     # version 4.34 and below cannot change back from global to local
+                    if changed:
+                        info.writeBackToReaction(reaction)
                     objs = COPASI.DataObjectVector()
                     objs.push_back(reaction.getParameters().getParameter(p_name))
                     reaction.setParameterObjects(p_name, objs)

@@ -269,6 +269,33 @@ class TestBasicoIO_LM(unittest.TestCase):
         m = basico.get_reaction_mapping('R3')
         self.assertListEqual(m['product'], ['S', 'E', 'F'])
 
+        # add new reaction with hill kinetics
+        basico.add_reaction('R4', 'S -> E', function='Hill Cooperativity')
+        basico.add_parameter('hillcoeff')
+        basico.add_parameter('K_ER_1')
+        basico.add_parameter('v_ER_1')
+        basico.add_species('Ca_1')
+            
+        m1 = basico.get_reaction_mapping('R4')
+        basico.set_reaction_mapping('R4', {'h': 2.0, 'substrate': 'Ca_1', 'Shalve': 'K_ER_1', 'V': 'v_ER_1'})
+        m2 = basico.get_reaction_mapping('R4')
+        self.assertEqual(m2['substrate'], 'Ca_1')
+        self.assertEqual(m2['Shalve'], 'K_ER_1')
+        self.assertEqual(m2['V'], 'v_ER_1')
+        self.assertEqual(m2['h'], 2.0)
+        basico.set_reaction_mapping('R4', {'h': 2.0, 'substrate': 'Ca_1', 'Shalve': 0.1, 'V': 0.1})
+        m3 = basico.get_reaction_mapping('R4')
+        self.assertEqual(m3['Shalve'], 0.1)
+        self.assertEqual(m3['V'], 0.1)
+        basico.set_reaction_mapping('R4', {'substrate': 'Ca_1', 'Shalve': 'K_ER_1', 'V': 'v_ER_1', 'h': 'hillcoeff'})
+        m4 = basico.get_reaction_mapping('R4')
+        self.assertEqual(m4['Shalve'], 'K_ER_1')
+        self.assertEqual(m4['V'], 'v_ER_1')
+        self.assertEqual(m4['h'], 'hillcoeff')
+
+
+        
+
     @unittest.skipIf(sys.version_info < (3, 6, 0), 'This test requires assertLogs which is not available before')
     def test_invalid_expression(self):
         self.assertLogs(

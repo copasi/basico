@@ -121,7 +121,7 @@ class TestBasicoIO(unittest.TestCase):
         dm = basico.load_example('LM')
         data = basico.get_experiment_data_from_model()
         self.assertTrue(len(data) == 5)
-        df = basico.run_time_course(100, automatic=False)
+        df = basico.run_time_course(100, 100, automatic=False)
         self.assertTrue(df.shape == (101, 5))
         basico.remove_datamodel(dm)
 

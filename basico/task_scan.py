@@ -205,6 +205,7 @@ def get_scan_settings(**kwargs):
             'scheduled': False,
             'subtask': 'Steady-State',
             'output_during_subtask': False,
+            'output_specification': [],
             'continue_from_current_state': False,
             'continue_on_error': False,
             'scan_items': [ ... ]
@@ -230,6 +231,7 @@ def get_scan_settings(**kwargs):
         'scheduled': task.isScheduled(),
         'subtask': basico.T.from_enum(problem.getSubtask()),
         'output_during_subtask': problem.getOutputInSubtask(),
+        'output_specification': _getOutputSpecification(problem),
         'continue_from_current_state': problem.getContinueFromCurrentState(),
         'continue_on_error': problem.getContinueOnError(),
         'scan_items': get_scan_items(model=model, problem=problem)
@@ -237,6 +239,44 @@ def get_scan_settings(**kwargs):
 
     return s
 
+def _setOutputSpecification(problem, output_specification):
+    if problem is None:
+        return
+    if output_specification is None:
+        return
+    if isinstance(output_specification, str): 
+        output_specification = output_specification.split('|')
+
+    stringSpecification = []
+    have_during = False
+    for item in output_specification:
+        if 'before' in item.lower():
+            stringSpecification.append('subTaskBefore')
+        if 'during' in item.lower():
+            stringSpecification.append('subTaskDuring')
+            have_during = True
+        if 'after' in item.lower():
+            stringSpecification.append('subTaskAfter')
+    
+    try: 
+        problem.setOutputSpecification('|'.join(stringSpecification))
+    except AttributeError:
+        problem.setOutputInSubtask(have_during and len(stringSpecification) == 1)      
+
+def _getOutputSpecification(problem):
+    if problem is None: 
+        return []
+    try:
+        stringSpecification = problem.getOutputSpecificationString()
+        if stringSpecification is not None:
+            if stringSpecification == 'none':
+                return []
+            stringSpecification = stringSpecification.replace('subTask', '')
+            return stringSpecification.split('|')
+    except AttributeError:
+        if problem.getOutputInSubtask():
+            return ['During']
+    return []
 
 def _set_parameter_from_value(parameter, value):
     """Utility function that sets the parameter value
@@ -460,6 +500,8 @@ def set_scan_settings(**kwargs):
         -  settings: dictionary with the scan settings
         -  subtask: sub task name
         -  output_during_subtask: boolean, indicating whether ouput should be collected during the subtask execution
+           it is set to True, if output_specification is set to 'During' and False otherwise
+        -  output_specification: list of strings, indicating when output should be collected ('Before', 'During', 'After')
         -  continue_from_current_state: boolean indicating, whether the subtask should be reset to initial values (False)
                 or not  (True)
         -  continue_on_error: boolean indicating, whether executions should continue, in case one subtask execution failed
@@ -490,6 +532,9 @@ def set_scan_settings(**kwargs):
 
     if 'output_during_subtask' in settings:
         problem.setOutputInSubtask(settings['output_during_subtask'])
+
+    if 'output_specification' in settings:
+        _setOutputSpecification(problem, settings['output_specification'])
 
     if 'continue_from_current_state' in settings:
         problem.setContinueFromCurrentState(settings['continue_from_current_state'])

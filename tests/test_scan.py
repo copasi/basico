@@ -57,6 +57,7 @@ class TestScan(unittest.TestCase):
                                  'update_model': False,
                                  'subtask': 'Steady-State',
                                  'output_during_subtask': False,
+                                 'output_specification': [],
                                  'continue_from_current_state': False,
                                  'continue_on_error': False,
                                  'scan_items':
@@ -101,6 +102,31 @@ class TestScan(unittest.TestCase):
         basico.add_scan_item(type='random', distribution='normal', item='(R3).k1')
         items = basico.get_scan_items()
         self.assertTrue(len(items), 4)
+
+    def test_output_specification(self):
+        s = basico.get_scan_settings()
+        self.assertTrue(s is not None)
+        self.assertListEqual(s['output_specification'], [])
+        self.assertEqual(s['output_during_subtask'], False)
+        s['output_specification'] = ['During']
+        basico.set_scan_settings(settings=s)
+        s = basico.get_scan_settings()
+        self.assertTrue(s is not None)
+        self.assertListEqual(s['output_specification'], ['During'])
+        self.assertEqual(s['output_during_subtask'], True)
+        s['output_specification'] = 'before'
+        basico.set_scan_settings(settings=s)
+        s = basico.get_scan_settings()
+        self.assertTrue(s is not None)
+        self.assertListEqual(s['output_specification'], ['Before'])        
+        self.assertEqual(s['output_during_subtask'], False)
+        s['output_specification'] = ['During', 'After']
+        basico.set_scan_settings(settings=s)
+        s = basico.get_scan_settings()
+        self.assertTrue(s is not None)
+        self.assertListEqual(s['output_specification'], ['During', 'After'])
+        self.assertEqual(s['output_during_subtask'], False)
+        
 
     def test_run_scan(self):
         result = basico.run_scan(settings=

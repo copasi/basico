@@ -108,24 +108,44 @@ class TestScan(unittest.TestCase):
         self.assertTrue(s is not None)
         self.assertListEqual(s['output_specification'], [])
         self.assertEqual(s['output_during_subtask'], False)
+        s2 = basico.get_task_settings(basico.T.SCAN)
+        self.assertTrue(s2 is not None)
+        self.assertEqual(s2['problem']['Subtask Output'], 'none')
+
+
+        # during only 
         s['output_specification'] = ['During']
         basico.set_scan_settings(settings=s)
         s = basico.get_scan_settings()
         self.assertTrue(s is not None)
         self.assertListEqual(s['output_specification'], ['During'])
         self.assertEqual(s['output_during_subtask'], True)
+        s2 = basico.get_task_settings(basico.T.SCAN)
+        self.assertTrue(s2 is not None)
+        self.assertEqual(s2['problem']['Subtask Output'], 'subTaskDuring')
+
+
+        # before
         s['output_specification'] = 'before'
         basico.set_scan_settings(settings=s)
         s = basico.get_scan_settings()
         self.assertTrue(s is not None)
         self.assertListEqual(s['output_specification'], ['Before'])        
         self.assertEqual(s['output_during_subtask'], False)
+        s2 = basico.get_task_settings(basico.T.SCAN)
+        self.assertTrue(s2 is not None)
+        self.assertEqual(s2['problem']['Subtask Output'], 'subTaskBefore')
+
+        # during and after
         s['output_specification'] = ['During', 'After']
         basico.set_scan_settings(settings=s)
         s = basico.get_scan_settings()
         self.assertTrue(s is not None)
         self.assertListEqual(s['output_specification'], ['During', 'After'])
         self.assertEqual(s['output_during_subtask'], False)
+        s2 = basico.get_task_settings(basico.T.SCAN)
+        self.assertTrue(s2 is not None)
+        self.assertEqual(s2['problem']['Subtask Output'], 'subTaskDuring|subTaskAfter')
         
 
     def test_run_scan(self):

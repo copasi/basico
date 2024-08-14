@@ -355,7 +355,7 @@ class PetabSimulator(petab.simulate.Simulator):
         
         for item in fit_items:
             # remove the Values[] part
-            id = item['name'] if item['name'].startswith('Values[') else item['name']
+            id = item['name'][7:-1] if item['name'].startswith('Values[') else item['name']
 
             # if we have a new value, set it
             if id in x_unscaled:

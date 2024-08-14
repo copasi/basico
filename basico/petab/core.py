@@ -279,7 +279,7 @@ class PetabSimulator(petab.simulate.Simulator):
         self.settings = settings
         self.name = name
         self.cps_file = None
-        self.load_model(**kwargs)
+        self.model = self.load_model(**kwargs)
 
     def load_model(self, **kwargs):
         """Loads the model into basico
@@ -300,6 +300,7 @@ class PetabSimulator(petab.simulate.Simulator):
         else:
             files = write_problem_to(self.petab_problem, self.working_dir, self.name)
             self.cps_file = load_petab(files['problem'], self.working_dir)
+        return basico.get_current_model()
 
     def evaluate(self):
         if self.settings is not None:
@@ -332,6 +333,7 @@ class PetabSimulator(petab.simulate.Simulator):
         state = self.__dict__.copy()
 
         # maybe save cps file to omex? and add to state?
+        del state['model']
 
         return state
 
@@ -339,4 +341,25 @@ class PetabSimulator(petab.simulate.Simulator):
         """Set state after unpickling"""
         self.__dict__.update(state)
         # initialize from 'cps_file' in state, otherwise we'd initialize from the settings
-        self.load_model()
+        self.model = self.load_model()
+
+
+    def set_parameters(self, x_unscaled):
+        """Sets the specified fit parameters from the dictionary to the new ones. 
+
+        :param x_unscaled: the new values for the parameters (assumed to be a dictionary 
+                           of the form {parameter_id: value}) where the value can be cast to a float
+                           and parameter_id is the sbml id of a parameter specified to be estimated
+        """
+        fit_items = basico.as_dict(basico.get_fit_parameters(model=self.model))
+        
+        for item in fit_items:
+            # remove the Values[] part
+            id = item['name'] if item['name'].startswith('Values[') else item['name']
+
+            # if we have a new value, set it
+            if id in x_unscaled:
+                item['start'] = float(x_unscaled[id])
+
+        basico.set_fit_parameters(fit_items, model=self.model)
+        return 

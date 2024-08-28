@@ -25,7 +25,7 @@ def run_lyapunov(**kwargs):
 
          - | `num_exponents`: number of exponents to calculate (default: 3)
 
-         - | `calculate_convergence`: boolean flag indicating whether the divergence should be calculated (default: True)
+         - | `calculate_divergence`: boolean flag indicating whether the divergence should be calculated (default: True)
 
          - | `start_averaging_after`: time after which the averaging should start (default: disabled = 0)
 
@@ -62,8 +62,8 @@ def run_lyapunov(**kwargs):
     if 'num_exponents' in kwargs:
         problem.setExponentNumber(int(kwargs['num_exponents']))
 
-    if 'calculate_convergence' in kwargs:
-        problem.setDivergenceRequested(bool(kwargs['calculate_convergence']))
+    if 'calculate_divergence' in kwargs:
+        problem.setDivergenceRequested(bool(kwargs['calculate_divergence']))
 
     if 'start_averaging_after' in kwargs:
         problem.setTransientTime(float(kwargs['start_averaging_after']))

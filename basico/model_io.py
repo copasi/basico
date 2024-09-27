@@ -262,6 +262,66 @@ def load_model_from_url(url):
     return load_model_from_string(content)
 
 
+def import_sbml(filename_or_content, annotations_to_remove=None, remove_user_defined_functions=False):
+    """ Imports an SBML model and optionally removes custom annotations 
+
+    :param filename_or_content: either a filename, or a string containing the SBML model
+    :type filename_or_content: str
+
+    :param annotations_to_remove: optional list with tuples containing element name 
+    and namespace of the annotations to remove
+    :type annotations_to_remove: [(str, str)]
+
+    :return: the loaded model
+    :rtype: COPASI.CDataModel
+
+    """
+
+
+    if os.path.isfile(filename_or_content):
+        with open(filename_or_content, 'rb') as file:
+            content = file.read()
+    else:
+        content = filename_or_content
+
+    if annotations_to_remove is not None:
+        content = remove_annotations(content, annotations_to_remove)
+
+    if remove_user_defined_functions:
+        basico.model_info.remove_user_defined_functions()
+
+    return load_model_from_string(content)
+    
+
+def remove_annotations(content, annotations):
+    """ Removes annotations from an SBML model string
+
+    :param content: the SBML model as string
+    :type content: str or bytes
+
+    :param annotations: list with tuples containing element name and namespace of the annotations to remove
+    :type annotations: [(str, str)]
+
+    :return: the SBML model with the annotations removed    
+
+    """
+
+    from lxml import etree
+
+    if type(content) is str:
+        from io import StringIO
+        content = StringIO(content)
+    
+    parser = etree.XMLParser(remove_blank_text=True)
+    root = etree.fromstring(content, parser)
+
+    for element, namespace in annotations:
+        for annotation in root.iter('{%s}%s' % (namespace, element)):
+            annotation.getparent().remove(annotation)
+
+    return etree.tostring(root, pretty_print=True).decode('utf-8')
+
+
 def load_model(location, remove_user_defined_functions=False):
     """Loads the model and sets it as current
 

@@ -140,6 +140,25 @@ class TestBasicoIO(unittest.TestCase):
             self.assertTrue(len(data) > 0)
             basico.remove_datamodel(dm)
 
+    def test_import_sbml_with_pre_processing(self):
+        filename = os.path.join(os.path.dirname(__file__), 'test_data', 'BIOMD0000000507_url.xml')
+        self.assertTrue(os.path.exists(filename))
+
+        # this file contains special processing instructions 
+        # since an initial value is used in an expression. 
+
+        dm = basico.import_sbml(filename, annotations_to_remove=[
+            ('initialValue', 'http://copasi.org/initialValue'), 
+        ])
+
+        self.assertTrue(dm is not None)
+        params = basico.as_dict(basico.get_parameters())
+        self.assertEqual(len(params), 9)
+        
+        basico.remove_datamodel(dm)
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

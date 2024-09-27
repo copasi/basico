@@ -48,7 +48,7 @@ setup(name='copasi_basico',
       package_data={'basico': ['data/*']},
       license='Artistic-2.0',
       install_requires=[
-          'python-copasi', 'pandas', 'numpy', 'matplotlib', 'PyYAML' , 'scipy'
+          'python-copasi', 'pandas', 'numpy', 'matplotlib', 'PyYAML' , 'scipy', 'lxml'
       ],
       platforms=['Windows', 'Linux', 'MacOS'],
       classifiers=[

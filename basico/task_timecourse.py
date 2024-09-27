@@ -236,8 +236,34 @@ def create_data_handler(output_selection, during=None, after=None, before=None, 
             obj = model.findObjectByDisplayName(name)
 
             if not obj:
-                logger.warning('no object for name {0}'.format(name))
-                continue
+                # add some heuristics
+                found = False
+                tail = name.rfind(').')
+                if name.startswith('(') and tail != -1:
+                    obj = model.getModel().getReaction(name[1:tail])
+                    if obj:
+                        parameter = name[tail+2:]
+                        
+                        if parameter == "Flux":
+                            obj = obj.getFluxReference()
+                            found = True
+                        elif parameter == "ParticleFlux":
+                            obj = obj.getParticleFluxReference()
+                            found = True
+                        else:
+                            params = obj.getParameterObjects()
+                            for data_obj in params:
+                                if data_obj[0].getObjectName() == parameter:
+                                    obj = data_obj[0].getValueObject()
+                                    found = True
+                                    break
+                        
+                        if not found: 
+                            obj = None
+                
+                if not found:
+                    logger.warning('no object for name {0}'.format(name))
+                    continue
 
             if obj.getObjectType() != 'Reference':
                 obj = obj.getValueReference()

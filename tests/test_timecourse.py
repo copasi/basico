@@ -65,6 +65,18 @@ class TestTimeCourse(unittest.TestCase):
         basico.run_scheduled_tasks(include_plots=False, include_general_plots=True, plots=plots, model=dm)
         self.assertEqual(len(plots), 1)
 
+    def test_datahandler_for_fluxes_with_parenthesis(self):
+        basico.new_model(name='Simple Model')
+        basico.add_reaction('R1 (step 1)', 'A ->')
+        basico.set_species('A', initial_concentration=10)
+        
+        result = basico.run_time_course_with_output(['Time', 
+                                                     '(R1 (step 1)).Flux',
+                                                     '(R1 (step 1)).k1'], 0, 5, 5)    
+        
+        self.assertIsNotNone(result)
+        self.assertEqual(result.shape, (6, 3))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,6 +5,11 @@ import basico
 import basico.biomodels
 import COPASI
 
+try:
+    import lxml
+    _have_lxml = True
+except ImportError:
+    _have_lxml = False
 
 class TestBasicoIO(unittest.TestCase):
 
@@ -140,6 +145,7 @@ class TestBasicoIO(unittest.TestCase):
             self.assertTrue(len(data) > 0)
             basico.remove_datamodel(dm)
 
+    @unittest.skipUnless(_have_lxml, "lxml not available")
     def test_import_sbml_with_pre_processing(self):
         filename = os.path.join(os.path.dirname(__file__), 'test_data', 'BIOMD0000000507_url.xml')
         self.assertTrue(os.path.exists(filename))

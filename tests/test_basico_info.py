@@ -630,5 +630,29 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
         basico.remove_datamodel(dm);
 
+    def test_multiple_elements_with_same_name(self):
+        dm = basico.new_model(name='Test Model');
+
+        basico.add_reaction('R1', ' -> "Time"')
+        basico.add_compartment('Time')
+        basico.add_parameter('Time', initial_value=1)
+
+        result = basico.run_time_course()
+        self.assertListEqual(result.columns.tolist(), ['Time', 'Time'])
+
+        result2 = basico.run_time_course_with_output(['Time', '[Time]'])
+        self.assertListEqual(result2.columns.tolist(), ['Time', '[Time]'])
+
+        names = basico.model_info._get_name_map(dm)
+        self.assertGreater(len(names['Time']), 1)
+
+        did_rename = basico.ensure_unique_names()
+        self.assertTrue(did_rename)
+
+        names2 = basico.model_info._get_name_map(dm)
+        self.assertEqual(len(names2['Time']), 1)
+
+        basico.remove_datamodel(dm);
+
 if __name__ == "__main__":
     unittest.main()

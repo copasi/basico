@@ -66,7 +66,11 @@ def __build_result_from_ts(time_series, use_concentrations=True, use_sbml_id=Fal
                 concentrations[i, j] = time_series.getData(i, j)
 
     df = pandas.DataFrame(data=concentrations, columns=column_names)
-    df = df.set_index('Time')
+
+    if len(column_names) != len(set(column_names)):
+        logger.warning('Duplicate column names in time series consider using use_sbml_id=True, or running ensure_unique_names()')
+    else:
+        df = df.set_index('Time')
 
     return df
 

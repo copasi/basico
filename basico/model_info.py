@@ -2350,6 +2350,82 @@ def add_event_assignment(name, assignment, exact=False, **kwargs):
     set_event(name, exact, assignments=assignments)
 
 
+def _get_name_map(dm, include_species=True, include_parameters=True, include_compartments=True, include_reactions=True):
+    """Returns a dictionary mapping the display names to underlying DataObjects
+
+    :param dm: the data model
+    :type dm: COPASI.CDataModel
+
+    :return: the dictionary mapping the display names to the objects
+    :rtype: dict[str, COPASI.CDataObject]
+    """
+    names = {
+        "Time": [dm.getModel()],
+        "Avogadro Constant": [dm.getModel()],
+        "Quantity Conversion Factor": [dm.getModel()],
+    }
+
+    def _append_to_list(function_name):
+        for element in function_name():
+            name = element.getObjectName()
+            if name not in names:
+                names[name] = []
+            names[name].append(element)
+
+    if include_species:
+        _append_to_list(dm.getModel().getMetabolites)
+
+    if include_parameters:
+        _append_to_list(dm.getModel().getModelValues)
+
+    if include_compartments:
+        _append_to_list(dm.getModel().getCompartments)
+
+    if include_reactions:
+        _append_to_list(dm.getModel().getReactions)
+    
+    return names
+
+def ensure_unique_names(include_species=True, include_parameters=True, include_compartments=True, include_reactions=True, **kwargs):
+    """ Ensures that all names in the model are unique
+
+    :param include_species: boolean indicating whether to check species
+    :type include_species: bool
+
+    :param include_parameters: boolean indicating whether to check parameters
+    :type include_parameters: bool
+
+    :param include_compartments: boolean indicating whether to check compartments
+    :type include_compartments: bool
+
+    :param include_reactions: boolean indicating whether to check reactions
+    :type include_reactions: bool
+
+    :param kwargs: optional parameters, recognized are:
+
+        * | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+    :return: boolean indicating whether any names have been changed
+    :rtype: bool
+
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+
+    names = _get_name_map(dm, include_species, include_parameters, include_compartments, include_reactions)
+
+    renamed = False
+
+    for name, elements in names.items():
+        if len(elements) > 1:
+            count = 1
+            for element in elements[1:]:
+                element.setObjectName(name + f' ({count})')
+                count += 1
+                renamed = True
+
+    return renamed
+
 def add_reaction(name, scheme, **kwargs):
     """Adds a new reaction to the model
 

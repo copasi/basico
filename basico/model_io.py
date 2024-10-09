@@ -262,7 +262,7 @@ def load_model_from_url(url):
     return load_model_from_string(content)
 
 
-def import_sbml(filename_or_content, annotations_to_remove=None, remove_user_defined_functions=False):
+def import_sbml(filename_or_content, annotations_to_remove=None, remove_user_defined_functions=False, ensure_unique_names=False):
     """ Imports an SBML model and optionally removes custom annotations 
 
     :param filename_or_content: either a filename, or a string containing the SBML model
@@ -271,6 +271,14 @@ def import_sbml(filename_or_content, annotations_to_remove=None, remove_user_def
     :param annotations_to_remove: optional list with tuples containing element name 
     and namespace of the annotations to remove
     :type annotations_to_remove: [(str, str)]
+
+    :param remove_user_defined_functions: optional flag, indicating that user defined functions should be removed
+            before loading the model. Since function definitions are global, this can be helpful to ensure that
+            function names remain the same as in the loaded file. (default: False)
+    :type remove_user_defined_functions: bool
+
+    :param ensure_unique_names: optional flag, indicating that all names should be made unique
+    :type ensure_unique_names: bool
 
     :return: the loaded model
     :rtype: COPASI.CDataModel
@@ -290,7 +298,12 @@ def import_sbml(filename_or_content, annotations_to_remove=None, remove_user_def
     if remove_user_defined_functions:
         basico.model_info.remove_user_defined_functions()
 
-    return load_model_from_string(content)
+    dm = load_model_from_string(content)
+
+    if ensure_unique_names:
+        basico.model_info.ensure_unique_names(dm)
+
+    return dm
     
 
 def remove_annotations(content, annotations):

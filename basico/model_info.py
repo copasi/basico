@@ -4927,6 +4927,37 @@ def _set_group_from_dict(group, values, dm=None):
             logger.error('could not set value {0} for parameter {1}'.format(values[key], key))
 
 
+def get_valid_methods(task, **kwargs):
+    """Returns the valid methods for the given task
+
+    :param task: the task to get the valid methods for
+    :type task: COPASI.CCopasiTask or str
+
+    :param kwargs: optional parameters
+    
+            - | `model`: to specify the data model to be used (if not specified
+            | the one from :func:`.get_current_model` will be taken)
+    
+    :return: list of valid method names
+    :rtype: [str]
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+    if not isinstance(task, COPASI.CCopasiTask):
+        name = task
+        task = dm.getTask(name)
+
+    if not isinstance(task, COPASI.CCopasiTask):
+        return []
+
+    methods = task.getValidMethods()
+    result = []
+    for i in range(len(methods)):
+        method = COPASI.CCopasiMethod.getSubTypeName(methods[i])
+        if method:
+            result.append(method)
+    return result
+
 def get_task_settings(task, basic_only=True, **kwargs):
     """Returns the settings of the given task
 

@@ -233,10 +233,10 @@ def load_model_from_string(content):
     if type(content) is bytes:
         content = content.decode("utf8")
 
-    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
+    if '<sbml ' in content and model.importSBMLFromString(content):
         return set_current_model(model)
 
-    if '<sbml ' in content and model.importSBMLFromString(content):
+    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
         return set_current_model(model)
 
     if '<sedML '  in content and model.importSEDMLFromString(content):
@@ -332,7 +332,7 @@ def remove_annotations(content, annotations):
         for annotation in root.iter('{%s}%s' % (namespace, element)):
             annotation.getparent().remove(annotation)
 
-    return etree.tostring(root, pretty_print=True).decode('utf-8')
+    return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding="UTF-8").decode('utf-8')
 
 
 def load_model(location, remove_user_defined_functions=False):

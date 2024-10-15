@@ -163,7 +163,26 @@ class TestBasicoIO(unittest.TestCase):
         
         basico.remove_datamodel(dm)
 
+    @unittest.skipUnless(_have_lxml, "lxml not available")
+    def test_import_sbml_with_pre_processing(self):
+        filename = os.path.join(os.path.dirname(__file__), 'test_data', 'import_sbml_issue.xml')
+        self.assertTrue(os.path.exists(filename))
 
+        # this file contains special processing instructions 
+        # since an initial value is used in an expression. 
+
+        dm = basico.import_sbml(filename, annotations_to_remove=[
+            ('initialValue', 'http://copasi.org/initialValue')],
+            ensure_unique_names=True
+        )
+
+        self.assertTrue(dm is not None)
+        species = basico.as_dict(basico.get_species())
+        self.assertEqual(len(species), 13)
+        params = basico.as_dict(basico.get_parameters())
+        self.assertEqual(len(params), 7)
+        
+        basico.remove_datamodel(dm)
 
 
 if __name__ == "__main__":

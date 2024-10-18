@@ -14,6 +14,14 @@ class TestTimeCourse(unittest.TestCase):
         self.assertIsNotNone(tc)
         self.assertListEqual(tc.columns.to_list(), ['Time', '[S1]', '[S2]', 'Values[k1]'])
 
+    def test_values(self):
+        tc = basico.run_time_course(values=[10, 20, 30])
+        tc2 = basico.run_time_course(values=[10, 20, 30], start_time=10)
+        self.assertIsNotNone(tc)
+        self.assertEqual(tc.shape, (4, 1))
+        self.assertEqual(tc2.shape, (3, 1))
+
+
     def test_stochastic(self):
         basico.new_model(name='Simple Model')
         basico.add_reaction('R1', 'A ->')

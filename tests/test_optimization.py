@@ -23,6 +23,10 @@ class TestOptimization(unittest.TestCase):
         items = basico.get_opt_parameters()
         self.assertIsNotNone(items)
 
+        basico.set_opt_constraints(items)
+        items = basico.get_opt_constraints()
+        self.assertIsNotNone(items)
+
     def test_settings(self):
         settings = basico.get_opt_settings()
         self.assertIsNotNone(settings)

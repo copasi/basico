@@ -191,7 +191,7 @@ def set_opt_parameters(opt_parameters, model=None):
             logger.warning('object {0} not found'.format(name))
             continue
 
-        opt_item = problem.addOptItem(cn)
+        opt_item = problem.addOptItem(COPASI.CRegisteredCommonName(cn))
         assert (isinstance(opt_item, COPASI.COptItem))
         if 'lower' in item:
             opt_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))
@@ -249,7 +249,7 @@ def set_opt_constraints(opt_constraints, model=None):
             logger.warning('object {0} not found'.format(name))
             continue
 
-        opt_item = problem.addOptConstraint(cn)
+        opt_item = problem.addOptConstraint(COPASI.CRegisteredCommonName(cn))
         assert (isinstance(opt_item, COPASI.COptItem))
         if 'lower' in item:
             opt_item.setLowerBound(COPASI.CRegisteredCommonName(str(item['lower'])))

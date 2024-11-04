@@ -90,10 +90,15 @@ def run_steadystate(**kwargs):
     else:
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
-        if not result:
-            logger.error("Error while running the simulation: " +
-            model_info.get_copasi_messages(num_messages_before))
 
+        # the result for the steady state is interpreted differently from other tasks
+        # here process returns task.getResult() != COPASI.CSteadyStateMethod.notFound
+        # so we dont print an error here, rather we check the error log 
+
+        if num_messages_before < COPASI.CCopasiMessage.size():
+            logger.error("Error while running the simulation: " +
+            model_info.get_copasi_messages(num_messages_before, 'No output'))
+        
     task.restore()
 
     return task.getResult()

@@ -5113,13 +5113,24 @@ def _get_cn_string(cn):
         return cn.getString()
     return str(cn)
 
-def _collect_data(names=None, cns=None, **kwargs):
+def collect_data(names=None, cns=None, **kwargs):
     """Collects data from the model, returning it as dataframe
 
-    :param names: list of names of elements to return
+    :param names: list of display names of elements to return
     :type names: list or None
+    
     :param cns: list of common names of references for which to return the results
     :type cns: list or None
+
+    :param kwargs: optional parameters
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+
+        - `preserve_names`: if set to True, the names will be preserved in the output
+                            otherwise the display name of the object will be used. Default is True 
+                            for names. It does not apply to cns.
+    
     :return: data frame with the results
     :rtype: pd.DataFrame
     """
@@ -5143,8 +5154,18 @@ def _collect_data(names=None, cns=None, **kwargs):
             data.append({'name': obj.getObjectDisplayName(), 'value': value})
 
     if names:
+        preseve_names = kwargs.get('preserve_names', True)
         for name in names:
-            obj = model.findObjectByDisplayName(name)
+            obj = None
+            if name == '[Time]':
+                # workaround for a bug in the python bindings
+                # where Time would always return the models time instead of potentially
+                # existing species called Time
+                obj = model.getModel().getMetabolite(name[1:-1])
+            
+            if obj is None:
+                obj = model.findObjectByDisplayName(name)
+
             if obj is None:
                 # couldn't find that object in the model
                 logger.warning('No object for name: {0}'.format(name))
@@ -5165,7 +5186,7 @@ def _collect_data(names=None, cns=None, **kwargs):
                 else:
                     value = None
 
-            data.append({'name': obj.getObjectDisplayName(), 'value': value})
+            data.append({'name': name if preseve_names else obj.getObjectDisplayName(), 'value': value})
 
     return pandas.DataFrame(data=data).set_index('name')
 

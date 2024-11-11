@@ -1300,7 +1300,7 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
             # run steady state
             steady_state_task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
             steady_state_task.processRaw(True)
-            data = basico.model_info._collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
+            data = basico.model_info.collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
 
             for j in range(1, num_independent_points):
                 container.applyInitialValues()
@@ -1314,7 +1314,7 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
                     _update_fit_parameters_from(dm, solution, exp_name)
                 steady_state_task.processRaw(True)
 
-                new_row = basico.model_info._collect_data(
+                new_row = basico.model_info.collect_data(
                     cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
                 data = pd.concat([data, new_row], ignore_index=True)
 

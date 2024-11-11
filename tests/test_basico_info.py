@@ -181,7 +181,7 @@ class TestBasicoIO_Brus(unittest.TestCase):
         mod = basico.get_current_model().getModel()
         assert (isinstance(mod, COPASI.CModel))
         mod.applyInitialValues()
-        data = basico.model_info._collect_data(cns=[
+        data = basico.model_info.collect_data(cns=[
             'CN=Root,Model=The Brusselator,Reference=Time',
             'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Reference=InitialVolume',
             'CN=Root,Model=The Brusselator,Vector=Compartments[compartment],Reference=Rate',
@@ -200,7 +200,7 @@ class TestBasicoIO_Brus(unittest.TestCase):
             'CN=Root,Model=The Brusselator,Vector=Reactions[R1],ParameterGroup=Parameters,Parameter=k1,Reference=Value'
         ])
 
-        data2 = basico.model_info._collect_data(names=[
+        data2 = basico.model_info.collect_data(names=[
             'Time',
             'Compartments[compartment].InitialVolume',
             'Compartments[compartment].Rate',
@@ -643,6 +643,12 @@ class TestBasicoModelConstruction(unittest.TestCase):
         result2 = basico.run_time_course_with_output(['Time', '[Time]'])
         self.assertListEqual(result2.columns.tolist(), ['Time', '[Time]'])
 
+        # test using collect:
+        data = basico.model_info.collect_data(names=['Time', '[Time]'])
+        self.assertTrue(data is not None)
+        self.assertListEqual(data.index.to_list(), ['Time', '[Time]'])
+
+
         names = basico.model_info._get_name_map(dm)
         self.assertGreater(len(names['Time']), 1)
 
@@ -651,6 +657,7 @@ class TestBasicoModelConstruction(unittest.TestCase):
 
         names2 = basico.model_info._get_name_map(dm)
         self.assertEqual(len(names2['Time']), 1)
+        
 
         basico.remove_datamodel(dm);
 

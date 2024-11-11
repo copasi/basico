@@ -86,5 +86,44 @@ class TestTimeCourse(unittest.TestCase):
         self.assertEqual(result.shape, (6, 3))
 
 
+    def test_issue_61(self):
+        dm = basico.import_sbml(os.path.join(THIS_DIR, 'test_data','issue61.xml'), annotations_to_remove=[
+            ('initialValue', 'http://copasi.org/initialValue')], ensure_unique_names=True)
+
+        desired_values = [10.0, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 
+                        16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20]
+        
+        problem = {
+                        "AutomaticStepSize": False,
+                        "Duration": 20.0,
+                        "OutputStartTime": 10.0,
+                        "Use Values": True,
+                        "Values": desired_values
+                    }
+
+        method = {'name': 'Deterministic (LSODA)'}
+
+        settings = {
+            "problem": problem,
+            "method": method
+        }
+
+        basico.set_task_settings('Time-Course', settings)
+
+        output_elements = ['Time', '[A]', '[C]', '[DA]']
+        dh, columns = basico.create_data_handler(output_elements, model=dm)
+
+        df1 = basico.run_time_course_with_output(output_elements, model=dm)
+        self.assertListEqual(df1['Time'].to_list(), desired_values)
+
+        dm.addInterface(dh)
+        df2 = basico.run_time_course(**{"use_inital_values": True}).reset_index()
+        data = basico.get_data_from_data_handler(dh, columns)
+        dm.removeInterface(dh)
+        self.assertListEqual(data['Time'].to_list(), desired_values)
+        self.assertListEqual(df2['Time'].to_list(), desired_values)
+        basico.remove_datamodel(dm)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -414,6 +414,12 @@ def _setup_timecourse(args, kwargs):
             for val in vals:
                 new_vals += ' ' + str(val)
             vals = new_vals.strip()
+
+        # ensure that the output start time is correct adjusted: 
+        first_value = vals.split(' ')[0] if vals else None
+        if first_value:
+            problem.setOutputStartTime(float(first_value))
+
         problem.setValues(vals)
         problem.setUseValues(True)
     if 'use_values' in kwargs:

@@ -4901,10 +4901,10 @@ def _set_group_from_dict(group, values, dm=None):
         try:
             if param_type == COPASI.CCopasiParameter.Type_STRING:
                 current_value = values[key]
-                # convert list of strings to comma separated string
+                # convert list of strings to space separated string
                 # converting other data types to string
                 if isinstance(current_value, list):                    
-                    current_value = ', '.join(map(str, current_value))
+                    current_value = ' '.join(map(str, current_value))
                 else:
                     current_value = str(current_value)
                 param.setStringValue(current_value)
@@ -5070,6 +5070,12 @@ def set_task_settings(task, settings, **kwargs):
                 problem.setStepNumber(int(settings['problem']['intervals']))
             if 'StepNumber' in settings['problem']:
                 problem.setStepNumber(int(settings['problem']['StepNumber']))
+            if 'Values' in settings['problem'] and 'Use Values' in settings['problem'] and settings['problem']['Use Values']:
+                desired_values = problem.getValueString().split()
+                first_value = desired_values[0] if desired_values else None
+                if first_value:
+                    # correct start time if needed
+                    problem.setOutputStartTime(float(first_value))                
 
     if 'method' in settings:
         method = task.getMethod()

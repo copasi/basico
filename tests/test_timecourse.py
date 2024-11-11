@@ -18,7 +18,9 @@ class TestTimeCourse(unittest.TestCase):
         tc = basico.run_time_course(values=[10, 20, 30])
         tc2 = basico.run_time_course(values=[10, 20, 30], start_time=10)
         self.assertIsNotNone(tc)
-        self.assertEqual(tc.shape, (4, 1))
+        # we decided that both should have the same shape
+        # see issue #61
+        self.assertEqual(tc.shape, (3, 1))
         self.assertEqual(tc2.shape, (3, 1))
 
 
@@ -94,9 +96,9 @@ class TestTimeCourse(unittest.TestCase):
                         16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20]
         
         problem = {
-                        "AutomaticStepSize": False,
-                        "Duration": 20.0,
-                        "OutputStartTime": 10.0,
+                        "AutomaticStepSize": True,   # should be ignored
+                        "Duration": 200.0,           # should be ignored
+                        "OutputStartTime": 100.0,    # should be ignored
                         "Use Values": True,
                         "Values": desired_values
                     }
@@ -122,6 +124,24 @@ class TestTimeCourse(unittest.TestCase):
         dm.removeInterface(dh)
         self.assertListEqual(data['Time'].to_list(), desired_values)
         self.assertListEqual(df2['Time'].to_list(), desired_values)
+
+
+        # run some more tests white different values for duration and output start time
+        # ensuring that the requested values are still returned
+        desired_values = [ 0, 10, 15, 20]
+        df1 = basico.run_time_course_with_output(output_elements, values=desired_values, model=dm)
+        self.assertListEqual(df1['Time'].to_list(), desired_values)
+        df2 = basico.run_time_course(**{"use_inital_values": True}).reset_index()
+        self.assertListEqual(df2['Time'].to_list(), desired_values)
+
+        desired_values = [ 15, 20 ]
+        df1 = basico.run_time_course_with_output(output_elements, values=desired_values, model=dm)
+        self.assertListEqual(df1['Time'].to_list(), desired_values)
+        df2 = basico.run_time_course(**{"use_inital_values": True, "values":desired_values}).reset_index()
+        self.assertListEqual(df2['Time'].to_list(), desired_values)
+
+
+
         basico.remove_datamodel(dm)
 
 

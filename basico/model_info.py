@@ -4900,7 +4900,14 @@ def _set_group_from_dict(group, values, dm=None):
 
         try:
             if param_type == COPASI.CCopasiParameter.Type_STRING:
-                param.setStringValue(str(values[key]))
+                current_value = values[key]
+                # convert list of strings to comma separated string
+                # converting other data types to string
+                if isinstance(current_value, list):                    
+                    current_value = ', '.join(map(str, current_value))
+                else:
+                    current_value = str(current_value)
+                param.setStringValue(current_value)
             elif param_type == COPASI.CCopasiParameter.Type_INT:
                 param.setIntValue(int(values[key]))
             elif param_type == COPASI.CCopasiParameter.Type_UINT:

@@ -22,6 +22,7 @@ from .task_optimization import *
 from .task_sensitivities import *
 from .task_mca import *
 from .task_lyapunov import *
+from .task_lna import *
 
 from .compartment_array_tools import *
 

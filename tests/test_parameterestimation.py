@@ -214,7 +214,7 @@ class TestBasicoParamterEstimation(unittest.TestCase):
 class TestBasicoParamterEstimationPK(unittest.TestCase):
 
     def setUp(self):
-        self.model = basico.load_example('PK')
+        self.model = basico.load_example('PK_fit')
         self.assertTrue(self.model.getModel().getObjectName() ==
                         'Pritchard2002_glycolysis')
 

@@ -110,10 +110,10 @@ def get_lna_solution(**kwargs):
     :return: a tuple of the LNA solution
     """
 
-    return get_lna_status(**kwargs), get_lna_covariance_matrix(True, **kwargs), get_lna_reduced_covariance_matrix(True, **kwargs), get_lna_reduced_b_matrix(True, **kwargs)
+    return get_lna_status(**kwargs), get_lna_covariance_matrix(False, **kwargs), get_lna_reduced_covariance_matrix(False, **kwargs), get_lna_reduced_b_matrix(False, **kwargs)
 
 
-def get_lna_covariance_matrix(scaled, **kwargs):
+def get_lna_covariance_matrix(scaled=False, **kwargs):
     """ Returns the LNA covariance matrix calculated last time `run_lna` was called
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
@@ -135,7 +135,7 @@ def get_lna_covariance_matrix(scaled, **kwargs):
 
 
 
-def get_lna_reduced_covariance_matrix(scaled, **kwargs):
+def get_lna_reduced_covariance_matrix(scaled=False, **kwargs):
     """ Returns the LNA covariance matrix calculated last time `run_lna` was called
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
@@ -156,7 +156,7 @@ def get_lna_reduced_covariance_matrix(scaled, **kwargs):
         )
 
 
-def get_lna_reduced_b_matrix(scaled, **kwargs):
+def get_lna_reduced_b_matrix(scaled=False, **kwargs):
     """ Returns the LNA covariance matrix calculated last time `run_lna` was called
     """
     model = model_io.get_model_from_dict_or_default(kwargs)

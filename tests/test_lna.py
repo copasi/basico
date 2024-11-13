@@ -8,7 +8,7 @@ class TestLNA(unittest.TestCase):
     def test_lna(self):
         dm = basico.load_example('brusselator')
         self.assertIsNotNone(dm)
-        status, cv, cv_red, b = basico.run_lna()
+        status = basico.run_lna()
 
         self.assertEqual(status, 'The reduced system has non-negative Eigen values! No LNA calculated!')
 
@@ -16,7 +16,7 @@ class TestLNA(unittest.TestCase):
 
         dm = basico.load_example('Yeast')
         self.assertIsNotNone(dm)
-        status, cv, cv_red, b = basico.run_lna()
+        status, cv, cv_red, b = basico.run_lna(return_results=True)
 
         # this model has reversible reactions, so the LNA should not be calculated
         # and the matrices should be empty
@@ -30,7 +30,7 @@ class TestLNA(unittest.TestCase):
 
         dm = basico.load_model(os.path.join(os.path.dirname(__file__), 'test_data', 'BM11.cps'))
         self.assertIsNotNone(dm)
-        status, cv, cv_red, b = basico.run_lna()
+        status, cv, cv_red, b = basico.run_lna(return_results=True)
         self.assertEqual(status, 'Steady State found.')
 
         # ensure matrices are not empty

@@ -44,6 +44,7 @@ complexity of the underlying SWIG generated language bindings.
    notebooks/MCA
    notebooks/Working_with_Widgets
    notebooks/AllTaskSettings
+   notebooks/LinearNoiseApproximation.ipynb
 
 .. toctree::
    :maxdepth: 2

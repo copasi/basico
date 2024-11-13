@@ -13,11 +13,21 @@ logger = logging.getLogger(__name__)
 # LNA is available since COPASI 4.45.295+
 _have_lna_method = int(COPASI.__version__.split('.')[-1]) > 295
 
-def run_lna(**kwargs):
-    """ Runs the LNA task, the result is obtained by calling:
-    
-        * `get_lna_solution`
+def run_lna(return_results=False, **kwargs):
+    """ Runs the LNA task
 
+    :param return_results: if True the results are returned (by call `get_lna_solution`), otherwise only the status is returned
+    :param kwargs: optional arguments
+
+            - | `model`: to specify the data model to be used (if not specified
+              | the one from :func:`.get_current_model` will be taken)   
+     
+            - `settings`: a dictionary with settings for the LNA task
+
+            - `use_initial_values`: if True the initial values are used, otherwise the current state is used
+
+    :return: the status of the LNA task and the results (if `return_results` is True), otherwise only
+             the status is returned 
     """
     model = model_io.get_model_from_dict_or_default(kwargs)
     assert (isinstance(model, COPASI.CDataModel))
@@ -38,7 +48,7 @@ def run_lna(**kwargs):
     if not task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI):
         logger.error('Could not initialize LNA Task: {0}'.format(
             basico.model_info.get_copasi_messages(num_messages_before, 'No output')))
-        return get_lna_solution()
+        return get_lna_solution() if return_results else get_lna_status()
 
     if not task.processRaw(use_initial_values):
         logger.error('Could not run LNA Task: {0}'.format(
@@ -47,7 +57,7 @@ def run_lna(**kwargs):
     task.restore()
 
 
-    return get_lna_solution()
+    return get_lna_solution() if return_results else get_lna_status()
 
 
 def _get_lna_status(**kwargs):

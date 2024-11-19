@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- generated with COPASI 4.44 (Build 293) (http://www.copasi.org) at 2024-11-13T13:31:42Z -->
+<!-- generated with COPASI 4.44 (Build 293) (http://www.copasi.org) at 2024-11-19T18:11:01Z -->
 <?oxygen RNGSchema="http://www.copasi.org/static/schema/CopasiML.rng" type="xml"?>
 <COPASI xmlns="http://www.copasi.org/static/schema" versionMajor="4" versionMinor="44" versionDevel="293" copasiSourcesModified="0">
   <ListOfFunctions>
@@ -29,12 +29,10 @@ Reaction scheme where the products are created from the reactants and the change
         <ParameterDescription key="FunctionParameter_79" name="product" order="3" role="product"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_42" name="HXT kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_41" name="HXT kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_42">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_41">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -42,19 +40,17 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         (Vmax * (A-B)/Kglc)/(1+(A+B)/Kglc+(Ki*A*B)/(Kglc^2))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_282" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_283" name="B" order="1" role="product"/>
-        <ParameterDescription key="FunctionParameter_281" name="Vmax" order="2" role="constant"/>
-        <ParameterDescription key="FunctionParameter_284" name="Kglc" order="3" role="constant"/>
-        <ParameterDescription key="FunctionParameter_285" name="Ki" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_275" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_274" name="B" order="1" role="product"/>
+        <ParameterDescription key="FunctionParameter_273" name="Vmax" order="2" role="constant"/>
+        <ParameterDescription key="FunctionParameter_272" name="Kglc" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_266" name="Ki" order="4" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_43" name="HK kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_42" name="HK kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_43">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_42">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -62,24 +58,22 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A*B/(Kglc*Katp)- P*Q/(Kglc*Katp*Keq))/((1+A/Kglc+P/Kg6p)*(1+B/Katp+Q/Kadp))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_297" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_298" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_301" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_302" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_279" name="Vmax" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_299" name="Kglc" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_300" name="Katp" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_303" name="Keq" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_304" name="Kg6p" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_305" name="Kadp" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_280" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_279" name="B" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_278" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_277" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_276" name="Vmax" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_281" name="Kglc" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_282" name="Katp" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_283" name="Keq" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_284" name="Kg6p" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_285" name="Kadp" order="9" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_44" name="PGI kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_43" name="PGI kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_44">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_43">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -87,20 +81,18 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A/Kg6p-P/(Kg6p*Keq))/(1+A/Kg6p+P/Kf6p)
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_277" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_289" name="P" order="1" role="product"/>
-        <ParameterDescription key="FunctionParameter_266" name="Vmax" order="2" role="constant"/>
-        <ParameterDescription key="FunctionParameter_280" name="Kg6p" order="3" role="constant"/>
-        <ParameterDescription key="FunctionParameter_295" name="Keq" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_292" name="Kf6p" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_295" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_294" name="P" order="1" role="product"/>
+        <ParameterDescription key="FunctionParameter_293" name="Vmax" order="2" role="constant"/>
+        <ParameterDescription key="FunctionParameter_292" name="Kg6p" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_291" name="Keq" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_290" name="Kf6p" order="5" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_45" name="PFK kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_44" name="PFK kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_45">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_44">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -108,33 +100,31 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(gR*(F6P/Kf6p)*(ATP/Katp)*(1+F6P/Kf6p+ATP/Katp+gR*F6P/Kf6p*ATP/Katp)/((1+F6P/Kf6p+ATP/Katp+gR*F6P/Kf6p*ATP/Katp)^2+(L0*((1+Ciatp*ATP/Kiatp)/(1+ATP/Kiatp))^2*((1+Camp*AMP/Kamp)/(1+AMP/Kamp))^2*((1+Cf26*F26BP/Kf26+Cf16*F16P/Kf16)/(1+F26BP/Kf26+F16P/Kf16))^2)*(1+Catp*ATP/Katp)^2))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_291" name="F6P" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_334" name="ATP" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_346" name="F16P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_340" name="AMP" order="3" role="modifier"/>
-        <ParameterDescription key="FunctionParameter_343" name="F26BP" order="4" role="modifier"/>
-        <ParameterDescription key="FunctionParameter_273" name="Vmax" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_287" name="gR" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_293" name="Kf6p" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_335" name="Katp" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_336" name="L0" order="9" role="constant"/>
-        <ParameterDescription key="FunctionParameter_337" name="Ciatp" order="10" role="constant"/>
-        <ParameterDescription key="FunctionParameter_338" name="Kiatp" order="11" role="constant"/>
-        <ParameterDescription key="FunctionParameter_339" name="Camp" order="12" role="constant"/>
-        <ParameterDescription key="FunctionParameter_341" name="Kamp" order="13" role="constant"/>
-        <ParameterDescription key="FunctionParameter_342" name="Cf26" order="14" role="constant"/>
-        <ParameterDescription key="FunctionParameter_344" name="Kf26" order="15" role="constant"/>
-        <ParameterDescription key="FunctionParameter_345" name="Cf16" order="16" role="constant"/>
-        <ParameterDescription key="FunctionParameter_347" name="Kf16" order="17" role="constant"/>
-        <ParameterDescription key="FunctionParameter_348" name="Catp" order="18" role="constant"/>
+        <ParameterDescription key="FunctionParameter_297" name="F6P" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_296" name="ATP" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_286" name="F16P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_287" name="AMP" order="3" role="modifier"/>
+        <ParameterDescription key="FunctionParameter_288" name="F26BP" order="4" role="modifier"/>
+        <ParameterDescription key="FunctionParameter_289" name="Vmax" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_298" name="gR" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_299" name="Kf6p" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_300" name="Katp" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_301" name="L0" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_302" name="Ciatp" order="10" role="constant"/>
+        <ParameterDescription key="FunctionParameter_303" name="Kiatp" order="11" role="constant"/>
+        <ParameterDescription key="FunctionParameter_304" name="Camp" order="12" role="constant"/>
+        <ParameterDescription key="FunctionParameter_305" name="Kamp" order="13" role="constant"/>
+        <ParameterDescription key="FunctionParameter_306" name="Cf26" order="14" role="constant"/>
+        <ParameterDescription key="FunctionParameter_307" name="Kf26" order="15" role="constant"/>
+        <ParameterDescription key="FunctionParameter_308" name="Cf16" order="16" role="constant"/>
+        <ParameterDescription key="FunctionParameter_309" name="Kf16" order="17" role="constant"/>
+        <ParameterDescription key="FunctionParameter_310" name="Catp" order="18" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_46" name="ALD kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_45" name="ALD kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_46">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_45">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -142,23 +132,21 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A/Kf16bp-(P*Q/(Kf16bp*Keq)))/(1+A/Kf16bp+P/Kdhap+Q/Kgap+A*Q/(Kf16bp*Kigap)+P*Q/(Kdhap*Kgap))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_272" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_294" name="P" order="1" role="product"/>
-        <ParameterDescription key="FunctionParameter_306" name="Q" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_288" name="Vmax" order="3" role="constant"/>
-        <ParameterDescription key="FunctionParameter_278" name="Kf16bp" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_308" name="Keq" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_310" name="Kdhap" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_312" name="Kgap" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_314" name="Kigap" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_329" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_328" name="P" order="1" role="product"/>
+        <ParameterDescription key="FunctionParameter_327" name="Q" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_326" name="Vmax" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_325" name="Kf16bp" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_324" name="Keq" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_323" name="Kdhap" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_322" name="Kgap" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_321" name="Kigap" order="8" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_47" name="GAPDH kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_46" name="GAPDH kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_47">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_46">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -166,25 +154,23 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         C*(Vmaxf*A*B/(Kgap*Knad)-Vmaxr*P*Q/(Kbpg*Knadh))/((1+A/Kgap+P/Kbpg)*(1+B/Knad+Q/Knadh))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_315" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_319" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_349" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_350" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_275" name="C" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_290" name="Vmaxf" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_327" name="Kgap" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_331" name="Knad" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_333" name="Vmaxr" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_351" name="Kbpg" order="9" role="constant"/>
-        <ParameterDescription key="FunctionParameter_352" name="Knadh" order="10" role="constant"/>
+        <ParameterDescription key="FunctionParameter_312" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_313" name="B" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_314" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_315" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_316" name="C" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_317" name="Vmaxf" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_318" name="Kgap" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_319" name="Knad" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_320" name="Vmaxr" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_311" name="Kbpg" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_330" name="Knadh" order="10" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_48" name="PGK kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_47" name="PGK kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_48">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_47">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -192,24 +178,22 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*((Keq*A*B-P*Q)/(Kp3g*Katp))/((1+A/Kbpg+P/Kp3g)*(1+B/Kadp+Q/Katp))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_296" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_329" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_318" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_330" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_323" name="Vmax" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_274" name="Keq" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_357" name="Kp3g" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_358" name="Katp" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_359" name="Kbpg" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_360" name="Kadp" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_341" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_340" name="B" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_339" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_338" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_337" name="Vmax" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_336" name="Keq" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_335" name="Kp3g" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_334" name="Katp" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_333" name="Kbpg" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_332" name="Kadp" order="9" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_49" name="PGM kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_48" name="PGM kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_49">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_48">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -217,20 +201,18 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A/Kp3g-P/(Kp3g*Keq))/(1+A/Kp3g+P/Kp2g)
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_317" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_332" name="P" order="1" role="product"/>
-        <ParameterDescription key="FunctionParameter_311" name="Vmax" order="2" role="constant"/>
-        <ParameterDescription key="FunctionParameter_326" name="Kp3g" order="3" role="constant"/>
-        <ParameterDescription key="FunctionParameter_355" name="Keq" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_353" name="Kp2g" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_350" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_349" name="P" order="1" role="product"/>
+        <ParameterDescription key="FunctionParameter_348" name="Vmax" order="2" role="constant"/>
+        <ParameterDescription key="FunctionParameter_347" name="Kp3g" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_346" name="Keq" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_345" name="Kp2g" order="5" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_50" name="ENO kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_49" name="ENO kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_50">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_49">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -238,20 +220,18 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A/Kp2g-P/(Kp2g*Keq))/(1+A/Kp2g+P/Kpep)
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_356" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_362" name="P" order="1" role="product"/>
-        <ParameterDescription key="FunctionParameter_324" name="Vmax" order="2" role="constant"/>
-        <ParameterDescription key="FunctionParameter_361" name="Kp2g" order="3" role="constant"/>
-        <ParameterDescription key="FunctionParameter_363" name="Keq" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_364" name="Kpep" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_352" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_351" name="P" order="1" role="product"/>
+        <ParameterDescription key="FunctionParameter_331" name="Vmax" order="2" role="constant"/>
+        <ParameterDescription key="FunctionParameter_342" name="Kp2g" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_343" name="Keq" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_344" name="Kpep" order="5" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_51" name="PYK kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_50" name="PYK kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_51">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_50">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -259,24 +239,22 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A*B/(Kpep*Kadp)-P*Q/(Kpep*Kadp*Keq))/((1+A/Kpep+P/Kpyr)*(1+B/Kadp+Q/Katp))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_374" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_375" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_378" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_379" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_322" name="Vmax" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_376" name="Kpep" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_377" name="Kadp" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_380" name="Keq" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_381" name="Kpyr" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_382" name="Katp" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_358" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_357" name="B" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_356" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_355" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_354" name="Vmax" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_353" name="Kpep" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_359" name="Kadp" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_360" name="Keq" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_361" name="Kpyr" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_362" name="Katp" order="9" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_52" name="PDC kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_51" name="PDC kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_52">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_51">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -284,18 +262,16 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*((A/Kpyr)^nH)/(1+(A/Kpyr)^nH)
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_313" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_307" name="Vmax" order="1" role="constant"/>
-        <ParameterDescription key="FunctionParameter_328" name="Kpyr" order="2" role="constant"/>
-        <ParameterDescription key="FunctionParameter_325" name="nH" order="3" role="constant"/>
+        <ParameterDescription key="FunctionParameter_372" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_371" name="Vmax" order="1" role="constant"/>
+        <ParameterDescription key="FunctionParameter_370" name="Kpyr" order="2" role="constant"/>
+        <ParameterDescription key="FunctionParameter_369" name="nH" order="3" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_53" name="ADH kinetics" type="UserDefined" reversible="true">
+    <Function key="Function_52" name="ADH kinetics" type="UserDefined" reversible="true">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_53">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_52">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -303,28 +279,26 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*(A*B/(Ketoh*Kinad)-P*Q/(Ketoh*Kinad*Keq))/(1+B/Kinad+A*Knad/(Kinad*Ketoh)+P*Knadh/(Kinadh*Kacald)+Q/Kinadh+A*B/(Kinad*Ketoh)+B*P*Knadh/(Kinad*Kinadh*Kacald)+A*Q*Knad/(Kinad*Kinadh*Ketoh)+P*Q/(Kacald*Kinadh)+A*B*P/(Kinad*Kiacald*Ketoh)+A*P*Q/(Kietoh*Kinadh*Kacald))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_320" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_397" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_400" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_401" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_370" name="Vmax" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_398" name="Ketoh" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_399" name="Kinad" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_402" name="Keq" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_403" name="Knad" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_404" name="Knadh" order="9" role="constant"/>
-        <ParameterDescription key="FunctionParameter_405" name="Kinadh" order="10" role="constant"/>
-        <ParameterDescription key="FunctionParameter_406" name="Kacald" order="11" role="constant"/>
-        <ParameterDescription key="FunctionParameter_407" name="Kiacald" order="12" role="constant"/>
-        <ParameterDescription key="FunctionParameter_408" name="Kietoh" order="13" role="constant"/>
+        <ParameterDescription key="FunctionParameter_365" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_366" name="B" order="1" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_367" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_368" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_364" name="Vmax" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_363" name="Ketoh" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_373" name="Kinad" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_374" name="Keq" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_375" name="Knad" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_376" name="Knadh" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_377" name="Kinadh" order="10" role="constant"/>
+        <ParameterDescription key="FunctionParameter_378" name="Kacald" order="11" role="constant"/>
+        <ParameterDescription key="FunctionParameter_379" name="Kiacald" order="12" role="constant"/>
+        <ParameterDescription key="FunctionParameter_380" name="Kietoh" order="13" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_54" name="ATPase" type="UserDefined" reversible="false">
+    <Function key="Function_53" name="ATPase" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_54">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_53">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -332,16 +306,14 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Katpase*ATP
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_286" name="ATP" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_276" name="Katpase" order="1" role="constant"/>
+        <ParameterDescription key="FunctionParameter_394" name="ATP" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_393" name="Katpase" order="1" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_55" name="G3PDH kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_54" name="G3PDH kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_55">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_54">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -349,24 +321,22 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Vmax*((A/Kdhap)*(B/Knadh)-(P/Kdhap)*(Q/Knadh)*(1/Keq))/((1+A/Kdhap+P/Kglycerol)*(1+B/Knadh+Q/Knad))
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_365" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_391" name="A" order="0" role="substrate"/>
         <ParameterDescription key="FunctionParameter_392" name="B" order="1" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_396" name="P" order="2" role="product"/>
-        <ParameterDescription key="FunctionParameter_409" name="Q" order="3" role="product"/>
-        <ParameterDescription key="FunctionParameter_309" name="Vmax" order="4" role="constant"/>
-        <ParameterDescription key="FunctionParameter_390" name="Kdhap" order="5" role="constant"/>
-        <ParameterDescription key="FunctionParameter_394" name="Knadh" order="6" role="constant"/>
-        <ParameterDescription key="FunctionParameter_410" name="Keq" order="7" role="constant"/>
-        <ParameterDescription key="FunctionParameter_411" name="Kglycerol" order="8" role="constant"/>
-        <ParameterDescription key="FunctionParameter_412" name="Knad" order="9" role="constant"/>
+        <ParameterDescription key="FunctionParameter_390" name="P" order="2" role="product"/>
+        <ParameterDescription key="FunctionParameter_389" name="Q" order="3" role="product"/>
+        <ParameterDescription key="FunctionParameter_388" name="Vmax" order="4" role="constant"/>
+        <ParameterDescription key="FunctionParameter_387" name="Kdhap" order="5" role="constant"/>
+        <ParameterDescription key="FunctionParameter_386" name="Knadh" order="6" role="constant"/>
+        <ParameterDescription key="FunctionParameter_385" name="Keq" order="7" role="constant"/>
+        <ParameterDescription key="FunctionParameter_384" name="Kglycerol" order="8" role="constant"/>
+        <ParameterDescription key="FunctionParameter_383" name="Knad" order="9" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_56" name="Glycogen synthesis kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_55" name="Glycogen synthesis kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_56">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_55">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -374,15 +344,13 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         KGLYCOGEN
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_321" name="KGLYCOGEN" order="0" role="constant"/>
+        <ParameterDescription key="FunctionParameter_402" name="KGLYCOGEN" order="0" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_57" name="Trehalose synthesis kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_56" name="Trehalose synthesis kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_57">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_56">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -390,15 +358,13 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         Ktrehalose
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_367" name="Ktrehalose" order="0" role="constant"/>
+        <ParameterDescription key="FunctionParameter_401" name="Ktrehalose" order="0" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
-    <Function key="Function_58" name="Succinate kinetics" type="UserDefined" reversible="false">
+    <Function key="Function_57" name="Succinate kinetics" type="UserDefined" reversible="false">
       <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#Function_58">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="#Function_57">
 </rdf:Description>
 </rdf:RDF>
       </MiriamAnnotation>
@@ -406,17 +372,17 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         k*A
       </Expression>
       <ListOfParameterDescriptions>
-        <ParameterDescription key="FunctionParameter_389" name="A" order="0" role="substrate"/>
-        <ParameterDescription key="FunctionParameter_354" name="k" order="1" role="constant"/>
+        <ParameterDescription key="FunctionParameter_400" name="A" order="0" role="substrate"/>
+        <ParameterDescription key="FunctionParameter_399" name="k" order="1" role="constant"/>
       </ListOfParameterDescriptions>
     </Function>
   </ListOfFunctions>
-  <Model key="Model_0" name="Yeast glycolysis model of Pritchard and Kell" simulationType="time" timeUnit="min" volumeUnit="ml" areaUnit="m²" lengthUnit="m" quantityUnit="mmol" type="deterministic" avogadroConstant="6.0221407599999999e+23">
+  <Model key="Model_1" name="Yeast glycolysis model of Pritchard and Kell" simulationType="time" timeUnit="min" volumeUnit="ml" areaUnit="m²" lengthUnit="m" quantityUnit="mmol" type="deterministic" avogadroConstant="6.0221407599999999e+23">
     <MiriamAnnotation>
 <rdf:RDF
    xmlns:dcterms="http://purl.org/dc/terms/"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <rdf:Description rdf:about="#Model_0">
+  <rdf:Description rdf:about="#Model_1">
     <dcterms:created>
       <rdf:Description>
         <dcterms:W3CDTF>2024-11-13T13:31:22Z</dcterms:W3CDTF>
@@ -432,14 +398,11 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 the best fit (R1) of Table 1 of the Pritchard and Kell paper, and simulates a decrease of external glucose  concentration from 100 to 2 mM
 
 (More model files at http://users.aber.ac.uk/lep/models.shtml)
-
     </Comment>
     <ListOfCompartments>
       <Compartment key="Compartment_0" name="compartment" simulationType="fixed" dimensionality="3" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Compartment_0">
 </rdf:Description>
 </rdf:RDF>
@@ -449,9 +412,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <ListOfMetabolites>
       <Metabolite key="Metabolite_0" name="GLCo" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_0">
 </rdf:Description>
 </rdf:RDF>
@@ -459,9 +420,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_1" name="GLCi" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_1">
 </rdf:Description>
 </rdf:RDF>
@@ -469,9 +428,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_2" name="ATP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_2">
 </rdf:Description>
 </rdf:RDF>
@@ -479,9 +436,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_3" name="G6P" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_3">
 </rdf:Description>
 </rdf:RDF>
@@ -489,9 +444,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_4" name="ADP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_4">
 </rdf:Description>
 </rdf:RDF>
@@ -499,9 +452,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_5" name="F6P" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_5">
 </rdf:Description>
 </rdf:RDF>
@@ -509,9 +460,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_6" name="F16bP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_6">
 </rdf:Description>
 </rdf:RDF>
@@ -519,9 +468,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_7" name="AMP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_7">
 </rdf:Description>
 </rdf:RDF>
@@ -529,9 +476,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_8" name="F26bP" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_8">
 </rdf:Description>
 </rdf:RDF>
@@ -539,9 +484,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_9" name="DHAP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_9">
 </rdf:Description>
 </rdf:RDF>
@@ -549,9 +492,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_10" name="GAP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_10">
 </rdf:Description>
 </rdf:RDF>
@@ -559,9 +500,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_11" name="NAD" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_11">
 </rdf:Description>
 </rdf:RDF>
@@ -569,9 +508,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_12" name="BPG" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_12">
 </rdf:Description>
 </rdf:RDF>
@@ -579,9 +516,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_13" name="NADH" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_13">
 </rdf:Description>
 </rdf:RDF>
@@ -589,9 +524,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_14" name="P3G" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_14">
 </rdf:Description>
 </rdf:RDF>
@@ -599,9 +532,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_15" name="P2G" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_15">
 </rdf:Description>
 </rdf:RDF>
@@ -609,9 +540,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_16" name="PEP" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_16">
 </rdf:Description>
 </rdf:RDF>
@@ -619,9 +548,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_17" name="PYR" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_17">
 </rdf:Description>
 </rdf:RDF>
@@ -629,9 +556,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_18" name="AcAld" simulationType="reactions" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_18">
 </rdf:Description>
 </rdf:RDF>
@@ -639,9 +564,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_19" name="CO2" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_19">
 </rdf:Description>
 </rdf:RDF>
@@ -649,9 +572,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_20" name="EtOH" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_20">
 </rdf:Description>
 </rdf:RDF>
@@ -659,9 +580,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_21" name="Glycerol" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_21">
 </rdf:Description>
 </rdf:RDF>
@@ -669,9 +588,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_22" name="Glycogen" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_22">
 </rdf:Description>
 </rdf:RDF>
@@ -679,9 +596,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_23" name="Trehalose" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_23">
 </rdf:Description>
 </rdf:RDF>
@@ -689,9 +604,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Metabolite>
       <Metabolite key="Metabolite_24" name="Succinate" simulationType="fixed" compartment="Compartment_0" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Metabolite_24">
 </rdf:Description>
 </rdf:RDF>
@@ -701,9 +614,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <ListOfReactions>
       <Reaction key="Reaction_0" name="HXT" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_0">
 </rdf:Description>
 </rdf:RDF>
@@ -715,35 +626,33 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_1" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_4969" name="Vmax" value="97.24"/>
-          <Constant key="Parameter_4970" name="Kglc" value="1.1918"/>
-          <Constant key="Parameter_4972" name="Ki" value="0.91"/>
+          <Constant key="Parameter_6922" name="Vmax" value="97.24"/>
+          <Constant key="Parameter_6925" name="Kglc" value="1.1918"/>
+          <Constant key="Parameter_5512" name="Ki" value="0.91"/>
         </ListOfConstants>
-        <KineticLaw function="Function_42" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_41" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_282">
+            <CallParameter functionParameter="FunctionParameter_275">
               <SourceParameter reference="Metabolite_0"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_283">
+            <CallParameter functionParameter="FunctionParameter_274">
               <SourceParameter reference="Metabolite_1"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_281">
-              <SourceParameter reference="Parameter_4969"/>
+            <CallParameter functionParameter="FunctionParameter_273">
+              <SourceParameter reference="Parameter_6922"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_284">
-              <SourceParameter reference="Parameter_4970"/>
+            <CallParameter functionParameter="FunctionParameter_272">
+              <SourceParameter reference="Parameter_6925"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_285">
-              <SourceParameter reference="Parameter_4972"/>
+            <CallParameter functionParameter="FunctionParameter_266">
+              <SourceParameter reference="Parameter_5512"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_1" name="HK" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_1">
 </rdf:Description>
 </rdf:RDF>
@@ -757,53 +666,51 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_4" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_4968" name="Vmax" value="236.7"/>
-          <Constant key="Parameter_4971" name="Kglc" value="0.08"/>
-          <Constant key="Parameter_6833" name="Katp" value="0.15"/>
-          <Constant key="Parameter_6834" name="Keq" value="2000"/>
-          <Constant key="Parameter_6836" name="Kg6p" value="30"/>
-          <Constant key="Parameter_6832" name="Kadp" value="0.23"/>
+          <Constant key="Parameter_5513" name="Vmax" value="236.7"/>
+          <Constant key="Parameter_5515" name="Kglc" value="0.08"/>
+          <Constant key="Parameter_5511" name="Katp" value="0.15"/>
+          <Constant key="Parameter_5514" name="Keq" value="2000"/>
+          <Constant key="Parameter_4680" name="Kg6p" value="30"/>
+          <Constant key="Parameter_4681" name="Kadp" value="0.23"/>
         </ListOfConstants>
-        <KineticLaw function="Function_43" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_42" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_297">
+            <CallParameter functionParameter="FunctionParameter_280">
               <SourceParameter reference="Metabolite_1"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_298">
+            <CallParameter functionParameter="FunctionParameter_279">
               <SourceParameter reference="Metabolite_2"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_301">
+            <CallParameter functionParameter="FunctionParameter_278">
               <SourceParameter reference="Metabolite_3"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_302">
+            <CallParameter functionParameter="FunctionParameter_277">
               <SourceParameter reference="Metabolite_4"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_279">
-              <SourceParameter reference="Parameter_4968"/>
+            <CallParameter functionParameter="FunctionParameter_276">
+              <SourceParameter reference="Parameter_5513"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_299">
-              <SourceParameter reference="Parameter_4971"/>
+            <CallParameter functionParameter="FunctionParameter_281">
+              <SourceParameter reference="Parameter_5515"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_300">
-              <SourceParameter reference="Parameter_6833"/>
+            <CallParameter functionParameter="FunctionParameter_282">
+              <SourceParameter reference="Parameter_5511"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_303">
-              <SourceParameter reference="Parameter_6834"/>
+            <CallParameter functionParameter="FunctionParameter_283">
+              <SourceParameter reference="Parameter_5514"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_304">
-              <SourceParameter reference="Parameter_6836"/>
+            <CallParameter functionParameter="FunctionParameter_284">
+              <SourceParameter reference="Parameter_4680"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_305">
-              <SourceParameter reference="Parameter_6832"/>
+            <CallParameter functionParameter="FunctionParameter_285">
+              <SourceParameter reference="Parameter_4681"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_2" name="PGI" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_2">
 </rdf:Description>
 </rdf:RDF>
@@ -815,39 +722,37 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_5" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_6835" name="Vmax" value="1056"/>
-          <Constant key="Parameter_5392" name="Kg6p" value="1.4"/>
-          <Constant key="Parameter_5393" name="Keq" value="0.29"/>
-          <Constant key="Parameter_5395" name="Kf6p" value="0.3"/>
+          <Constant key="Parameter_4683" name="Vmax" value="1056"/>
+          <Constant key="Parameter_4679" name="Kg6p" value="1.4"/>
+          <Constant key="Parameter_4684" name="Keq" value="0.29"/>
+          <Constant key="Parameter_4682" name="Kf6p" value="0.3"/>
         </ListOfConstants>
-        <KineticLaw function="Function_44" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_43" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_277">
+            <CallParameter functionParameter="FunctionParameter_295">
               <SourceParameter reference="Metabolite_3"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_289">
+            <CallParameter functionParameter="FunctionParameter_294">
               <SourceParameter reference="Metabolite_5"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_266">
-              <SourceParameter reference="Parameter_6835"/>
-            </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_280">
-              <SourceParameter reference="Parameter_5392"/>
-            </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_295">
-              <SourceParameter reference="Parameter_5393"/>
+            <CallParameter functionParameter="FunctionParameter_293">
+              <SourceParameter reference="Parameter_4683"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_292">
-              <SourceParameter reference="Parameter_5395"/>
+              <SourceParameter reference="Parameter_4679"/>
+            </CallParameter>
+            <CallParameter functionParameter="FunctionParameter_291">
+              <SourceParameter reference="Parameter_4684"/>
+            </CallParameter>
+            <CallParameter functionParameter="FunctionParameter_290">
+              <SourceParameter reference="Parameter_4682"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_3" name="PFK" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_3">
 </rdf:Description>
 </rdf:RDF>
@@ -865,88 +770,86 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Modifier metabolite="Metabolite_8" stoichiometry="1"/>
         </ListOfModifiers>
         <ListOfConstants>
-          <Constant key="Parameter_5391" name="Vmax" value="110"/>
-          <Constant key="Parameter_5394" name="gR" value="5.12"/>
-          <Constant key="Parameter_8507" name="Kf6p" value="0.1"/>
-          <Constant key="Parameter_8508" name="Katp" value="0.71"/>
-          <Constant key="Parameter_8510" name="L0" value="0.66"/>
-          <Constant key="Parameter_8506" name="Ciatp" value="100"/>
-          <Constant key="Parameter_8509" name="Kiatp" value="0.65"/>
-          <Constant key="Parameter_4494" name="Camp" value="0.0845"/>
-          <Constant key="Parameter_4495" name="Kamp" value="0.0995"/>
-          <Constant key="Parameter_4497" name="Cf26" value="0.0174"/>
-          <Constant key="Parameter_4493" name="Kf26" value="0.000682"/>
-          <Constant key="Parameter_4500" name="Cf16" value="0.397"/>
-          <Constant key="Parameter_4499" name="Kf16" value="0.111"/>
-          <Constant key="Parameter_4498" name="Catp" value="3"/>
+          <Constant key="Parameter_6928" name="Vmax" value="110"/>
+          <Constant key="Parameter_6929" name="gR" value="5.12"/>
+          <Constant key="Parameter_6931" name="Kf6p" value="0.1"/>
+          <Constant key="Parameter_6927" name="Katp" value="0.71"/>
+          <Constant key="Parameter_6932" name="L0" value="0.66"/>
+          <Constant key="Parameter_6930" name="Ciatp" value="100"/>
+          <Constant key="Parameter_4652" name="Kiatp" value="0.65"/>
+          <Constant key="Parameter_4653" name="Camp" value="0.0845"/>
+          <Constant key="Parameter_4655" name="Kamp" value="0.0995"/>
+          <Constant key="Parameter_4651" name="Cf26" value="0.0174"/>
+          <Constant key="Parameter_4657" name="Kf26" value="0.000682"/>
+          <Constant key="Parameter_4659" name="Cf16" value="0.397"/>
+          <Constant key="Parameter_4658" name="Kf16" value="0.111"/>
+          <Constant key="Parameter_4656" name="Catp" value="3"/>
         </ListOfConstants>
-        <KineticLaw function="Function_45" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_44" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_291">
+            <CallParameter functionParameter="FunctionParameter_297">
               <SourceParameter reference="Metabolite_5"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_334">
+            <CallParameter functionParameter="FunctionParameter_296">
               <SourceParameter reference="Metabolite_2"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_346">
+            <CallParameter functionParameter="FunctionParameter_286">
               <SourceParameter reference="Metabolite_6"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_340">
+            <CallParameter functionParameter="FunctionParameter_287">
               <SourceParameter reference="Metabolite_7"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_343">
+            <CallParameter functionParameter="FunctionParameter_288">
               <SourceParameter reference="Metabolite_8"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_273">
-              <SourceParameter reference="Parameter_5391"/>
+            <CallParameter functionParameter="FunctionParameter_289">
+              <SourceParameter reference="Parameter_6928"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_287">
-              <SourceParameter reference="Parameter_5394"/>
+            <CallParameter functionParameter="FunctionParameter_298">
+              <SourceParameter reference="Parameter_6929"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_293">
-              <SourceParameter reference="Parameter_8507"/>
+            <CallParameter functionParameter="FunctionParameter_299">
+              <SourceParameter reference="Parameter_6931"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_335">
-              <SourceParameter reference="Parameter_8508"/>
+            <CallParameter functionParameter="FunctionParameter_300">
+              <SourceParameter reference="Parameter_6927"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_336">
-              <SourceParameter reference="Parameter_8510"/>
+            <CallParameter functionParameter="FunctionParameter_301">
+              <SourceParameter reference="Parameter_6932"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_337">
-              <SourceParameter reference="Parameter_8506"/>
+            <CallParameter functionParameter="FunctionParameter_302">
+              <SourceParameter reference="Parameter_6930"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_338">
-              <SourceParameter reference="Parameter_8509"/>
+            <CallParameter functionParameter="FunctionParameter_303">
+              <SourceParameter reference="Parameter_4652"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_339">
-              <SourceParameter reference="Parameter_4494"/>
+            <CallParameter functionParameter="FunctionParameter_304">
+              <SourceParameter reference="Parameter_4653"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_341">
-              <SourceParameter reference="Parameter_4495"/>
+            <CallParameter functionParameter="FunctionParameter_305">
+              <SourceParameter reference="Parameter_4655"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_342">
-              <SourceParameter reference="Parameter_4497"/>
+            <CallParameter functionParameter="FunctionParameter_306">
+              <SourceParameter reference="Parameter_4651"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_344">
-              <SourceParameter reference="Parameter_4493"/>
+            <CallParameter functionParameter="FunctionParameter_307">
+              <SourceParameter reference="Parameter_4657"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_345">
-              <SourceParameter reference="Parameter_4500"/>
+            <CallParameter functionParameter="FunctionParameter_308">
+              <SourceParameter reference="Parameter_4659"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_347">
-              <SourceParameter reference="Parameter_4499"/>
+            <CallParameter functionParameter="FunctionParameter_309">
+              <SourceParameter reference="Parameter_4658"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_348">
-              <SourceParameter reference="Parameter_4498"/>
+            <CallParameter functionParameter="FunctionParameter_310">
+              <SourceParameter reference="Parameter_4656"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_4" name="ALD" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_4">
 </rdf:Description>
 </rdf:RDF>
@@ -959,50 +862,48 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_10" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_4496" name="Vmax" value="94.69"/>
-          <Constant key="Parameter_6535" name="Kf16bp" value="0.3"/>
-          <Constant key="Parameter_6536" name="Keq" value="0.069"/>
-          <Constant key="Parameter_6538" name="Kdhap" value="2"/>
-          <Constant key="Parameter_6534" name="Kgap" value="2.4"/>
-          <Constant key="Parameter_6537" name="Kigap" value="10"/>
+          <Constant key="Parameter_4654" name="Vmax" value="94.69"/>
+          <Constant key="Parameter_7512" name="Kf16bp" value="0.3"/>
+          <Constant key="Parameter_7513" name="Keq" value="0.069"/>
+          <Constant key="Parameter_7515" name="Kdhap" value="2"/>
+          <Constant key="Parameter_7511" name="Kgap" value="2.4"/>
+          <Constant key="Parameter_7516" name="Kigap" value="10"/>
         </ListOfConstants>
-        <KineticLaw function="Function_46" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_45" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_272">
+            <CallParameter functionParameter="FunctionParameter_329">
               <SourceParameter reference="Metabolite_6"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_294">
+            <CallParameter functionParameter="FunctionParameter_328">
               <SourceParameter reference="Metabolite_9"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_306">
+            <CallParameter functionParameter="FunctionParameter_327">
               <SourceParameter reference="Metabolite_10"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_288">
-              <SourceParameter reference="Parameter_4496"/>
+            <CallParameter functionParameter="FunctionParameter_326">
+              <SourceParameter reference="Parameter_4654"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_278">
-              <SourceParameter reference="Parameter_6535"/>
+            <CallParameter functionParameter="FunctionParameter_325">
+              <SourceParameter reference="Parameter_7512"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_308">
-              <SourceParameter reference="Parameter_6536"/>
+            <CallParameter functionParameter="FunctionParameter_324">
+              <SourceParameter reference="Parameter_7513"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_310">
-              <SourceParameter reference="Parameter_6538"/>
+            <CallParameter functionParameter="FunctionParameter_323">
+              <SourceParameter reference="Parameter_7515"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_312">
-              <SourceParameter reference="Parameter_6534"/>
+            <CallParameter functionParameter="FunctionParameter_322">
+              <SourceParameter reference="Parameter_7511"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_314">
-              <SourceParameter reference="Parameter_6537"/>
+            <CallParameter functionParameter="FunctionParameter_321">
+              <SourceParameter reference="Parameter_7516"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_5" name="TPI" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_5">
 </rdf:Description>
 </rdf:RDF>
@@ -1014,19 +915,19 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_10" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_8187" name="k1" value="450000"/>
-          <Constant key="Parameter_8188" name="k2" value="1e+07"/>
+          <Constant key="Parameter_7514" name="k1" value="450000"/>
+          <Constant key="Parameter_6031" name="k2" value="1e+07"/>
         </ListOfConstants>
         <KineticLaw function="Function_14" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
             <CallParameter functionParameter="FunctionParameter_69">
-              <SourceParameter reference="Parameter_8187"/>
+              <SourceParameter reference="Parameter_7514"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_68">
               <SourceParameter reference="Metabolite_9"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_78">
-              <SourceParameter reference="Parameter_8188"/>
+              <SourceParameter reference="Parameter_6031"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_79">
               <SourceParameter reference="Metabolite_10"/>
@@ -1036,9 +937,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Reaction>
       <Reaction key="Reaction_6" name="GAPDH" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_6">
 </rdf:Description>
 </rdf:RDF>
@@ -1052,57 +951,55 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_13" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_8190" name="C" value="1"/>
-          <Constant key="Parameter_8186" name="Vmaxf" value="1152"/>
-          <Constant key="Parameter_8189" name="Kgap" value="0.21"/>
-          <Constant key="Parameter_7455" name="Knad" value="0.09"/>
-          <Constant key="Parameter_7456" name="Vmaxr" value="6719"/>
-          <Constant key="Parameter_7458" name="Kbpg" value="0.0098"/>
-          <Constant key="Parameter_7454" name="Knadh" value="0.06"/>
+          <Constant key="Parameter_6032" name="C" value="1"/>
+          <Constant key="Parameter_6034" name="Vmaxf" value="1152"/>
+          <Constant key="Parameter_6030" name="Kgap" value="0.21"/>
+          <Constant key="Parameter_6033" name="Knad" value="0.09"/>
+          <Constant key="Parameter_6515" name="Vmaxr" value="6719"/>
+          <Constant key="Parameter_6516" name="Kbpg" value="0.0098"/>
+          <Constant key="Parameter_6518" name="Knadh" value="0.06"/>
         </ListOfConstants>
-        <KineticLaw function="Function_47" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_46" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_315">
+            <CallParameter functionParameter="FunctionParameter_312">
               <SourceParameter reference="Metabolite_10"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_319">
+            <CallParameter functionParameter="FunctionParameter_313">
               <SourceParameter reference="Metabolite_11"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_349">
+            <CallParameter functionParameter="FunctionParameter_314">
               <SourceParameter reference="Metabolite_12"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_350">
+            <CallParameter functionParameter="FunctionParameter_315">
               <SourceParameter reference="Metabolite_13"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_275">
-              <SourceParameter reference="Parameter_8190"/>
+            <CallParameter functionParameter="FunctionParameter_316">
+              <SourceParameter reference="Parameter_6032"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_290">
-              <SourceParameter reference="Parameter_8186"/>
+            <CallParameter functionParameter="FunctionParameter_317">
+              <SourceParameter reference="Parameter_6034"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_327">
-              <SourceParameter reference="Parameter_8189"/>
+            <CallParameter functionParameter="FunctionParameter_318">
+              <SourceParameter reference="Parameter_6030"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_331">
-              <SourceParameter reference="Parameter_7455"/>
+            <CallParameter functionParameter="FunctionParameter_319">
+              <SourceParameter reference="Parameter_6033"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_333">
-              <SourceParameter reference="Parameter_7456"/>
+            <CallParameter functionParameter="FunctionParameter_320">
+              <SourceParameter reference="Parameter_6515"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_351">
-              <SourceParameter reference="Parameter_7458"/>
+            <CallParameter functionParameter="FunctionParameter_311">
+              <SourceParameter reference="Parameter_6516"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_352">
-              <SourceParameter reference="Parameter_7454"/>
+            <CallParameter functionParameter="FunctionParameter_330">
+              <SourceParameter reference="Parameter_6518"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_7" name="PGK" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_7">
 </rdf:Description>
 </rdf:RDF>
@@ -1116,53 +1013,51 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_2" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_7457" name="Vmax" value="1288"/>
-          <Constant key="Parameter_7360" name="Keq" value="3200"/>
-          <Constant key="Parameter_7361" name="Kp3g" value="0.53"/>
-          <Constant key="Parameter_7363" name="Katp" value="0.3"/>
-          <Constant key="Parameter_7359" name="Kbpg" value="0.003"/>
-          <Constant key="Parameter_7362" name="Kadp" value="0.2"/>
+          <Constant key="Parameter_6514" name="Vmax" value="1288"/>
+          <Constant key="Parameter_6517" name="Keq" value="3200"/>
+          <Constant key="Parameter_7350" name="Kp3g" value="0.53"/>
+          <Constant key="Parameter_7351" name="Katp" value="0.3"/>
+          <Constant key="Parameter_7353" name="Kbpg" value="0.003"/>
+          <Constant key="Parameter_7349" name="Kadp" value="0.2"/>
         </ListOfConstants>
-        <KineticLaw function="Function_48" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_47" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_296">
+            <CallParameter functionParameter="FunctionParameter_341">
               <SourceParameter reference="Metabolite_12"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_329">
+            <CallParameter functionParameter="FunctionParameter_340">
               <SourceParameter reference="Metabolite_4"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_318">
+            <CallParameter functionParameter="FunctionParameter_339">
               <SourceParameter reference="Metabolite_14"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_330">
+            <CallParameter functionParameter="FunctionParameter_338">
               <SourceParameter reference="Metabolite_2"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_323">
-              <SourceParameter reference="Parameter_7457"/>
+            <CallParameter functionParameter="FunctionParameter_337">
+              <SourceParameter reference="Parameter_6514"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_274">
-              <SourceParameter reference="Parameter_7360"/>
+            <CallParameter functionParameter="FunctionParameter_336">
+              <SourceParameter reference="Parameter_6517"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_357">
-              <SourceParameter reference="Parameter_7361"/>
+            <CallParameter functionParameter="FunctionParameter_335">
+              <SourceParameter reference="Parameter_7350"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_358">
-              <SourceParameter reference="Parameter_7363"/>
+            <CallParameter functionParameter="FunctionParameter_334">
+              <SourceParameter reference="Parameter_7351"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_359">
-              <SourceParameter reference="Parameter_7359"/>
+            <CallParameter functionParameter="FunctionParameter_333">
+              <SourceParameter reference="Parameter_7353"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_360">
-              <SourceParameter reference="Parameter_7362"/>
+            <CallParameter functionParameter="FunctionParameter_332">
+              <SourceParameter reference="Parameter_7349"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_8" name="PGM" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_8">
 </rdf:Description>
 </rdf:RDF>
@@ -1174,39 +1069,37 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_15" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_4742" name="Vmax" value="2585"/>
-          <Constant key="Parameter_4743" name="Kp3g" value="1.2"/>
-          <Constant key="Parameter_4745" name="Keq" value="0.19"/>
-          <Constant key="Parameter_4741" name="Kp2g" value="0.08"/>
+          <Constant key="Parameter_7352" name="Vmax" value="2585"/>
+          <Constant key="Parameter_4931" name="Kp3g" value="1.2"/>
+          <Constant key="Parameter_4932" name="Keq" value="0.19"/>
+          <Constant key="Parameter_4934" name="Kp2g" value="0.08"/>
         </ListOfConstants>
-        <KineticLaw function="Function_49" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_48" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_317">
+            <CallParameter functionParameter="FunctionParameter_350">
               <SourceParameter reference="Metabolite_14"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_332">
+            <CallParameter functionParameter="FunctionParameter_349">
               <SourceParameter reference="Metabolite_15"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_311">
-              <SourceParameter reference="Parameter_4742"/>
+            <CallParameter functionParameter="FunctionParameter_348">
+              <SourceParameter reference="Parameter_7352"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_326">
-              <SourceParameter reference="Parameter_4743"/>
+            <CallParameter functionParameter="FunctionParameter_347">
+              <SourceParameter reference="Parameter_4931"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_355">
-              <SourceParameter reference="Parameter_4745"/>
+            <CallParameter functionParameter="FunctionParameter_346">
+              <SourceParameter reference="Parameter_4932"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_353">
-              <SourceParameter reference="Parameter_4741"/>
+            <CallParameter functionParameter="FunctionParameter_345">
+              <SourceParameter reference="Parameter_4934"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_9" name="ENO" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_9">
 </rdf:Description>
 </rdf:RDF>
@@ -1218,39 +1111,37 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_16" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_4744" name="Vmax" value="201.6"/>
-          <Constant key="Parameter_6324" name="Kp2g" value="0.04"/>
-          <Constant key="Parameter_6325" name="Keq" value="6.7"/>
-          <Constant key="Parameter_6327" name="Kpep" value="0.5"/>
+          <Constant key="Parameter_4930" name="Vmax" value="201.6"/>
+          <Constant key="Parameter_4933" name="Kp2g" value="0.04"/>
+          <Constant key="Parameter_6782" name="Keq" value="6.7"/>
+          <Constant key="Parameter_6783" name="Kpep" value="0.5"/>
         </ListOfConstants>
-        <KineticLaw function="Function_50" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_49" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_356">
+            <CallParameter functionParameter="FunctionParameter_352">
               <SourceParameter reference="Metabolite_15"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_362">
+            <CallParameter functionParameter="FunctionParameter_351">
               <SourceParameter reference="Metabolite_16"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_324">
-              <SourceParameter reference="Parameter_4744"/>
+            <CallParameter functionParameter="FunctionParameter_331">
+              <SourceParameter reference="Parameter_4930"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_361">
-              <SourceParameter reference="Parameter_6324"/>
+            <CallParameter functionParameter="FunctionParameter_342">
+              <SourceParameter reference="Parameter_4933"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_363">
-              <SourceParameter reference="Parameter_6325"/>
+            <CallParameter functionParameter="FunctionParameter_343">
+              <SourceParameter reference="Parameter_6782"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_364">
-              <SourceParameter reference="Parameter_6327"/>
+            <CallParameter functionParameter="FunctionParameter_344">
+              <SourceParameter reference="Parameter_6783"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_10" name="PYK" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_10">
 </rdf:Description>
 </rdf:RDF>
@@ -1264,53 +1155,51 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_2" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_6323" name="Vmax" value="1000"/>
-          <Constant key="Parameter_6326" name="Kpep" value="0.14"/>
-          <Constant key="Parameter_8782" name="Kadp" value="0.53"/>
-          <Constant key="Parameter_8783" name="Keq" value="6500"/>
-          <Constant key="Parameter_8785" name="Kpyr" value="21"/>
-          <Constant key="Parameter_8781" name="Katp" value="1.5"/>
+          <Constant key="Parameter_6785" name="Vmax" value="1000"/>
+          <Constant key="Parameter_6781" name="Kpep" value="0.14"/>
+          <Constant key="Parameter_6784" name="Kadp" value="0.53"/>
+          <Constant key="Parameter_8037" name="Keq" value="6500"/>
+          <Constant key="Parameter_8038" name="Kpyr" value="21"/>
+          <Constant key="Parameter_8040" name="Katp" value="1.5"/>
         </ListOfConstants>
-        <KineticLaw function="Function_51" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_50" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_374">
+            <CallParameter functionParameter="FunctionParameter_358">
               <SourceParameter reference="Metabolite_16"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_375">
+            <CallParameter functionParameter="FunctionParameter_357">
               <SourceParameter reference="Metabolite_4"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_378">
+            <CallParameter functionParameter="FunctionParameter_356">
               <SourceParameter reference="Metabolite_17"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_379">
+            <CallParameter functionParameter="FunctionParameter_355">
               <SourceParameter reference="Metabolite_2"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_322">
-              <SourceParameter reference="Parameter_6323"/>
+            <CallParameter functionParameter="FunctionParameter_354">
+              <SourceParameter reference="Parameter_6785"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_376">
-              <SourceParameter reference="Parameter_6326"/>
+            <CallParameter functionParameter="FunctionParameter_353">
+              <SourceParameter reference="Parameter_6781"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_377">
-              <SourceParameter reference="Parameter_8782"/>
+            <CallParameter functionParameter="FunctionParameter_359">
+              <SourceParameter reference="Parameter_6784"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_380">
-              <SourceParameter reference="Parameter_8783"/>
+            <CallParameter functionParameter="FunctionParameter_360">
+              <SourceParameter reference="Parameter_8037"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_381">
-              <SourceParameter reference="Parameter_8785"/>
+            <CallParameter functionParameter="FunctionParameter_361">
+              <SourceParameter reference="Parameter_8038"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_382">
-              <SourceParameter reference="Parameter_8781"/>
+            <CallParameter functionParameter="FunctionParameter_362">
+              <SourceParameter reference="Parameter_8040"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_11" name="PDC" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_11">
 </rdf:Description>
 </rdf:RDF>
@@ -1323,32 +1212,30 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_19" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_8784" name="Vmax" value="857.8"/>
-          <Constant key="Parameter_7294" name="Kpyr" value="4.33"/>
-          <Constant key="Parameter_7295" name="nH" value="1.9"/>
+          <Constant key="Parameter_8036" name="Vmax" value="857.8"/>
+          <Constant key="Parameter_8039" name="Kpyr" value="4.33"/>
+          <Constant key="Parameter_8012" name="nH" value="1.9"/>
         </ListOfConstants>
-        <KineticLaw function="Function_52" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_51" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_313">
+            <CallParameter functionParameter="FunctionParameter_372">
               <SourceParameter reference="Metabolite_17"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_307">
-              <SourceParameter reference="Parameter_8784"/>
+            <CallParameter functionParameter="FunctionParameter_371">
+              <SourceParameter reference="Parameter_8036"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_328">
-              <SourceParameter reference="Parameter_7294"/>
+            <CallParameter functionParameter="FunctionParameter_370">
+              <SourceParameter reference="Parameter_8039"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_325">
-              <SourceParameter reference="Parameter_7295"/>
+            <CallParameter functionParameter="FunctionParameter_369">
+              <SourceParameter reference="Parameter_8012"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_12" name="ADH" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_12">
 </rdf:Description>
 </rdf:RDF>
@@ -1362,69 +1249,67 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_13" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_7297" name="Vmax" value="209.5"/>
-          <Constant key="Parameter_7293" name="Ketoh" value="17"/>
-          <Constant key="Parameter_7296" name="Kinad" value="0.92"/>
-          <Constant key="Parameter_7258" name="Keq" value="6.9e-05"/>
-          <Constant key="Parameter_7259" name="Knad" value="0.17"/>
-          <Constant key="Parameter_7261" name="Knadh" value="0.11"/>
-          <Constant key="Parameter_7257" name="Kinadh" value="0.031"/>
-          <Constant key="Parameter_7260" name="Kacald" value="1.11"/>
-          <Constant key="Parameter_7400" name="Kiacald" value="1.1"/>
-          <Constant key="Parameter_7401" name="Kietoh" value="90"/>
+          <Constant key="Parameter_8013" name="Vmax" value="209.5"/>
+          <Constant key="Parameter_8015" name="Ketoh" value="17"/>
+          <Constant key="Parameter_8011" name="Kinad" value="0.92"/>
+          <Constant key="Parameter_8014" name="Keq" value="6.9e-05"/>
+          <Constant key="Parameter_6843" name="Knad" value="0.17"/>
+          <Constant key="Parameter_6844" name="Knadh" value="0.11"/>
+          <Constant key="Parameter_6846" name="Kinadh" value="0.031"/>
+          <Constant key="Parameter_6842" name="Kacald" value="1.11"/>
+          <Constant key="Parameter_6845" name="Kiacald" value="1.1"/>
+          <Constant key="Parameter_6631" name="Kietoh" value="90"/>
         </ListOfConstants>
-        <KineticLaw function="Function_53" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_52" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_320">
+            <CallParameter functionParameter="FunctionParameter_365">
               <SourceParameter reference="Metabolite_20"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_397">
+            <CallParameter functionParameter="FunctionParameter_366">
               <SourceParameter reference="Metabolite_11"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_400">
+            <CallParameter functionParameter="FunctionParameter_367">
               <SourceParameter reference="Metabolite_18"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_401">
+            <CallParameter functionParameter="FunctionParameter_368">
               <SourceParameter reference="Metabolite_13"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_370">
-              <SourceParameter reference="Parameter_7297"/>
+            <CallParameter functionParameter="FunctionParameter_364">
+              <SourceParameter reference="Parameter_8013"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_398">
-              <SourceParameter reference="Parameter_7293"/>
+            <CallParameter functionParameter="FunctionParameter_363">
+              <SourceParameter reference="Parameter_8015"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_399">
-              <SourceParameter reference="Parameter_7296"/>
+            <CallParameter functionParameter="FunctionParameter_373">
+              <SourceParameter reference="Parameter_8011"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_402">
-              <SourceParameter reference="Parameter_7258"/>
+            <CallParameter functionParameter="FunctionParameter_374">
+              <SourceParameter reference="Parameter_8014"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_403">
-              <SourceParameter reference="Parameter_7259"/>
+            <CallParameter functionParameter="FunctionParameter_375">
+              <SourceParameter reference="Parameter_6843"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_404">
-              <SourceParameter reference="Parameter_7261"/>
+            <CallParameter functionParameter="FunctionParameter_376">
+              <SourceParameter reference="Parameter_6844"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_405">
-              <SourceParameter reference="Parameter_7257"/>
+            <CallParameter functionParameter="FunctionParameter_377">
+              <SourceParameter reference="Parameter_6846"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_406">
-              <SourceParameter reference="Parameter_7260"/>
+            <CallParameter functionParameter="FunctionParameter_378">
+              <SourceParameter reference="Parameter_6842"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_407">
-              <SourceParameter reference="Parameter_7400"/>
+            <CallParameter functionParameter="FunctionParameter_379">
+              <SourceParameter reference="Parameter_6845"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_408">
-              <SourceParameter reference="Parameter_7401"/>
+            <CallParameter functionParameter="FunctionParameter_380">
+              <SourceParameter reference="Parameter_6631"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_13" name="ATPase" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_13">
 </rdf:Description>
 </rdf:RDF>
@@ -1436,24 +1321,22 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_4" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_7403" name="Katpase" value="39.5"/>
+          <Constant key="Parameter_6632" name="Katpase" value="39.5"/>
         </ListOfConstants>
-        <KineticLaw function="Function_54" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_53" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_286">
+            <CallParameter functionParameter="FunctionParameter_394">
               <SourceParameter reference="Metabolite_2"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_276">
-              <SourceParameter reference="Parameter_7403"/>
+            <CallParameter functionParameter="FunctionParameter_393">
+              <SourceParameter reference="Parameter_6632"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_14" name="AK" reversible="true" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_14">
 </rdf:Description>
 </rdf:RDF>
@@ -1466,20 +1349,20 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_7" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_7399" name="k1" value="45"/>
-          <Constant key="Parameter_7402" name="k2" value="100"/>
+          <Constant key="Parameter_6634" name="k1" value="45"/>
+          <Constant key="Parameter_6630" name="k2" value="100"/>
         </ListOfConstants>
         <KineticLaw function="Function_14" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
             <CallParameter functionParameter="FunctionParameter_69">
-              <SourceParameter reference="Parameter_7399"/>
+              <SourceParameter reference="Parameter_6634"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_68">
               <SourceParameter reference="Metabolite_4"/>
               <SourceParameter reference="Metabolite_4"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_78">
-              <SourceParameter reference="Parameter_7402"/>
+              <SourceParameter reference="Parameter_6630"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_79">
               <SourceParameter reference="Metabolite_2"/>
@@ -1490,9 +1373,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </Reaction>
       <Reaction key="Reaction_15" name="G3PDH" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_15">
 </rdf:Description>
 </rdf:RDF>
@@ -1506,53 +1387,51 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_11" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_8692" name="Vmax" value="47.11"/>
-          <Constant key="Parameter_8693" name="Kdhap" value="0.4"/>
-          <Constant key="Parameter_8695" name="Knadh" value="0.023"/>
-          <Constant key="Parameter_8691" name="Keq" value="4300"/>
-          <Constant key="Parameter_8694" name="Kglycerol" value="1"/>
-          <Constant key="Parameter_6219" name="Knad" value="0.93"/>
+          <Constant key="Parameter_6633" name="Vmax" value="47.11"/>
+          <Constant key="Parameter_8672" name="Kdhap" value="0.4"/>
+          <Constant key="Parameter_8673" name="Knadh" value="0.023"/>
+          <Constant key="Parameter_8675" name="Keq" value="4300"/>
+          <Constant key="Parameter_8671" name="Kglycerol" value="1"/>
+          <Constant key="Parameter_8674" name="Knad" value="0.93"/>
         </ListOfConstants>
-        <KineticLaw function="Function_55" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_54" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_365">
+            <CallParameter functionParameter="FunctionParameter_391">
               <SourceParameter reference="Metabolite_9"/>
             </CallParameter>
             <CallParameter functionParameter="FunctionParameter_392">
               <SourceParameter reference="Metabolite_13"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_396">
+            <CallParameter functionParameter="FunctionParameter_390">
               <SourceParameter reference="Metabolite_21"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_409">
+            <CallParameter functionParameter="FunctionParameter_389">
               <SourceParameter reference="Metabolite_11"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_309">
-              <SourceParameter reference="Parameter_8692"/>
+            <CallParameter functionParameter="FunctionParameter_388">
+              <SourceParameter reference="Parameter_6633"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_390">
-              <SourceParameter reference="Parameter_8693"/>
+            <CallParameter functionParameter="FunctionParameter_387">
+              <SourceParameter reference="Parameter_8672"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_394">
-              <SourceParameter reference="Parameter_8695"/>
+            <CallParameter functionParameter="FunctionParameter_386">
+              <SourceParameter reference="Parameter_8673"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_410">
-              <SourceParameter reference="Parameter_8691"/>
+            <CallParameter functionParameter="FunctionParameter_385">
+              <SourceParameter reference="Parameter_8675"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_411">
-              <SourceParameter reference="Parameter_8694"/>
+            <CallParameter functionParameter="FunctionParameter_384">
+              <SourceParameter reference="Parameter_8671"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_412">
-              <SourceParameter reference="Parameter_6219"/>
+            <CallParameter functionParameter="FunctionParameter_383">
+              <SourceParameter reference="Parameter_8674"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_16" name="Glycogen Branch" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_16">
 </rdf:Description>
 </rdf:RDF>
@@ -1566,21 +1445,19 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_22" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_6220" name="KGLYCOGEN" value="6"/>
+          <Constant key="Parameter_8147" name="KGLYCOGEN" value="6"/>
         </ListOfConstants>
-        <KineticLaw function="Function_56" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_55" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_321">
-              <SourceParameter reference="Parameter_6220"/>
+            <CallParameter functionParameter="FunctionParameter_402">
+              <SourceParameter reference="Parameter_8147"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_17" name="Trehalose Branch" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_17">
 </rdf:Description>
 </rdf:RDF>
@@ -1594,21 +1471,19 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_23" stoichiometry="1"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_6222" name="Ktrehalose" value="2.4"/>
+          <Constant key="Parameter_8148" name="Ktrehalose" value="2.4"/>
         </ListOfConstants>
-        <KineticLaw function="Function_57" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_56" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_367">
-              <SourceParameter reference="Parameter_6222"/>
+            <CallParameter functionParameter="FunctionParameter_401">
+              <SourceParameter reference="Parameter_8148"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
       <Reaction key="Reaction_18" name="Succinate Branch" reversible="false" fast="false" addNoise="false">
         <MiriamAnnotation>
-<rdf:RDF
-xmlns:dcterms="http://purl.org/dc/terms/"
-xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <rdf:Description rdf:about="#Reaction_18">
 </rdf:Description>
 </rdf:RDF>
@@ -1622,27 +1497,27 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
           <Product metabolite="Metabolite_13" stoichiometry="3"/>
         </ListOfProducts>
         <ListOfConstants>
-          <Constant key="Parameter_6218" name="k" value="21.4"/>
+          <Constant key="Parameter_8150" name="k" value="21.4"/>
         </ListOfConstants>
-        <KineticLaw function="Function_58" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
+        <KineticLaw function="Function_57" unitType="Default" scalingCompartment="CN=Root,Model=Yeast glycolysis model of Pritchard and Kell,Vector=Compartments[compartment]">
           <ListOfCallParameters>
-            <CallParameter functionParameter="FunctionParameter_389">
+            <CallParameter functionParameter="FunctionParameter_400">
               <SourceParameter reference="Metabolite_18"/>
             </CallParameter>
-            <CallParameter functionParameter="FunctionParameter_354">
-              <SourceParameter reference="Parameter_6218"/>
+            <CallParameter functionParameter="FunctionParameter_399">
+              <SourceParameter reference="Parameter_8150"/>
             </CallParameter>
           </ListOfCallParameters>
         </KineticLaw>
       </Reaction>
     </ListOfReactions>
-    <ListOfModelParameterSets activeSet="ModelParameterSet_0">
-      <ModelParameterSet key="ModelParameterSet_0" name="Initial State">
+    <ListOfModelParameterSets activeSet="ModelParameterSet_1">
+      <ModelParameterSet key="ModelParameterSet_1" name="Initial State">
         <MiriamAnnotation>
 <rdf:RDF
 xmlns:dcterms="http://purl.org/dc/terms/"
 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="#ModelParameterSet_0">
+<rdf:Description rdf:about="#ModelParameterSet_1">
 </rdf:Description>
 </rdf:RDF>
         </MiriamAnnotation>
@@ -1811,7 +1686,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       </ModelParameterSet>
     </ListOfModelParameterSets>
     <StateTemplate>
-      <StateTemplateVariable objectReference="Model_0"/>
+      <StateTemplateVariable objectReference="Model_1"/>
       <StateTemplateVariable objectReference="Metabolite_11"/>
       <StateTemplateVariable objectReference="Metabolite_4"/>
       <StateTemplateVariable objectReference="Metabolite_3"/>
@@ -1844,8 +1719,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     </InitialState>
   </Model>
   <ListOfTasks>
-    <Task key="Task_13" name="Steady-State" type="steadyState" scheduled="true" updateModel="false">
-      <Report reference="Report_10" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_17" name="Steady-State" type="steadyState" scheduled="true" updateModel="false">
+      <Report reference="Report_11" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="JacobianRequested" type="bool" value="1"/>
         <Parameter name="StabilityAnalysisRequested" type="bool" value="1"/>
@@ -1853,9 +1728,9 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       <Method name="Enhanced Newton" type="EnhancedNewton">
         <Parameter name="Resolution" type="unsignedFloat" value="1.0000000000000001e-09"/>
         <Parameter name="Derivation Factor" type="unsignedFloat" value="0.001"/>
-        <Parameter name="Use Newton" type="bool" value="0"/>
+        <Parameter name="Use Newton" type="bool" value="1"/>
         <Parameter name="Use Integration" type="bool" value="1"/>
-        <Parameter name="Use Back Integration" type="bool" value="1"/>
+        <Parameter name="Use Back Integration" type="bool" value="0"/>
         <Parameter name="Accept Negative Concentrations" type="bool" value="0"/>
         <Parameter name="Iteration Limit" type="unsignedInteger" value="50"/>
         <Parameter name="Maximum duration for forward integration" type="unsignedFloat" value="1000000000"/>
@@ -1863,8 +1738,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Target Criterion" type="string" value="Distance and Rate"/>
       </Method>
     </Task>
-    <Task key="Task_12" name="Time-Course" type="timeCourse" scheduled="true" updateModel="false">
-      <Report reference="Report_9" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_18" name="Time-Course" type="timeCourse" scheduled="true" updateModel="false">
+      <Report reference="Report_12" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="AutomaticStepSize" type="bool" value="0"/>
         <Parameter name="StepNumber" type="unsignedInteger" value="100"/>
@@ -1885,7 +1760,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Max Internal Step Size" type="unsignedFloat" value="0"/>
       </Method>
     </Task>
-    <Task key="Task_11" name="Scan" type="scan" scheduled="false" updateModel="false">
+    <Task key="Task_19" name="Scan" type="scan" scheduled="false" updateModel="false">
       <Problem>
         <Parameter name="Subtask" type="unsignedInteger" value="1"/>
         <ParameterGroup name="ScanItems">
@@ -1897,15 +1772,15 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       <Method name="Scan Framework" type="ScanFramework">
       </Method>
     </Task>
-    <Task key="Task_10" name="Elementary Flux Modes" type="fluxMode" scheduled="false" updateModel="false">
-      <Report reference="Report_8" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_20" name="Elementary Flux Modes" type="fluxMode" scheduled="false" updateModel="false">
+      <Report reference="Report_13" target="" append="1" confirmOverwrite="1"/>
       <Problem>
       </Problem>
       <Method name="EFM Algorithm" type="EFMAlgorithm">
       </Method>
     </Task>
-    <Task key="Task_9" name="Optimization" type="optimization" scheduled="false" updateModel="false">
-      <Report reference="Report_7" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_21" name="Optimization" type="optimization" scheduled="false" updateModel="false">
+      <Report reference="Report_14" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="Subtask" type="cn" value="CN=Root,Vector=TaskList[Steady-State]"/>
         <ParameterText name="ObjectiveExpression" type="expression">
@@ -1926,8 +1801,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Seed" type="unsignedInteger" value="0"/>
       </Method>
     </Task>
-    <Task key="Task_8" name="Parameter Estimation" type="parameterFitting" scheduled="false" updateModel="false">
-      <Report reference="Report_6" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_22" name="Parameter Estimation" type="parameterFitting" scheduled="false" updateModel="false">
+      <Report reference="Report_15" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="Maximize" type="bool" value="0"/>
         <Parameter name="Randomize Start Values" type="bool" value="0"/>
@@ -1957,10 +1832,10 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Stop after # Stalled Generations" type="unsignedInteger" value="0"/>
       </Method>
     </Task>
-    <Task key="Task_7" name="Metabolic Control Analysis" type="metabolicControlAnalysis" scheduled="false" updateModel="false">
-      <Report reference="Report_5" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_23" name="Metabolic Control Analysis" type="metabolicControlAnalysis" scheduled="false" updateModel="false">
+      <Report reference="Report_16" target="" append="1" confirmOverwrite="1"/>
       <Problem>
-        <Parameter name="Steady-State" type="key" value="Task_13"/>
+        <Parameter name="Steady-State" type="key" value="Task_17"/>
       </Problem>
       <Method name="MCA Method (Reder)" type="MCAMethod(Reder)">
         <Parameter name="Modulation Factor" type="unsignedFloat" value="1.0000000000000001e-09"/>
@@ -1968,8 +1843,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Use Smallbone" type="bool" value="1"/>
       </Method>
     </Task>
-    <Task key="Task_6" name="Lyapunov Exponents" type="lyapunovExponents" scheduled="false" updateModel="false">
-      <Report reference="Report_4" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_24" name="Lyapunov Exponents" type="lyapunovExponents" scheduled="false" updateModel="false">
+      <Report reference="Report_17" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="ExponentNumber" type="unsignedInteger" value="3"/>
         <Parameter name="DivergenceRequested" type="bool" value="1"/>
@@ -1983,8 +1858,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Max Internal Steps" type="unsignedInteger" value="10000"/>
       </Method>
     </Task>
-    <Task key="Task_5" name="Time Scale Separation Analysis" type="timeScaleSeparationAnalysis" scheduled="false" updateModel="false">
-      <Report reference="Report_3" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_25" name="Time Scale Separation Analysis" type="timeScaleSeparationAnalysis" scheduled="false" updateModel="false">
+      <Report reference="Report_18" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="StepNumber" type="unsignedInteger" value="100"/>
         <Parameter name="StepSize" type="float" value="0.01"/>
@@ -1996,8 +1871,8 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Deuflhard Tolerance" type="unsignedFloat" value="0.0001"/>
       </Method>
     </Task>
-    <Task key="Task_16" name="Sensitivities" type="sensitivities" scheduled="false" updateModel="false">
-      <Report reference="Report_2" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_26" name="Sensitivities" type="sensitivities" scheduled="false" updateModel="false">
+      <Report reference="Report_19" target="" append="1" confirmOverwrite="1"/>
       <Problem>
         <Parameter name="SubtaskType" type="unsignedInteger" value="1"/>
         <ParameterGroup name="TargetFunctions">
@@ -2020,14 +1895,14 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Delta minimum" type="unsignedFloat" value="9.9999999999999998e-13"/>
       </Method>
     </Task>
-    <Task key="Task_15" name="Moieties" type="moieties" scheduled="false" updateModel="false">
-      <Report reference="Report_1" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_27" name="Moieties" type="moieties" scheduled="false" updateModel="false">
+      <Report reference="Report_20" target="" append="1" confirmOverwrite="1"/>
       <Problem>
       </Problem>
       <Method name="Householder Reduction" type="Householder">
       </Method>
     </Task>
-    <Task key="Task_4" name="Cross Section" type="crosssection" scheduled="false" updateModel="false">
+    <Task key="Task_28" name="Cross Section" type="crosssection" scheduled="false" updateModel="false">
       <Problem>
         <Parameter name="AutomaticStepSize" type="bool" value="0"/>
         <Parameter name="StepNumber" type="unsignedInteger" value="100"/>
@@ -2063,15 +1938,15 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Parameter name="Max Internal Step Size" type="unsignedFloat" value="0"/>
       </Method>
     </Task>
-    <Task key="Task_3" name="Linear Noise Approximation" type="linearNoiseApproximation" scheduled="false" updateModel="false">
-      <Report reference="Report_0" target="" append="1" confirmOverwrite="1"/>
+    <Task key="Task_29" name="Linear Noise Approximation" type="linearNoiseApproximation" scheduled="false" updateModel="false">
+      <Report reference="Report_21" target="" append="1" confirmOverwrite="1"/>
       <Problem>
-        <Parameter name="Steady-State" type="key" value="Task_13"/>
+        <Parameter name="Steady-State" type="key" value="Task_17"/>
       </Problem>
       <Method name="Linear Noise Approximation" type="LinearNoiseApproximation">
       </Method>
     </Task>
-    <Task key="Task_2" name="Time-Course Sensitivities" type="timeSensitivities" scheduled="false" updateModel="false">
+    <Task key="Task_30" name="Time-Course Sensitivities" type="timeSensitivities" scheduled="false" updateModel="false">
       <Problem>
         <Parameter name="AutomaticStepSize" type="bool" value="0"/>
         <Parameter name="StepNumber" type="unsignedInteger" value="100"/>
@@ -2098,7 +1973,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     </Task>
   </ListOfTasks>
   <ListOfReports>
-    <Report key="Report_10" name="Steady-State" taskType="steadyState" separator="&#x09;" precision="6">
+    <Report key="Report_11" name="Steady-State" taskType="steadyState" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2106,7 +1981,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Steady-State]"/>
       </Footer>
     </Report>
-    <Report key="Report_9" name="Time-Course" taskType="timeCourse" separator="&#x09;" precision="6">
+    <Report key="Report_12" name="Time-Course" taskType="timeCourse" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2117,7 +1992,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Time-Course],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_8" name="Elementary Flux Modes" taskType="fluxMode" separator="&#x09;" precision="6">
+    <Report key="Report_13" name="Elementary Flux Modes" taskType="fluxMode" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2125,7 +2000,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Elementary Flux Modes],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_7" name="Optimization" taskType="optimization" separator="&#x09;" precision="6">
+    <Report key="Report_14" name="Optimization" taskType="optimization" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2149,7 +2024,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Optimization],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_6" name="Parameter Estimation" taskType="parameterFitting" separator="&#x09;" precision="6">
+    <Report key="Report_15" name="Parameter Estimation" taskType="parameterFitting" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2173,7 +2048,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Parameter Estimation],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_5" name="Metabolic Control Analysis" taskType="metabolicControlAnalysis" separator="&#x09;" precision="6">
+    <Report key="Report_16" name="Metabolic Control Analysis" taskType="metabolicControlAnalysis" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2185,7 +2060,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Metabolic Control Analysis],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_4" name="Lyapunov Exponents" taskType="lyapunovExponents" separator="&#x09;" precision="6">
+    <Report key="Report_17" name="Lyapunov Exponents" taskType="lyapunovExponents" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2197,7 +2072,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Lyapunov Exponents],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_3" name="Time Scale Separation Analysis" taskType="timeScaleSeparationAnalysis" separator="&#x09;" precision="6">
+    <Report key="Report_18" name="Time Scale Separation Analysis" taskType="timeScaleSeparationAnalysis" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2209,7 +2084,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Time Scale Separation Analysis],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_2" name="Sensitivities" taskType="sensitivities" separator="&#x09;" precision="6">
+    <Report key="Report_19" name="Sensitivities" taskType="sensitivities" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2221,7 +2096,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Sensitivities],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_1" name="Moieties" taskType="moieties" separator="&#x09;" precision="6">
+    <Report key="Report_20" name="Moieties" taskType="moieties" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>
@@ -2233,7 +2108,7 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         <Object cn="CN=Root,Vector=TaskList[Moieties],Object=Result"/>
       </Footer>
     </Report>
-    <Report key="Report_0" name="Linear Noise Approximation" taskType="linearNoiseApproximation" separator="&#x09;" precision="6">
+    <Report key="Report_21" name="Linear Noise Approximation" taskType="linearNoiseApproximation" separator="&#x09;" precision="6">
       <Comment>
         Automatically generated report.
       </Comment>

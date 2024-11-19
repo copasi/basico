@@ -23,6 +23,18 @@ class TestMCA(unittest.TestCase):
         flux_control_coefficients = basico.get_flux_control_coefficients()
         self.assertIsNotNone(flux_control_coefficients)
 
+class TestMCAYeast(unittest.TestCase):
+    def setUp(self):
+        basico.load_example('YeastGly')
+        self.assertIsNotNone(basico.get_species('ATP', exact=True))
+
+    def test_steadystate(self):
+        result = basico.run_steadystate()
+        self.assertTrue(result)
+        species = basico.get_species()
+        self.assertIsNotNone(species)
+
+
 
 
 if __name__ == '__main__':

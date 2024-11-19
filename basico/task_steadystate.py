@@ -88,6 +88,7 @@ def run_steadystate(**kwargs):
         logger.error("Error while initializing the simulation: " +
         model_info.get_copasi_messages(num_messages_before, 'No output'))
     else:
+        num_messages_before = COPASI.CCopasiMessage.size()
         task.setCallBack(get_default_handler())
         result = task.processRaw(use_initial_values)
 

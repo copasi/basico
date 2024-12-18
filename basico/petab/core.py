@@ -143,7 +143,7 @@ def petab_llh(pp, sim):
     :return: the llh as calculated by petab
 
     """
-    return petab.calculate_llh(pp.measurement_df, sim, pp.observable_df, pp.parameter_df)
+    return petab.v1.calculate_llh(pp.measurement_df, sim, pp.observable_df, pp.parameter_df)
 
 
 def petab_chi2(pp, sim):

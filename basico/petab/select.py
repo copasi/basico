@@ -3,11 +3,17 @@ from math import log, isnan
 import os
 import tempfile
 
-from petab_select import Criterion
+import petab_select
+from petab_select import (Criterion, Model)
+from petab_select.constants import (
+    CANDIDATE_SPACE,
+    MODELS,
+    UNCALIBRATED_MODELS,
+)
+
 
 from . import core
 import basico
-import petab_select
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +136,7 @@ def _get_estimated_parameters(solution, petab_problem):
 
 
 def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, delete_temp_files=True,
-                   sim_dfs=None, sol_dfs=None, temp_files=None):
+                   sim_dfs=None, sol_dfs=None, temp_files=None, unload_model=False):
     """evaluates the given test model and updates it with the calculated metrics and estimated parameters
 
     :param test_model: the model to test
@@ -147,6 +153,8 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     :type sol_dfs: [] or None
     :param temp_files: optional array that returns filenames of temp files created during the run
     :type temp_files: [] or None
+    :param unload_model: boolean indicating whether the model should be unloaded after the evaluation (default: False)
+    :type unload_model: bool
     :return: COPASI objective value of the evaluation
     :rtype: float
     """
@@ -169,6 +177,7 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
     out_name = 'cps_{0}'.format(model_id)
     cps_file = os.path.join(temp_dir, out_name + '.cps')
     core.load_petab(files['problem'], temp_dir, out_name)
+    dm = basico.get_current_model()
 
     files = list(files.values())
     files.append(cps_file)
@@ -214,10 +223,10 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         if name in sol.index:
             test_model.estimated_parameters[param_id] = sol.loc[name].sol
 
-    # write result for testing
-    result_file = os.path.join(temp_dir, 'result_{0}.yaml'.format(model_id))
-    files.append(result_file)
-    test_model.to_yaml(result_file)
+    # # write result for testing
+    # result_file = os.path.join(temp_dir, 'result_{0}.yaml'.format(model_id))
+    # files.append(result_file)
+    # test_model.to_yaml(result_file)
 
     # delete temp files if needed
     if delete_temp_files:
@@ -230,11 +239,15 @@ def evaluate_model(test_model, evaluation=default_evaluation, temp_dir=None, del
         # add temp files to the list of temp files:
         temp_files = temp_files + files
 
+    # unload the model if needed
+    if unload_model:
+        basico.remove_datamodel(dm)
+
     return obj
 
 
 def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, delete_temp_files=True,
-                    sim_dfs=None, sol_dfs=None, temp_files=None):
+                    sim_dfs=None, sol_dfs=None, temp_files=None, unload_model=True):
     """Evaluates all temp models iteratively
 
     :param test_models: the models to evaluate
@@ -250,13 +263,15 @@ def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, d
     :type sol_dfs: [] or None
     :param temp_files: optional array that returns filenames of temp files created during the run
     :type temp_files: [] or None
+    :param unload_model: boolean indicating whether the model should be unloaded after the evaluation (default: True)
+    :type unload_model: bool
     :return:
     """
 
     obj_values = []
     for test_model in test_models:
         try:
-            obj = evaluate_model(test_model, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
+            obj = evaluate_model(test_model, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files, unload_model)
             obj_values.append({'obj': obj,
                                'id': test_model.model_subspace_id,
                                'params:, test_model.parameters, '
@@ -267,8 +282,81 @@ def evaluate_models(test_models, evaluation=default_evaluation, temp_dir=None, d
 
     logger.debug(f'obj_values: {obj_values}')
 
-
 def evaluate_problem(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
+                     delete_temp_files=True, sim_dfs=None, sol_dfs=None, temp_files=None):
+    """Evaluates the given selection problem with the specified candidate space returning the best model found
+
+    :param selection_problem: the selection problem
+    :type selection_problem: petab_select.Problem
+    :param candidate_space: optional the candidate space to use (otherwise the one from the problem method will be used)
+    :type candidate_space: petab_select.CandidateSpace or None
+    :param evaluation: optional function to evaluate the test model with. defaults to func:`.default_evaluation`
+    :type evaluation: () -> pandasDataFrame
+    :param temp_dir: optional temp directory to store the files in (otherwise the os temp dir will be used)
+    :type temp_dir: str or None
+    :param delete_temp_files: boolean indicating whether temp files should be deleted
+    :type delete_temp_files: bool
+    :param sim_dfs: optional array, in which simulation data frames will be returned
+    :type sim_dfs: [] or None
+    :param sol_dfs: optional array in which found parameters will be returned
+    :type sol_dfs: [] or None
+    :param temp_files: optional array that returns filenames of temp files created during the run
+    :type temp_files: [] or None
+    :return: the best model found
+    :rtype: petab_select.Model
+    """
+
+    def calibration_tool(
+        problem: petab_select.Problem,
+        candidate_space: petab_select.CandidateSpace = None,
+    ):
+        # Initialize iteration
+        iteration = petab_select.ui.start_iteration(
+            problem=problem,
+            candidate_space=candidate_space,
+        )
+
+        uncalibrated = iteration[UNCALIBRATED_MODELS]
+        evaluate_models(uncalibrated, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files, unload_model=True)
+
+        # Finalize iteration
+        iteration_results = petab_select.ui.end_iteration(
+            candidate_space=iteration[CANDIDATE_SPACE],
+            calibrated_models=iteration[UNCALIBRATED_MODELS],
+        )
+
+        return iteration_results
+
+    # initial iteration
+    iteration_results = calibration_tool(problem=selection_problem, candidate_space=candidate_space)
+
+    while len(iteration_results[MODELS]) > 0:
+        iteration_results = calibration_tool(
+            problem=selection_problem, candidate_space=iteration_results[CANDIDATE_SPACE]
+        )
+        
+        if len(iteration_results[MODELS]) == 0:
+            break
+
+        local_best_model = petab_select.ui.get_best(
+            problem=selection_problem, models=iteration_results[MODELS].values()
+        )
+
+        logger.debug(local_best_model.model_id, local_best_model.criteria)        
+
+
+    if len(iteration_results[CANDIDATE_SPACE].calibrated_models) == 0:
+        return None
+
+    # pick the best one found overall
+    chosen_model = petab_select.ui.get_best(
+        problem=selection_problem,
+        models=iteration_results[CANDIDATE_SPACE].calibrated_models.values(),        
+    )
+    return chosen_model
+
+
+def evaluate_problem_old(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
                      delete_temp_files=True, sim_dfs=None, sol_dfs=None, temp_files=None):
     """Evaluates the given selection problem with the specified candidate space returning the best model found
 
@@ -309,7 +397,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     calibrated_models = {}
 
     while test_models:
-        basico.petab.evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
+        evaluate_models(test_models, evaluation, temp_dir, delete_temp_files, sim_dfs, sol_dfs, temp_files)
         for model in test_models:
             logger.info('{0} = {1}'.format(model.model_id, model.criteria))
 

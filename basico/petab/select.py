@@ -47,15 +47,11 @@ def copasi_aic():
 def default_evaluation():
     """Default evaluation of current model:
 
-    * runs particle swarm for 600 iterations followed by
-    * levenberg marquardt
-
+    * runs genetic algorithm for 30 generations
+    * refines using nl2sol for 1000 iterations
 
     :return: found parameter values
     """
-    #logger.debug('running ps\n')
-    #basico.run_parameter_estimation(method='Particle Swarm', update_model=True,
-    #                                settings={'method': {'Iteration Limit': 600}})
     logger.debug('running ga, 30gens\n')
     basico.run_parameter_estimation(method=basico.PE.GENETIC_ALGORITHM_SR, update_model=True,
                                     settings={'method': {
@@ -69,8 +65,6 @@ def default_evaluation():
                                                 'Iteration Limit': 1000,
                                             }}
                                           )
-    # logger.debug('running lm')
-    # sol = basico.run_parameter_estimation(method='Levenberg - Marquardt', update_model=True)
     logger.debug('evaluation done')
     return sol
 

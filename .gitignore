@@ -144,4 +144,7 @@ $RECYCLE.BIN/
 /tests/test_data/observ*
 /tests/test_data/parameter*
 temp_dir
+temp_selection
+tmp_selection
+famos*
 .DS_Store

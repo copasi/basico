@@ -315,6 +315,7 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
 
         # Finalize iteration
         iteration_results = petab_select.ui.end_iteration(
+            problem=problem,
             candidate_space=iteration[CANDIDATE_SPACE],
             calibrated_models=iteration[UNCALIBRATED_MODELS],
         )
@@ -328,16 +329,15 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
         iteration_results = calibration_tool(
             problem=selection_problem, candidate_space=iteration_results[CANDIDATE_SPACE]
         )
-        
+
         if len(iteration_results[MODELS]) == 0:
             break
 
         local_best_model = petab_select.ui.get_best(
-            problem=selection_problem, models=iteration_results[MODELS].values()
+            problem=selection_problem, models=iteration_results[MODELS]
         )
 
         logger.debug(local_best_model.model_id, local_best_model.criteria)        
-
 
     if len(iteration_results[CANDIDATE_SPACE].calibrated_models) == 0:
         return None
@@ -345,13 +345,13 @@ def evaluate_problem(selection_problem, candidate_space=None, evaluation=default
     # pick the best one found overall
     chosen_model = petab_select.ui.get_best(
         problem=selection_problem,
-        models=iteration_results[CANDIDATE_SPACE].calibrated_models.values(),        
+        models=iteration_results[CANDIDATE_SPACE].calibrated_models,        
     )
     return chosen_model
 
 
 def evaluate_problem_old(selection_problem, candidate_space=None, evaluation=default_evaluation, temp_dir=None,
-                     delete_temp_files=True, sim_dfs=None, sol_dfs=None, temp_files=None):
+                         delete_temp_files=True, sim_dfs=None, sol_dfs=None, temp_files=None):
     """Evaluates the given selection problem with the specified candidate space returning the best model found
 
     :param selection_problem: the selection problem

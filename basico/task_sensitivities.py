@@ -392,7 +392,7 @@ def run_sensitivities(**kwargs):
         logger.error('Could not run Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
         return
 
-    task.restore()
+    task.restore(True)
 
 
 def get_scaled_sensitivities(**kwargs):

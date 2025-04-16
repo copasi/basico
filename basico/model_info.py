@@ -4274,7 +4274,12 @@ def have_miriam_resources():
         assert (isinstance(miriam, COPASI.CMIRIAMResources))
         return miriam.getResourceList().size() > 0
     except AttributeError:
-        return False
+        try:
+            miriam = COPASI.CRootContainer.getMiriamResources()
+            assert (isinstance(miriam, COPASI.CMIRIAMResources))
+            return miriam.getResourceList().size() > 0
+        except AttributeError:
+            return False
 
 
 def get_miriam_resources(compact=True):
@@ -4323,7 +4328,11 @@ def update_miriam_resources():
             temp_file.write(biomodels.download_from(MIRIAM_XML))
         temp_file.close()
     config = COPASI.CRootContainer.getConfiguration()
-    miriam = config.getRecentMIRIAMResources()
+    try:
+        miriam = config.getRecentMIRIAMResources()
+    except AttributeError:
+        miriam = COPASI.CRootContainer.getMiriamResources()
+
     assert (isinstance(miriam, COPASI.CMIRIAMResources))
     miriam.updateMIRIAMResourcesFromFile(None, temp_name)
     config.save()
@@ -4743,7 +4752,7 @@ def get_jacobian_matrix(apply_initial_values=False, **kwargs):
         model.applyInitialValues()
 
     jacobian = COPASI.FloatMatrix()
-    model.getMathContainer().calculateJacobian(jacobian, 1e-12, False)
+    model.getMathContainer().calculateJacobian(jacobian, 1e-12, False, False)
     state_template = model.getStateTemplate()
     user_order = state_template.getUserOrder()
     name_vector = []
@@ -4797,7 +4806,7 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
         model.applyInitialValues()
 
     jacobian = COPASI.FloatMatrix()
-    model.getMathContainer().calculateJacobian(jacobian, 1e-12, True)
+    model.getMathContainer().calculateJacobian(jacobian, 1e-12, True, False)
     state_template = model.getStateTemplate()
     name_vector = []
     data = []
@@ -6371,7 +6380,7 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
     task = dm.getTask(task_name)
     task.initializeRawWithOutputHandler(COPASI.CCopasiTask.OUTPUT_UI, dm)
     task.processRaw(True)
-    task.restore()
+    task.restore(True)
 
     for handler in report_handlers + plot_handlers:
         dm.removeInterface(handler['handler'])

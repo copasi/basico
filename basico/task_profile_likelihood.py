@@ -654,7 +654,7 @@ def prepare_files(filename,
     with open(os.path.join(data_dir, '.info.yaml'), 'w', encoding='utf8') as f:
         yaml.dump(info, f)
 
-    opt_item_list = _convert_opt_items(_Problem.getOptItemList())
+    opt_item_list = _convert_opt_items(_Problem.getOptItemList(False))
     logger.debug(f"Have: {len(opt_item_list)} optItems")
     for index in range(len(opt_item_list)):
         logger.debug(f"Handling: {opt_item_list[index]['cn']}")

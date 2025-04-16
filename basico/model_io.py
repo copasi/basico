@@ -223,7 +223,7 @@ def load_model_from_string(content):
         __temp_files.append(name)
         with open(name, 'wb') as temp_file:
             temp_file.write(content)
-        if model.openCombineArchive(name):
+        if model.openCombineArchive(name, None, True):
             return set_current_model(model)
 
     if type(content) is bytes:

@@ -78,7 +78,7 @@ def run_lyapunov(**kwargs):
         logger.error('Could not run Lyapunov Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
         return
 
-    task.restore()
+    task.restore(True)
 
     return get_lyapunov_exponents(model=model)
 

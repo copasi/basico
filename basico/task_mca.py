@@ -51,7 +51,7 @@ def run_mca(**kwargs):
         logger.error('Could not run Sensitivity Task: {0}'.format(COPASI.CCopasiMessage.getAllMessageText()))
         return
 
-    task.restore()
+    task.restore(True)
 
 
 

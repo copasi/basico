@@ -77,7 +77,7 @@ def get_opt_parameters(model=None):
     pe_task = model.getTask(basico.T.OPTIMIZATION)
     problem = pe_task.getProblem()
     assert (isinstance(problem, COPASI.COptProblem))
-    items = problem.getOptItemList()
+    items = problem.getOptItemList(False)
     data = []
 
     for i in range(len(items)):
@@ -396,8 +396,8 @@ def get_opt_solution(model=None):
     task = model.getTask(basico.T.OPTIMIZATION)
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.COptProblem))
-    solution = problem.getSolutionVariables()
-    items = problem.getOptItemList()
+    solution = problem.getSolutionVariables(False)
+    items = problem.getOptItemList(False)
     assert (solution.size() == len(items))
     data = []
 
@@ -476,7 +476,7 @@ def run_optimization(expression=None, output=None, settings=None, **kwargs):
             logger.error("Couldn't process optimization task: " +
             model_info.get_copasi_messages(num_messages_before))
 
-    task.restore()
+    task.restore(True)
 
     if dh:
         model.removeInterface(dh)

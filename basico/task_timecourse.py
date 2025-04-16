@@ -177,7 +177,7 @@ def run_time_course_with_output(output_selection, *args, **kwargs):
             logger.error("Error while running the simulation: " +
                          model_info.get_copasi_messages(num_messages_before))
 
-    task.restore()
+    task.restore(True)
     df = get_data_from_data_handler(dh, columns)
     model.removeInterface(dh)
 

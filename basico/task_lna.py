@@ -54,7 +54,7 @@ def run_lna(return_results=False, **kwargs):
         logger.error('Could not run LNA Task: {0}'.format(
             basico.model_info.get_copasi_messages(num_messages_before, 'No output')))        
 
-    task.restore()
+    task.restore(True)
 
 
     return get_lna_solution() if return_results else get_lna_status()

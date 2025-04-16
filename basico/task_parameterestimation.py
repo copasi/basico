@@ -660,7 +660,7 @@ def get_fit_parameters(model=None):
     pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
     problem = pe_task.getProblem()
     assert (isinstance(problem, COPASI.CFitProblem))
-    items = problem.getOptItemList()
+    items = problem.getOptItemList(False)
     data = []
 
     for i in range(len(items)):
@@ -927,8 +927,8 @@ def get_parameters_solution(model=None):
     pe_task = model.getTask(TASK_PARAMETER_ESTIMATION)
     problem = pe_task.getProblem()
     assert (isinstance(problem, COPASI.CFitProblem))
-    solution = problem.getSolutionVariables()
-    items = problem.getOptItemList()
+    solution = problem.getSolutionVariables(False)
+    items = problem.getOptItemList(False)
     assert (solution.size() == len(items))
     data = []
 
@@ -1211,7 +1211,7 @@ def run_parameter_estimation(**kwargs):
             logger.error("Error while initializing parameter estimation: " +
             basico.model_info.get_copasi_messages(num_messages_before))
 
-    task.restore()
+    task.restore(True)
 
     problem.setCreateParameterSets(old_create_parameter_sets)
 
@@ -1633,7 +1633,7 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
     }
     result['evals_per_sec'] = result['cpu_time'] / function_evaluations if performed_iterations else 0
 
-    sol = problem.getSolutionVariables()
+    sol = problem.getSolutionVariables(False)
     grad = problem.getVariableGradients()
     std = problem.getVariableStdDeviations()
 

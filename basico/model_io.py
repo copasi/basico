@@ -651,8 +651,6 @@ def save_model_and_data(filename, **kwargs):
         model.saveModel(filename, True)
         return
 
-    global __temp_files
-
     data_dir = os.path.dirname(filename)
     if not data_dir:
         data_dir = '.'
@@ -696,6 +694,7 @@ def save_model_and_data(filename, **kwargs):
         old_names[old_name] = new_name
         new_names[new_name] = old_name
         if delete_data_on_exit:
+            global __temp_files
             __temp_files.append(new_name)
 
     # rename experiments

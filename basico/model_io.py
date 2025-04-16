@@ -228,18 +228,18 @@ def load_model_from_string(content):
         with open(name, 'wb') as temp_file:
             temp_file.write(content)
         if model.openCombineArchive(name):
-            return set_current_model(model)
+            return set_current_model(model, None, True)
 
     if type(content) is bytes:
         content = content.decode("utf8")
 
-    if '<sbml ' in content and model.importSBMLFromString(content):
+    if '<sbml ' in content and model.importSBMLFromString(content, None, True):
         return set_current_model(model)
 
-    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
+    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd(), None, True):
         return set_current_model(model)
 
-    if '<sedML '  in content and model.importSEDMLFromString(content):
+    if '<sedML '  in content and model.importSEDMLFromString(content, None, True):
         return set_current_model(model)
 
     return remove_datamodel(model)
@@ -359,22 +359,22 @@ def load_model(location, remove_user_defined_functions=False):
         location = os.path.abspath(location)
         if zipfile.is_zipfile(location):
             try:
-                if model.openCombineArchive(location):
+                if model.openCombineArchive(location, None, True):
                     return set_current_model(model)
             except COPASI.CCopasiException:
                 pass
         try:
-            if model.importSBML(location):
+            if model.importSBML(location, None, True):
                 return set_current_model(model)
         except COPASI.CCopasiException:
             pass
         try:
-            if model.loadModel(location):
+            if model.loadModel(location, None, True):
                 return set_current_model(model)
         except COPASI.CCopasiException:
             pass
         try:
-            if model.importSEDML(location):
+            if model.importSEDML(location, None, True):
                 return set_current_model(model)
         except COPASI.CCopasiException:
             pass

@@ -386,7 +386,6 @@ def _convert_opt_items(opt_items):
 
 
 def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=False, **kwargs):
-    global _DataModel
     _DataModel.loadModel(Arguments["filename"])
     if Arguments["disable_plots"]:
 
@@ -702,7 +701,6 @@ def printStatus():
 
 
 def parse_args(args):
-    global Arguments
     num_args = len(args)
     for index in range(num_args):
         lowerInvariant = args[index].strip().lower()

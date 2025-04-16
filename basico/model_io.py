@@ -49,7 +49,6 @@ def set_current_model(model):
     :rtype: COPASI.CDataModel
     """
     global __current_model
-    global __model_list
     __current_model = model
     if model not in __model_list:
         __model_list.append(model)
@@ -69,7 +68,6 @@ def get_current_model():
     :return: the current model
     :rtype: COPASI.CDataModel
     """
-    global __current_model
     if __current_model is None:
         logger.warning('There is no model, creating a new one')
         new_model()
@@ -119,7 +117,6 @@ def remove_datamodel(model):
     :type model:COPASI.CDataModel
     :return: None
     """
-    global __model_list
     global __current_model
     if model in __model_list:
         __model_list.remove(model)
@@ -219,7 +216,6 @@ def load_model_from_string(content):
     model = create_datamodel()
 
     if _is_archive(content):
-        global __temp_dirs, __temp_files
         temp_name = tempfile.mkdtemp()
         __temp_dirs.append(temp_name)
 
@@ -228,7 +224,7 @@ def load_model_from_string(content):
         with open(name, 'wb') as temp_file:
             temp_file.write(content)
         if model.openCombineArchive(name):
-            return set_current_model(model, None, True)
+            return set_current_model(model)
 
     if type(content) is bytes:
         content = content.decode("utf8")
@@ -239,7 +235,7 @@ def load_model_from_string(content):
     if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd(), None, True):
         return set_current_model(model)
 
-    if '<sedML '  in content and model.importSEDMLFromString(content, None, True):
+    if '<sedML ' in content and model.importSEDMLFromString(content, None, True):
         return set_current_model(model)
 
     return remove_datamodel(model)
@@ -559,13 +555,17 @@ def save_model(filename, **kwargs):
     if file_type in exporters:
         try:
             if not exporters[file_type](filename):
-                logger.warning("Saving the file as {0} failed with: \n{1}".
-                                format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText()))
+                logger.warning(
+                    "Saving the file as {0} failed with: \n{1}"
+                    .format(os.path.basename(filename), COPASI.CCopasiMessage.getAllMessageText())
+                )
         except COPASI.CCopasiException:
             logger.error("Couldn't save the file as {0}".format(os.path.basename(filename)))
     else:
-        logger.error("Couldn't save the file as {0}, unknown file type {1}"
-                      .format(os.path.basename(filename), file_type))
+        logger.error(
+            "Couldn't save the file as {0}, unknown file type {1}"
+            .format(os.path.basename(filename), file_type)
+        )
 
 
 def save_model_to_string(**kwargs):
@@ -632,7 +632,6 @@ def save_model_and_data(filename, **kwargs):
 
     :return: None
     """
-
     try:
         from . import task_parameterestimation
     except ImportError:
@@ -681,20 +680,23 @@ def save_model_and_data(filename, **kwargs):
             old_name = os.path.join(directory, old_name)
 
         if not os.path.exists(old_name):
-            logger.warning("Experimental data file {0} does not exist, the resulting COPASI file cannot"
-                            " be used for Parameter Estimation".format(old_name))
+            logger.warning(
+                "Experimental data file {0} does not exist, the resulting COPASI file cannot"
+                " be used for Parameter Estimation".format(old_name)
+            )
             continue
 
         if os.path.exists(new_name):
-            logger.warning("Experimental data file {0} does already exist, and will not be overwritten."
-                            .format(new_name))
+            logger.warning(
+                "Experimental data file {0} does already exist, and will not be overwritten."
+                .format(new_name)
+            )
         else:
             shutil.copyfile(old_name, new_name)
             written_files.append(new_name)
         old_names[old_name] = new_name
         new_names[new_name] = old_name
         if delete_data_on_exit:
-            global __temp_files
             __temp_files.append(new_name)
 
     # rename experiments
@@ -748,7 +750,6 @@ def open_copasi(filename='', **kwargs):
     delete_data_on_exit = False
 
     if not name:
-        global __temp_dirs, __temp_files
         temp_name = tempfile.mkdtemp()
         __temp_dirs.append(temp_name)
 
@@ -779,12 +780,10 @@ def open_copasi(filename='', **kwargs):
 @atexit.register
 def __cleanup():
     # clean up temp files
-    global __temp_files
     for name in __temp_files:
         if os.path.exists(name):
             os.remove(name)
 
-    global __temp_dirs
     for name in __temp_dirs:
         if os.path.exists(name):
             try:

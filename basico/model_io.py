@@ -232,7 +232,7 @@ def load_model_from_string(content):
     if '<sbml ' in content and model.importSBMLFromString(content, None, True):
         return set_current_model(model)
 
-    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd(), None, True):
+    if '<COPASI ' in content and model.loadModelFromString(content, os.getcwd()):
         return set_current_model(model)
 
     if '<sedML ' in content and model.importSEDMLFromString(content, None, True):
@@ -365,7 +365,7 @@ def load_model(location, remove_user_defined_functions=False):
         except COPASI.CCopasiException:
             pass
         try:
-            if model.loadModel(location, None, True):
+            if model.loadModel(location):
                 return set_current_model(model)
         except COPASI.CCopasiException:
             pass

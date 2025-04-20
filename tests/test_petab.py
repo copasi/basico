@@ -17,8 +17,8 @@ _REMOVE_TEMP_FILES = True
 import basico
 
 try:
+    import petab.v1 as petab
     import petab_select
-    import petab
     from petab import Problem
     from basico.petab import PetabSimulator, evaluate_problem
     petab_test_enabled = True

@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 import petab
-import petab.simulate
+import petab.v1.simulate
 import basico
 import pandas as pd
 import copasi_petab_importer
@@ -240,7 +240,7 @@ def load_petab(yaml_file, output_dir, out_name=None):
     return cps_file
 
 
-class PetabSimulator(petab.simulate.Simulator):
+class PetabSimulator(petab.v1.simulate.Simulator):
     """ Implementation of a COPASI simulator with the petab simulation interface
 
         Examples:

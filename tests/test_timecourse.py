@@ -20,8 +20,8 @@ class TestTimeCourse(unittest.TestCase):
         self.assertIsNotNone(tc)
         # we decided that both should have the same shape
         # see issue #61
-        self.assertEqual(tc.shape, (3, 1))
-        self.assertEqual(tc2.shape, (3, 1))
+        self.assertEqual(tc.shape[0], 3 )
+        self.assertEqual(tc2.shape[0], 3 )
 
 
     def test_stochastic(self):

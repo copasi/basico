@@ -6420,7 +6420,7 @@ def get_copasi_messages(num_messages_before, filters=None):
     messages = []
     if filters is None:
         filters = []
-    if type(filters) == str:
+    if isinstance(filters, str):
         filters = [filters]
     while COPASI.CCopasiMessage.size() > num_messages_before:
         message = COPASI.CCopasiMessage.getLastMessage()

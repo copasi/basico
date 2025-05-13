@@ -14,6 +14,34 @@ class TestBasicoIO_Brus(unittest.TestCase):
         self.assertTrue(isinstance(self.dm, COPASI.CDataModel))
         self.assertTrue('The Brusselator' in basico.model_io.overview())
 
+    def test_to_python_ode_string(self):
+        code = basico.model_io.to_python_ode_string()
+        self.assertTrue(code is not None)
+        self.assertTrue(len(code) > 0)
+
+        # instantiate the code
+        ctx = {}
+        exec(code, ctx)
+        self.assertTrue('ode_function' in ctx)
+        self.assertTrue(callable(ctx['ode_function']))
+
+        # call the function with the initial values and parameters 
+        y0 = ctx['y0']
+        p = ctx['parameter_values']
+        result = ctx['ode_function'](y0, 0, p)
+        self.assertTrue(result is not None)
+        self.assertTrue(len(result) == len(y0))
+
+        # call odeint with the function
+        from scipy.integrate import odeint
+        import numpy as np
+        y0 = ctx['y0']
+        t = np.linspace(0, 10, 100)
+        result = odeint(ctx['ode_function'], y0, t, args=(ctx['parameter_values'],))
+        self.assertTrue(result is not None)
+        self.assertTrue(result.shape[0] == len(t))
+        self.assertTrue(result.shape[1] == len(y0))
+
     def test_get_species(self):
         species = basico.get_species('X')
         self.assertTrue(species.shape[0] == 1)

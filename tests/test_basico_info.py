@@ -5,6 +5,12 @@ import unittest
 import basico
 import COPASI
 
+try:
+    import libsbml
+    _have_libsbml = True
+except ImportError:
+    _have_libsbml = False
+
 
 class TestBasicoIO_Brus(unittest.TestCase):
 
@@ -14,6 +20,7 @@ class TestBasicoIO_Brus(unittest.TestCase):
         self.assertTrue(isinstance(self.dm, COPASI.CDataModel))
         self.assertTrue('The Brusselator' in basico.model_io.overview())
 
+    @unittest.skipIf(not _have_libsbml, "libsbml not available")
     def test_to_python_ode_string(self):
         code = basico.model_io.to_python_ode_string()
         self.assertTrue(code is not None)

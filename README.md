@@ -68,7 +68,7 @@ for example:
     PETAB_BENCHMARK_MODELS=../Benchmark-Models-PEtab/Benchmark-Models PETAB_SELECT_MODELS=../petab_select/test_cases  python3 -m pytest
 
 ### SSR support
-The latest version of the project contains support for T.J. Sego's libSSR.SSRSimAPI to use this, install the `[ssr]` extra:
+The latest version of the project contains support for T.J. Sego's [libSSR.SSRSimAPI](https://github.com/tjsego/libSSR) to use this, install the `[ssr]` extra:
 
 ```bash
 !pip install -e git+https://github.com/copasi/basico.git#egg=copasi-basico[ssr]

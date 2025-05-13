@@ -1,8 +1,5 @@
 import unittest
-try:
-    from basico.ssr.CopasiSSR import CopasiSSR
-except ImportError:
-    CopasiSSR = None
+from basico.ssr import CopasiSSR
 import os
 
 

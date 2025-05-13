@@ -3700,7 +3700,7 @@ def remove_species(name, **kwargs):
     """Deletes the named species
 
     :param name: the name of a species in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3714,14 +3714,19 @@ def remove_species(name, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    metab = model.getMetabolite(name)
-    if metab is None:
-        logger.warning('no such metabolite {0}'.format(name))
-        return
+    if type(name) is str:
+        name = [name]
 
-    key = metab.getKey()
-    model.compileIfNecessary()
-    model.removeMetabolite(key)
+    for n in name:
+        metab = model.getMetabolite(n)
+        if metab is None:
+            logger.warning('no such metabolite {0}'.format(n))
+            continue
+
+        key = metab.getKey()
+        model.compileIfNecessary()
+        model.removeMetabolite(key)
+
     model.setCompileFlag(True)
     model.compileIfNecessary()
 
@@ -3772,7 +3777,7 @@ def remove_compartment(name, **kwargs):
     """Deletes the named compartment (and everything included)
 
     :param name: the name of a compartment in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3786,14 +3791,19 @@ def remove_compartment(name, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    comp = model.getCompartment(name)
-    if comp is None:
-        logger.warning('no such compartment {0}'.format(name))
-        return
+    if type(name) is str:
+        name = [name]
 
-    key = comp.getKey()
-    model.compileIfNecessary()
-    model.removeCompartment(key)
+    for n in name:
+        comp = model.getCompartment(n)
+        if comp is None:
+            logger.warning('no such compartment {0}'.format(n))
+            continue
+
+        key = comp.getKey()
+        model.compileIfNecessary()
+        model.removeCompartment(key)
+
     model.setCompileFlag(True)
     model.compileIfNecessary()
 
@@ -3802,7 +3812,7 @@ def remove_event(name, **kwargs):
     """Deletes the named event
 
     :param name: the name of an event in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3816,13 +3826,43 @@ def remove_event(name, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    ev = model.getEvent(name)
-    if ev is None:
-        logger.warning('no such event {0}'.format(name))
-        return
-    key = ev.getKey()
+    if type(name) is str:
+        name = [name]
+
+    for n in name:
+        ev = model.getEvent(n)
+        if ev is None:
+            logger.warning('no such event {0}'.format(n))
+            continue
+        key = ev.getKey()
+        model.compileIfNecessary()
+        model.removeEvent(key)
+
+    model.setCompileFlag(True)
     model.compileIfNecessary()
-    model.removeEvent(key)
+
+
+def remove_all_events(**kwargs):
+    """Deletes all events from the model
+
+    :param kwargs: optional arguments
+
+        - | `model`: to specify the data model to be used (if not specified
+          | the one from :func:`.get_current_model` will be taken)
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(dm, COPASI.CDataModel))
+
+    model = dm.getModel()
+    assert (isinstance(model, COPASI.CModel))
+
+    model.compileIfNecessary()
+    events = model.getEvents()
+    for i in range(events.size()):
+        event = events.get(i)
+        key = event.getKey()
+        model.removeEvent(key)
+
     model.setCompileFlag(True)
     model.compileIfNecessary()
 
@@ -3831,7 +3871,7 @@ def remove_plot(name, **kwargs):
     """Deletes the named plot
 
     :param name: the name of an plot in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3845,22 +3885,28 @@ def remove_plot(name, **kwargs):
     output_list = dm.getPlotDefinitionList()
     assert (isinstance(output_list, COPASI.COutputDefinitionVector))
 
-    for i in range(output_list.size()):
+    if type(name) is str:
+        name = [name]
+
+    removed = False
+    for i in reversed(range(output_list.size())):
         plot = output_list.get(i)
-        if plot.getObjectName() != name:
-            continue
 
-        output_list.remove(i)
-        return
+        for n in name:
+            if plot.getObjectName() == n:
+                output_list.remove(i)
+                removed = True
+                break
 
-    logger.warning('no such plot {0}'.format(name))
+    if not removed:
+        logger.warning('no such plot {0}'.format(name))
 
 
 def remove_report(name, **kwargs):
     """Deletes the named report
 
     :param name: the name of a report in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3874,22 +3920,29 @@ def remove_report(name, **kwargs):
     report_list = dm.getReportDefinitionList()
     assert (isinstance(report_list, COPASI.CReportDefinitionVector))
 
+    if type(name) is str:
+        name = [name]
+
+    removed = False
+
     for i in range(report_list.size()):
-        plot = report_list.get(i)
-        if plot.getObjectName() != name:
-            continue
+        report = report_list.get(i)
 
-        report_list.remove(i)
-        return
+        for n in name:
+            if report.getObjectName() == n:
+                report_list.remove(i)
+                removed = True
+                break
 
-    logger.warning('no such report {0}'.format(name))
+    if not removed:
+        logger.warning('no such report {0}'.format(name))
 
 
 def remove_reaction(name, **kwargs):
     """Deletes the named reaction
 
     :param name: the name of a reaction in the model
-    :type name: str
+    :type name: str | List[str]
     :param kwargs: optional arguments
 
         - | `model`: to specify the data model to be used (if not specified
@@ -3903,14 +3956,18 @@ def remove_reaction(name, **kwargs):
     model = dm.getModel()
     assert (isinstance(model, COPASI.CModel))
 
-    reaction = model.getReaction(name)
-    if reaction is None:
-        logger.warning('no such reaction {0}'.format(name))
-        return
+    if type(name) is str:
+        name = [name]
 
-    key = reaction.getKey()
-    model.compileIfNecessary()
-    model.removeReaction(key)
+    for n in name:
+        reaction = model.getReaction(n)
+        if reaction is None:
+            logger.warning('no such reaction {0}'.format(name))
+            continue
+        key = reaction.getKey()
+        model.compileIfNecessary()
+        model.removeReaction(key)
+
     model.setCompileFlag(True)
     model.compileIfNecessary()
 

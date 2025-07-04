@@ -1008,6 +1008,8 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
 
             - `curves`: dictionary in the format as described in :func:`set_plot_curves`.
 
+            - `plot_engine`: the plot engine to use (one of 'QWT', 'QCustomPlot', 'Qt DataVizualization (scatter)', 'Qt DataVizualization (surface)'')
+
         :return: None
         """
     dm = model_io.get_model_from_dict_or_default(kwargs)
@@ -1027,6 +1029,12 @@ def set_plot_dict(plot_spec, active=True, log_x=False, log_y=False, tasks='', **
     plot_spec.setLogX(log_x)
     plot_spec.setLogY(log_y)
     plot_spec.setTaskTypes(tasks)
+
+    if 'plot_engine' in kwargs:
+        if not plot_spec.getParameter('plot engine'):
+            plot_spec.getParameter('log X').getObjectParent().addParameter(
+                'plot engine', COPASI.CCopasiParameter.Type_STRING)
+        _set_group_from_dict(plot_spec, {'plot engine': str(kwargs['plot_engine'])})
 
     if 'curves' in kwargs:
         set_plot_curves(plot_spec, **kwargs)

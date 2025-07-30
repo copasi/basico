@@ -82,7 +82,7 @@ setup(name='copasi_basico',
         'petab': ['copasi-petab-importer', 'petab', 'petab-select'],
         'tqdm': ['tqdm'],
         'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-mermaid', 'sphinxcontrib-plantuml', 'sphinxcontrib'],
-        'ssr': ['libssr @ git+https://github.com/tjsego/libSSR.git@port#subdirectory=src/python', 'python-libsbml'],
+        #'ssr': ['libssr @ git+https://github.com/tjsego/libSSR.git@port#subdirectory=src/python', 'python-libsbml'],
         },
 
       )

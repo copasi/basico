@@ -47,14 +47,17 @@ def _get_scan_files(data_dir):
     return files
 
 
-def process_dir(data_dir, pool_size=4, copasi_se=COPASI_SE, max_time=None):
+def process_dir(data_dir, pool_size=4, copasi_se=None, max_time=None):
     """Executes all generated copasi files from the given directory in a multiprocessing pool
 
     :param data_dir: directory containing high / low files generated
     :param pool_size: pool size for the multiprocessing pool that will be created (defaults to 4)
-    :param copasi_se: path to the copasi SE executable to execute
+    :param copasi_se: path to the copasi SE executable to execute (defaults to 'CopasiSE' if None)
     :param max_time: maximum time to allow for the execution of each file in seconds (defaults to None for no maximum
     """
+    if copasi_se is None:
+        copasi_se = COPASI_SE
+
     files = _get_scan_files(data_dir)
     process_files(files, pool_size, copasi_se, max_time)
 
@@ -425,6 +428,13 @@ def _generate_scan_for_item(item, index, data_dir, update_model=False, lower=Fal
     problem2.setSubtask(COPASI.CTaskEnum.Task_parameterFitting)
     problem2.setContinueFromCurrentState(False)
     problem2.setOutputInSubtask(False)
+    try:
+        # specify output specification to none, otherwise it defaults to 'during' which 
+        # would cause artifacts in the output
+        problem2.setOutputSpecification('')
+    except AttributeError:
+        pass
+
     problem2.clearScanItems()
     problem2.addScanItem(1, Arguments["scan_interval"])
     scan_item = problem2.getScanItem(0)

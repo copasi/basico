@@ -3545,8 +3545,8 @@ def get_reaction_mapping(reaction, **kwargs):
             result[p_name] = reaction.getParameterValue(p_name)
             continue
 
-        objs = info.getMappings(j)
-        obj_size = objs.size()
+        objs = list(info.getMappings(j))
+        obj_size = len(objs)
         if obj_size == 1:
             result[p_name] = objs[0]
             continue

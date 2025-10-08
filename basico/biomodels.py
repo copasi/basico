@@ -135,7 +135,7 @@ def search_for_model(query, offset=0, num_results=10, sort='id-asc'):
     """Queries the biomodel database
 
     Queries the database, for information about the query system see:
-    <https://www.ebi.ac.uk/biomodels-static/jummp-biomodels-help/model_search.html>
+    <https://www.ebi.ac.uk/biomodels/docs/>
 
     Example:
 

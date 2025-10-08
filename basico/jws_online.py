@@ -37,7 +37,7 @@ except ImportError:
 import json
 
 
-END_POINT = 'http://jjj.bio.vu.nl/rest/'
+END_POINT = 'https://jjj.bio.vu.nl/rest/'
 MODEL_END_POINT = END_POINT + 'models/'
 
 

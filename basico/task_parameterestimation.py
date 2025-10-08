@@ -611,11 +611,17 @@ def get_fit_item_template(include_local=False, include_global=False, default_lb=
 
         for mv in model.getModel().getModelValues():
             if mv.getStatus() == COPASI.CModelEntity.Status_FIXED:
+                ivalue = mv.getInitialValue()
+                if ivalue < default_lb:
+                    ivalue = default_lb
+                if ivalue > default_ub:
+                    ivalue = default_ub
+
                 result.append({
                     'name': mv.getInitialValueReference().getObjectDisplayName(),
                     'lower': default_lb,
                     'upper': default_ub,
-                    'start': mv.getInitialValue()
+                    'start': ivalue
                 })
 
     if include_local:
@@ -624,7 +630,11 @@ def get_fit_item_template(include_local=False, include_global=False, default_lb=
         local_params = model_info.get_reaction_parameters().reset_index()
         if 'name' in local_params:
             for name, local, value in zip(local_params['name'], local_params['type'], local_params['value']):
-
+                if value < default_lb:
+                    value = default_lb
+                if value > default_ub:
+                    value = default_ub
+                    
                 if local == 'local':
                     result.append({
                         'name': name,

@@ -164,6 +164,13 @@ class TestBasicoIO_Brus(unittest.TestCase):
         d = events.to_dict(orient='records')[0]
         self.assertEqual(len(d['assignments']), 2)
 
+        # test notes
+        notes = basico.model_info.get_notes(name='e0')
+        self.assertTrue(notes.strip() == '')
+        basico.model_info.set_notes('Notes on the event e0', name='e0')
+        notes = basico.model_info.get_notes(name='e0')
+        self.assertTrue('Notes on the event e0' in notes)
+
     def test_matrices(self):
         jac = basico.model_info.get_jacobian_matrix(True)
         self.assertIsNotNone(jac)

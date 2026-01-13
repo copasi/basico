@@ -33,7 +33,6 @@ def absolute_links(txt):
     return txt
 
 
-
 setup(name='copasi_basico',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
@@ -73,16 +72,16 @@ setup(name='copasi_basico',
       ],
       keywords='copasi sbml systems biology',
       project_urls={
-        "Github": "https://github.com/copasi/basico",
-        "Issues": "https://github.com/copasi/basico/issues",
-        "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index_colab.ipynb",
+          "Github": "https://github.com/copasi/basico",
+          "Issues": "https://github.com/copasi/basico/issues",
+          "Try it online": "https://colab.research.google.com/github/copasi/basico/blob/master/docs/notebooks/index_colab.ipynb",
       },
       test_suite='setup.basico_testsuite',
       extras_require={
-        'petab': ['copasi-petab-importer', 'petab', 'petab-select'],
-        'tqdm': ['tqdm'],
-        'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-mermaid', 'sphinxcontrib-plantuml', 'sphinxcontrib'],
-        'ssr': ['libssr @ git+https://github.com/tjsego/libSSR.git@port#subdirectory=src/python', 'python-libsbml'],
-        },
+          'petab': ['copasi-petab-importer', 'petab', 'petab-select'],
+          'tqdm': ['tqdm'],
+          'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput', 'sphinxcontrib-mermaid', 'sphinxcontrib-plantuml', 'sphinxcontrib'],
+          'ssr': ['libssr', 'python-libsbml'],
+      },
 
       )

@@ -3196,6 +3196,13 @@ def set_reaction_parameters(name=None, **kwargs):
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
+    To reset a parameter to local, set `mapped_to` to `None`. For example:
+
+    >>> set_reaction_parameters('(j0).k1', mapped_to='global1'); # will map to a global parameter named 'global1'
+    >>> get_reaction_parameters()
+    >>> set_reaction_parameters('(j0).k1', mapped_to=None); # will reset the parameter to local
+    >>> get_reaction_parameters()
+
     :return: None
     """
     dm = model_io.get_model_from_dict_or_default(kwargs)
@@ -3222,6 +3229,7 @@ def set_reaction_parameters(name=None, **kwargs):
 
         for j in range(num_params):
             fun_parameter = fun_params.getParameter(j)
+            fun_p_name = fun_parameter.getObjectName()
             if fun_parameter.getUsage() != COPASI.CFunctionParameter.Role_PARAMETER:
                 continue
             param = parameter_group.getParameter(fun_parameter.getObjectName())
@@ -3253,6 +3261,22 @@ def set_reaction_parameters(name=None, **kwargs):
                 changed = True
 
             if 'mapped_to' in kwargs and current_param is not None:
+
+                if kwargs['mapped_to'] is None:
+                    # special case swapping to local parameter value
+                    info = COPASI.CReactionInterface()
+                    info.init(reaction)
+                    for k in range(info.size()):
+                        p_type = info.getUsage(k)
+                        p_name = info.getParameterName(k)
+                        if p_name == fun_p_name and p_type == COPASI.CFunctionParameter.Role_PARAMETER:
+                            info.setLocal(k)
+                            info.writeBackToReaction(reaction)
+                            fun_params = reaction.getFunctionParameters()
+                            param_objects = reaction.getParameterObjects()
+                            changed = True
+                    continue
+
                 mv = model.getModelValue(kwargs['mapped_to'])
                 if not mv:
                     logger.warning('No such parameter "{0}" to map to.'.format(kwargs['mapped_to']))
@@ -3263,7 +3287,7 @@ def set_reaction_parameters(name=None, **kwargs):
                 for k in range(info.size()):
                     p_type = info.getUsage(k)
                     p_name = info.getParameterName(k)
-                    if p_name == current_param.getObjectName() and p_type == COPASI.CFunctionParameter.Role_PARAMETER:
+                    if p_name == fun_p_name and p_type == COPASI.CFunctionParameter.Role_PARAMETER:
                         info.setMapping(k, mv.getObjectName())
                         info.writeBackToReaction(reaction)
                         fun_params = reaction.getFunctionParameters()
@@ -4998,7 +5022,7 @@ def _set_group_from_dict(group, values, dm=None):
                     obj = dm.getObject(COPASI.CCommonName(name_or_cn))
                     if obj is None:
                         obj = dm.findObjectByDisplayName(name_or_cn)
-                    
+
                     if obj is not None:
                         name_or_cn = obj.getCN()
                     else:
@@ -5015,10 +5039,10 @@ def get_valid_methods(task, **kwargs):
     :type task: COPASI.CCopasiTask or str
 
     :param kwargs: optional parameters
-    
+
             - | `model`: to specify the data model to be used (if not specified
             | the one from :func:`.get_current_model` will be taken)
-    
+
     :return: list of valid method names
     :rtype: [str]
     """

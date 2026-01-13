@@ -293,9 +293,10 @@ class TestReportManipulation(unittest.TestCase):
         dm = basico.new_model(name=m)
         r = 'R'
         basico.add_parameter('k_global', 1, unit='1/s')
+        basico.add_parameter('k_global2', 2, unit='1/s')
         basico.add_reaction(r, 'A -> B', function='Mass action (irreversible)')
         params = basico.get_parameters()
-        self.assertTrue(len(params) == 1)
+        self.assertTrue(len(params) == 2)
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
         self.assertTrue(params2.type.iloc[0] == 'local')
@@ -313,6 +314,32 @@ class TestReportManipulation(unittest.TestCase):
         params2 = basico.get_reaction_parameters(r)
         self.assertTrue(len(params2) == 1)
         self.assertTrue(params2.type.iloc[0] == 'global')
+
+        # check that we can reset to local
+        basico.set_reaction_parameters('(R).k1', mapped_to=None)
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type.iloc[0] == 'local')
+
+        # check that we can set from one global to another
+        basico.set_reaction_parameters('(R).k1', mapped_to='k_global')
+        basico.set_reaction_parameters('(R).k1', mapped_to='k_global2')
+        params2 = basico.get_reaction_parameters(r)
+        self.assertTrue(len(params2) == 1)
+        self.assertTrue(params2.type.iloc[0] == 'global')
+        self.assertEqual(params2.mapped_to.iloc[0], 'k_global2')
+
+
+    def test_renaming_species(self):
+        m = basico.new_model(name='TestModel')
+        basico.add_species('ATP', compartment_name='cell', initial_concentration=1)
+        basico.add_species('ATP', compartment_name='mitochondrial', initial_concentration=2)
+        basico.set_species('ATP{cell}', new_name='ATP0')
+        basico.set_species('ATP{mitochondrial}', new_name='ATPM')
+        species = basico.get_species()
+        print(species)
+        self.assertEqual(species.loc['ATP0'].name, 'ATP0')
+        self.assertEqual(species.loc['ATPM'].name, 'ATPM')
 
 
 if __name__ == '__main__':

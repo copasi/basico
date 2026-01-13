@@ -4045,16 +4045,19 @@ def set_species(name=None, exact=False, **kwargs):
         current_name = metab.getObjectName()
         display_name = metab.getObjectDisplayName()
 
-        if name and type(name) is str and exact and name != current_name and name != display_name:
+
+        compartment_name = current_name+ ('{'+metab.getCompartment().getObjectName()+'}' if metab.getCompartment() else '')
+
+        if name and type(name) is str and exact and name != current_name and name != display_name and name != compartment_name:
             continue
 
-        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name:
+        if 'name' in kwargs and kwargs['name'] not in current_name and kwargs['name'] not in display_name and kwargs['name'] not in compartment_name:
             continue
 
-        if name and type(name) is str and name not in current_name and name not in display_name:
+        if name and type(name) is str and name not in current_name and name not in display_name and name not in compartment_name:
             continue
 
-        if name and isinstance(name, Iterable) and current_name not in name and display_name not in name:
+        if name and isinstance(name, Iterable) and current_name not in name and display_name not in name and compartment_name not in name   :
             continue
 
         _set_species(metab, model, **kwargs)

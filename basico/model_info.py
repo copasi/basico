@@ -3599,6 +3599,11 @@ def set_reaction_mapping(reaction, mapping, **kwargs):
         - | `model`: to specify the data model to be used (if not specified
           | the one from :func:`.get_current_model` will be taken)
 
+    For example, to map elements of a reaction R4 to local parameters and set a substrate: 
+
+    >>> set_reaction_mapping('R4', {'h': 2.0, 'substrate': 'Ca_1', 'Shalve': 0.1, 'V': 0.1})
+    
+
     :return: boolean indicating whether the reaction was changed
     :rtype: bool
 

@@ -75,9 +75,15 @@ The latest version of the project contains support for T.J. Sego's [libSSR.SSRSi
 ```
 
 ### Acknowledgements
-This project has been possible thanks to the BMBF funded de.NBI initiative (031L0104A):
+This project has been possible thanks to [LiBiS](https://libis.bioquant.uni-heidelberg.de), the Baden-Württemberg Institute for Bioinformatics Infrastructure:
+
+![LiBiS Logo](./docs/_static/libis-logo.svg)
+
+
+and to the BMBF funded [de.NBI](https://www.denbi.de) initiative (031L0104A, W-de.NBI-016)):
 
 ![de.NBI logo](./docs/_static/deNBI_logo.jpg)
+
 
 ### License
 

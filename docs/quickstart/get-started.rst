@@ -126,17 +126,3 @@ the model to SBML use:
 .. code-block:: python
 
     >>> save_model('model_3.xml', type-'sbml')
-
-
-Funding
-----------------
-
-This project has been possible thanks to `LiBiS <https://libis.bioquant.uni-heidelberg.de>`_, the Baden-Württemberg Institute for Bioinformatics Infrastructure:
-
-.. image:: ../_static/libis-logo.svg
-   :alt: LiBiS Logo
-
-and to the BMBF funded `de.NBI <https://www.denbi.de>`_ initiative (031L0104A, W-de.NBI-016):
-
-.. image:: ../_static/deNBI_logo.jpg
-   :alt: de.NBI logo

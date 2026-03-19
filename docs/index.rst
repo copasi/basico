@@ -61,3 +61,18 @@ Should you use basico in your project, please cite:
 .. toctree::
    :maxdepth: 2
    :caption: Reference documentation
+
+
+
+Funding
+----------------
+
+This project has been possible thanks to `LiBiS <https://libis.bioquant.uni-heidelberg.de>`_, the Baden-Württemberg Institute for Bioinformatics Infrastructure:
+
+.. image:: ./_static/libis-logo.svg
+   :alt: LiBiS Logo
+
+and to the BMBF funded `de.NBI <https://www.denbi.de>`_ initiative (031L0104A, W-de.NBI-016):
+
+.. image:: ./_static/deNBI_logo.jpg
+   :alt: de.NBI logo

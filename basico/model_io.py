@@ -428,7 +428,7 @@ def get_examples(selector=''):
     :rtype: [str]
     """
     dir_name = os.path.dirname(__file__)
-    types = ('*.xml', '*.cps')
+    types = ('*.xml', '*.cps', '*.omex')
     files = []
     for ext in types:
         files.extend(glob.glob(os.path.join(dir_name, 'data', '*{0}{1}'.format(selector, ext))))

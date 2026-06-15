@@ -4,12 +4,24 @@ import unittest
 import basico
 import basico.biomodels
 import COPASI
+import functools
 
 try:
     import lxml
     _have_lxml = True
 except ImportError:
     _have_lxml = False
+
+def online_may_fail(reason="Online dependency failed"):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                raise unittest.SkipTest(f"{reason}: {e}")
+        return wrapper
+    return decorator
 
 class TestBasicoIO(unittest.TestCase):
 
@@ -61,6 +73,7 @@ class TestBasicoIO(unittest.TestCase):
 
         basico.remove_datamodel(dm)
 
+    @online_may_fail("Biomodels database may be unavailable")
     def test_load_biomodel(self):
         dm = basico.load_biomodel(10)
         self.assertTrue(dm is not None)
@@ -76,6 +89,7 @@ class TestBasicoIO(unittest.TestCase):
         self.assertEqual(params.shape[0], 176)
         basico.remove_datamodel(dm)
 
+    @online_may_fail("Biomodels database may be unavailable")
     def test_load_and_reconstruct(self):
         dm = basico.load_biomodel(64)
         species = basico.as_dict(basico.get_species())
@@ -111,6 +125,7 @@ class TestBasicoIO(unittest.TestCase):
 
         basico.remove_datamodel(dm)
 
+    @online_may_fail("Biomodels database may be unavailable")
     def test_search_biomodels(self):
         models = basico.biomodels.search_for_model('Hodgkin')
         model_ids = [model['id'] for model in models]

@@ -546,6 +546,103 @@ def get_experiment_data_from_model(model=None):
 
     return result
 
+def get_validation_weight(model=None):
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    return experiments.getWeight()
+
+
+def set_validation_weight(weight, model=None):
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    experiments.setWeight(float(weight))
+
+def get_validation_threshold(model=None):
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    return experiments.getThreshold()
+
+def set_validation_threshold(threshold, model=None):
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    experiments.setThreshold(int(threshold))
+
+def get_validation_data_from_model(model=None):
+    """Returns all cross validation experimental data from the model
+
+    :param model: the model to get the data from
+    :type model: COPASI.CDataModel or None
+    :return: list of dataframes with cross validation experimental data (with columns renamed and unmapped columns dropped)
+    :rtype: [pandas.DataFrame]
+    """
+    if model is None:
+        model = model_io.get_current_model()
+    result = []
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        df = get_data_from_experiment(experiment, rename_headers=True, model=model)
+        result.append(df)
+
+    return result
+
 
 def get_experiment_filenames(model=None):
     """Returns filenames of all experiments
@@ -1346,6 +1443,120 @@ def get_simulation_results(values_only=False, update_parameters=True, **kwargs):
     return exp_data, sim_data
 
 
+def get_validation_results(values_only=False, update_parameters=True, **kwargs):
+    """Runs the current solution statistics and returns result of simulation and validation data
+
+    :param values_only: if true, only time points at the measurements will be returned
+    :type values_only: bool
+
+    :param update_parameters: if set true, the model will be updated with the parameters
+           found from the solution. (defaults to True)
+    :type update_parameters: bool
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    - | `solution`: a solution data frame to use, if not specified a current solution
+                    statistic will be computed
+
+    :return: tuple of lists of experiment data, and a list of simulation data
+    :rtype: ([pandas.DataFrame],[pandas.DataFrame])
+    """
+    import basico
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    result = []
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    if update_parameters:
+        if 'solution' in kwargs:
+            solution = kwargs['solution']
+            if type(solution) is dict or type(solution) is list:
+                solution = pd.DataFrame(data=solution)
+        else:
+            settings = basico.get_task_settings(basico.T.PARAMETER_ESTIMATION, model=dm)
+            solution = run_parameter_estimation(method='Current Solution Statistics', write_report=False, randomize_start_values=False, model=dm)
+            # restore settings
+            basico.set_task_settings(basico.T.PARAMETER_ESTIMATION, settings)
+
+    exp_data = []
+    sim_data = []
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        exp_name = experiment.getObjectName()
+        df = get_data_from_experiment(experiment, rename_headers=True)
+        mapping = get_experiment_mapping(experiment)
+
+        is_steady_state = experiment.getExperimentType() == COPASI.CTaskEnum.Task_steadyState
+        num_independent_points = df.shape[0]
+        steady_state_task = dm.getTask(basico.T.STEADY_STATE)
+        container = dm.getModel().getMathContainer()
+
+        if update_parameters:
+            _update_fit_parameters_from(dm, solution, exp_name)
+
+        container.fetchInitialState()
+        container.updateInitialValues(COPASI.CCore.Framework_ParticleNumbers)
+        container.applyInitialValues()
+        container.updateSimulatedValues(False)
+        container.updateTransientDataValues()
+        experiment.updateModelWithIndependentData(0)
+        container.pushAllTransientValues()
+        container.pushInitialState()
+
+        if is_steady_state:
+            # run steady state
+            steady_state_task.initializeRaw(COPASI.CCopasiTask.OUTPUT_UI)
+            steady_state_task.processRaw(True)
+            data = basico.model_info.collect_data(cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
+
+            for j in range(1, num_independent_points):
+                container.applyInitialValues()
+                container.updateSimulatedValues(False)
+                container.updateTransientDataValues()
+                experiment.updateModelWithIndependentData(j)
+                container.pushAllTransientValues()
+                container.pushInitialState()
+
+                if update_parameters:
+                    _update_fit_parameters_from(dm, solution, exp_name)
+                steady_state_task.processRaw(True)
+
+                new_row = basico.model_info.collect_data(
+                    cns=mapping[mapping.type == 'dependent']['cn'].to_list()).transpose()
+                data = pd.concat([data, new_row], ignore_index=True)
+
+        else:
+            # run time course (getting only the data from the experiment)
+            duration = df.iloc[-1].Time
+            cols = ['Time'] + mapping[mapping.type == 'dependent']['cn'].to_list()
+            tc_settings = basico.get_task_settings(basico.T.TIME_COURSE, model=dm)
+            if values_only:
+                data = basico.run_time_course_with_output(output_selection=cols, values=df.Time.to_list(), start_time=df.iloc[0].Time)
+            else:
+                data = basico.run_time_course_with_output(output_selection=cols,duration=duration)
+            # restore setttings
+            basico.set_task_settings(basico.T.TIME_COURSE, tc_settings)
+
+        exp_data.append(df)
+        sim_data.append(data)
+
+    return exp_data, sim_data
+
 def _apply_nth_change(change, columns, df, dm, exp_name, independent, model, num_independent):
     change_set = COPASI.DataObjectSet()
     for j in range(num_independent):
@@ -1503,6 +1714,62 @@ def plot_per_experiment(**kwargs):
 
     return result
 
+def plot_validation_per_experiment(**kwargs):
+    """
+    This function creates one figure per validation experiment defined, with plots of all dependent variables
+    and their fit in it.
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: array of tuples (fig, ax) for the figures created
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    result = []
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    exp_data, sim_data = get_validation_results(**kwargs)
+
+    for i in range(num_experiments):
+        fig, ax = plt.subplots()
+        cycler = plt.cycler("color", plt.cm.tab20c.colors)()
+        experiment = experiments.getExperiment(i)
+        exp_name = experiment.getObjectName()
+        mapping = get_experiment_mapping(experiment)
+        ax.set_title(exp_name)
+
+        # set independent values for that experiment
+        dependent = mapping[mapping.type == 'dependent']
+
+        num_dependent = dependent.shape[0]
+        for j in range(num_dependent):
+            nextval = next(cycler)['color']
+            name = dependent.iloc[j].mapping
+            if name not in sim_data[i].columns:
+                name = name[1:-1]
+            sim_data[i].reset_index().plot(x='Time', y=name,
+                                           label="{0} Fit".format(name), ax=ax, color=nextval)
+            name = dependent.iloc[j].mapping
+            exp_data[i].plot.scatter(x='Time', y=name, ax=ax, color=nextval,
+                                     label='{0} Measured'.format(name))
+        result.append((fig, ax))
+
+    return result
+
 
 def plot_per_dependent_variable(**kwargs):
     """
@@ -1570,6 +1837,71 @@ def plot_per_dependent_variable(**kwargs):
 
     return result
 
+def plot__validation_per_dependent_variable(**kwargs):
+    """
+    This function creates a figure for each dependent variable, with traces for all validationexperiments.
+
+    :param kwargs:
+
+    - | `model`: to specify the data model to be used (if not specified
+      | the one from :func:`.get_current_model` will be taken)
+
+    :return: array of tuples (fig, ax) for each figure created
+    """
+    dm = model_io.get_model_from_dict_or_default(kwargs)
+
+    task = dm.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+
+    experiments = problem.getCrossValidationSet()
+    assert (isinstance(experiments, COPASI.CCrossValidationSet))
+
+    result = []
+    num_experiments = experiments.getExperimentCount()
+    if num_experiments == 0:
+        return result
+
+    exp_data, sim_data = get_validation_results(**kwargs)
+
+    dependent_variables = {}
+
+    for i in range(num_experiments):
+        experiment = experiments.getExperiment(i)
+        mapping = get_experiment_mapping(experiment)
+
+        # set independent values for that experiment
+        dependent = mapping[mapping.type == 'dependent']
+        num_dependent = dependent.shape[0]
+        for j in range(num_dependent):
+            name = dependent.iloc[j].mapping
+            if name not in dependent_variables:
+                dependent_variables[name] = []
+            dependent_variables[name].append(i)
+
+    for dependent in dependent_variables:
+        fig, ax = plt.subplots()
+        cycler = plt.cycler("color", plt.cm.tab20c.colors)()
+        ax.set_title(dependent)
+        experiment_indices = dependent_variables[dependent]
+
+        for i in experiment_indices:
+            experiment = experiments.getExperiment(i)
+            exp_name = experiment.getObjectName()
+            nextval = next(cycler)['color']
+            name = dependent
+            if name not in sim_data[i].columns:
+                name = name[1:-1]
+
+            sim_data[i].reset_index().plot(x='Time', y=name,
+                                           label="{0} Fit".format(exp_name), ax=ax, color=nextval)
+            exp_data[i].plot.scatter(x='Time', y=dependent, ax=ax, color=nextval,
+                                     label='{0} Measured'.format(exp_name))
+        result.append((fig, ax))
+
+    return result
 
 def prune_simulation_results(simulation_results):
     """Removes all columns & time points from the simulation set, that are not available in the measurement set
@@ -1592,7 +1924,8 @@ def prune_simulation_results(simulation_results):
     return simulation_results
 
 
-def get_fit_statistic(include_parameters=False, include_experiments=False, include_fitted=False, **kwargs):
+def get_fit_statistic(include_parameters=False, include_experiments=False, include_fitted=False,
+                      include_validation=False, **kwargs):
     """Return information about the last fit.
 
     :param include_parameters: whether to include information about the parameters in a result entry
@@ -1605,6 +1938,9 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
 
     :param include_fitted: whether to include information about the fitted values in a result entry
                                with key `fitted`
+
+    :param include_validation: whether to include information about the validation statistic in a result entry
+
     :type include_fitted: bool
 
     :param kwargs:
@@ -1727,6 +2063,20 @@ def get_fit_statistic(include_parameters=False, include_experiments=False, inclu
             })
 
         result['variables'] = values
+
+    if include_validation:
+
+        validation_set = problem.getCrossValidationSet()
+        assert(isinstance(validation_set, COPASI.CCrossValidationSet))
+
+        validation_stat = {
+            'obj': problem.getCrossValidationSolutionValue(),
+            'rms': problem.getCrossValidationRMS(),
+            'sd': problem.getCrossValidationSD(),
+            'data_points': validation_set.getDataPointCount(),
+            'valid_data_points': validation_set.getValidValueCount(),
+        }
+        result['validation'] = validation_stat
 
     return result
 

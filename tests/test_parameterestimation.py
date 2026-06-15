@@ -7,6 +7,29 @@ import pandas as pd
 import basico
 import COPASI
 
+class TestFitWithValidationData(unittest.TestCase):
+
+    def setUp(self):
+        self.assertTrue(basico.get_examples('val-example') is not None, 'Validation example not found in basico examples')
+        self.dm = basico.load_example('val-example')
+        self.assertTrue(self.dm is not None, f'Failed to load validation model from {basico.__path__}')
+        return super().setUp()
+    
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
+        return super().tearDown()
+    
+    def test_get_validation_data(self):
+        validation_data = basico.get_validation_data_from_model()
+        self.assertIsNotNone(validation_data)
+        self.assertEqual(len(validation_data), 1)
+        self.assertEqual(validation_data[0].shape, (51, 2))
+
+        basico.run_parameter_estimation(method=basico.PE.CURRENT_SOLUTION)
+        stat = basico.get_fit_statistic(include_validation=True)
+        self.assertIn('validation', stat)
+
+
 class TestBasicoParamterEstimation(unittest.TestCase):
 
     def setUp(self):

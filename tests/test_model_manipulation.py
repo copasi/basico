@@ -337,7 +337,6 @@ class TestReportManipulation(unittest.TestCase):
         basico.set_species('ATP{cell}', new_name='ATP0')
         basico.set_species('ATP{mitochondrial}', new_name='ATPM')
         species = basico.get_species()
-        print(species)
         self.assertEqual(species.loc['ATP0'].name, 'ATP0')
         self.assertEqual(species.loc['ATPM'].name, 'ATPM')
 

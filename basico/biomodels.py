@@ -44,7 +44,7 @@ except ImportError:
 import json
 
 
-END_POINT = 'https://www.ebi.ac.uk/biomodels/'
+END_POINT = 'https://www.biomodels.org/'
 
 
 def download_from(url):

@@ -637,11 +637,22 @@ def get_report_dict(report, **kwargs):
 
     return result
 
+def _resolve_cn_or_name(name_or_cn, dm=None):
+    if dm is None:
+        dm = model_io.get_current_model()
+
+    if isinstance(name_or_cn, COPASI.CCommonName):
+        return dm.getObject(name_or_cn)
+
+    obj = dm.findObjectByDisplayName(name_or_cn)
+    if obj is None:
+        obj = dm.getObject(COPASI.CCommonName(name_or_cn))
+    return obj
 
 def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
     for i in range(num_elements):
         cn = get_nth_function(i)
-        obj = dm.getObject(cn)
+        obj = _resolve_cn_or_name(cn, dm)
         if obj is None:
             obj = dm.getObjectFromCN(COPASI.CCommonName(cn))
 
@@ -657,6 +668,10 @@ def _add_report_items_to_list(result, num_elements, get_nth_function, dm):
             result.append(obj.getObjectDisplayName())
 
     return result
+
+
+def _is_None_or_Root(obj):
+    return obj is None or obj.getCN().getString() == 'CN=Root'
 
 
 def get_plot_dict(plot_spec, **kwargs):
@@ -748,11 +763,12 @@ def get_plot_dict(plot_spec, **kwargs):
         channels = plot_item.getChannels()
         for k in range(channels.size()):
             channel_obj = dm.getObject(channels[k])
-            if channel_obj is None:
+            if _is_None_or_Root(channel_obj):
                 curve_data['channels'].append(channels[k].getString())
                 continue
             name = channel_obj.getObjectDisplayName()
-            if not dm.getObject(COPASI.CCommonName(name)):
+            channel_obj = dm.getObject(COPASI.CCommonName(name))
+            if _is_None_or_Root(channel_obj):
                 name = channels[k].getString()
             curve_data['channels'].append(name)
 
@@ -1538,7 +1554,7 @@ def _replace_cns_with_names(expression, **kwargs):
 
         if cn is not None:
             obj = dm.getObject(COPASI.CCommonName(cn))
-            if obj is not None:
+            if not _is_None_or_Root(obj):
                 word = obj.getObjectDisplayName()
                 if ' ' in word:
                     word = '{' + word + '}'
@@ -6458,7 +6474,11 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
             if curve['activity'] != 'during':
                 continue
             for channel in curve['channels']:
-                dh.addDuringName(_get_registered_common_name(channel, dm))
+                obj = _resolve_cn_or_name(channel)
+                if obj is not None:
+                    dh.addDuringName(COPASI.CRegisteredCommonName(obj.getCN()))
+                else:
+                    logger.error('Object {} not found'.format(channel))
             pass
         plot_handlers.append({
             'handler': dh,

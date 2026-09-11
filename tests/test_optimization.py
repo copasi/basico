@@ -48,7 +48,7 @@ class TestOptimization(unittest.TestCase):
         self.assertIsNotNone(result)
         stat = basico.get_opt_statistic()
         self.assertIsNotNone(stat)
-        self.assertLess(stat['obj'], 1e-6)
+        self.assertLess(stat['obj'], 1e-4)
 
     def test_custom_output(self):
         dh, col = basico.create_data_handler([

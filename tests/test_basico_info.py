@@ -1,5 +1,6 @@
 import logging
 from math import exp
+from pathlib import Path
 import sys
 import unittest
 import basico
@@ -10,6 +11,46 @@ try:
     _have_libsbml = True
 except ImportError:
     _have_libsbml = False
+
+
+class TestBasicoIO_Jacobian(unittest.TestCase):
+
+
+    def test_jacobian_chain(self):
+        dm = basico.load_model(str(Path(__file__).resolve().parent / 'chain2.xml'))
+        jacobian = basico.get_jacobian_matrix()
+        self.assertIsNotNone(jacobian)
+        self.assertTrue(jacobian.shape[0] == jacobian.shape[1])
+        self.assertTrue(jacobian.shape[0] == 2)
+        self.assertTrue(jacobian.columns is not None)
+        self.assertTrue(jacobian.columns[0] == 'B')
+        self.assertTrue(jacobian.columns[1] == 'A')
+        basico.remove_datamodel(dm)
+
+    def test_jacobian_schaber(self):
+        dm = basico.load_example('schaber')
+        jacobian = basico.get_jacobian_matrix()
+        self.assertIsNotNone(jacobian)
+        self.assertTrue(jacobian.shape[0] == jacobian.shape[1])
+        self.assertTrue(jacobian.shape[0] == 3)
+        self.assertTrue(jacobian.columns is not None)
+        self.assertTrue(jacobian.columns[0] == 'T')
+        self.assertTrue(jacobian.columns[1] == 'S')
+        self.assertTrue(jacobian.columns[2] == 'Tp')
+        jacobian = basico.get_reduced_jacobian_matrix()
+        self.assertTrue(jacobian.shape[0] == 2)
+        self.assertTrue(jacobian.columns[0] == 'T')
+        self.assertTrue(jacobian.columns[1] == 'S')
+        basico.add_species('unused_reaction')
+        jacobian = basico.get_jacobian_matrix()
+        self.assertIsNotNone(jacobian)
+        self.assertTrue(jacobian.shape[0] == jacobian.shape[1])
+        self.assertTrue(jacobian.shape[0] == 3)
+        self.assertTrue(jacobian.columns is not None)
+        self.assertTrue(jacobian.columns[0] == 'T')
+        self.assertTrue(jacobian.columns[1] == 'S')
+        self.assertTrue(jacobian.columns[2] == 'Tp')
+        basico.remove_datamodel(dm)
 
 
 class TestBasicoIO_Brus(unittest.TestCase):

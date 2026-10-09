@@ -4839,12 +4839,15 @@ def get_reduced_stoichiometry_matrix(**kwargs):
     return _annotated_matrix_to_df(model.getRedStoiAnnotation())
 
 
-def get_jacobian_matrix(apply_initial_values=False, **kwargs):
+def get_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-12, **kwargs):
     """Returns the jacobian matrix of the model at the current state
 
     :param apply_initial_values: if set to the the initial values will be applied, otherwise
          the jacobian from the current state will be returned
     :type apply_initial_values: bool
+
+    :param derivation_factor: the factor to use for numerical derivation when calculating the jacobian
+    :type derivation_factor: float
 
     :param kwargs: optional parameters
 
@@ -4865,40 +4868,31 @@ def get_jacobian_matrix(apply_initial_values=False, **kwargs):
         model.applyInitialValues()
 
     jacobian = COPASI.FloatMatrix()
-    model.getMathContainer().calculateJacobian(jacobian, 1e-12, False, False)
+    model.getMathContainer().calculateJacobian(jacobian, derivation_factor, False, False)
     state_template = model.getStateTemplate()
-    user_order = state_template.getUserOrder()
-    name_vector = []
-
-    for i in range(0, user_order.size()):
-        entity = state_template.getEntity(user_order.get(i))
-        if entity is None:
-            continue
-        status = entity.getStatus()
-
-        if status == COPASI.CModelEntity.Status_ODE or \
-                (status == COPASI.CModelEntity.Status_REACTIONS and entity.isUsed()):
-            name_vector.append(entity.getObjectName())
-
-    assert len(name_vector) == jacobian.numRows()
+    name_vector = [state_template.getIndependent(i).getObjectName() for i in range(state_template.getNumIndependent())] + \
+                  [state_template.getDependent(i).getObjectName() for i in range(state_template.getNumDependent()) if state_template.getDependent(i).getStatus() > 1]
 
     data = []
 
-    for i in range(0, len(name_vector)):
+    for i in range(0, jacobian.numRows()):
         row = {}
-        for j in range(0, len(name_vector)):
+        for j in range(0, jacobian.numCols()):
             row[name_vector[j]] = jacobian.get(i, j)
         data.append(row)
 
     return pd.DataFrame(data, columns=name_vector, index=name_vector)
 
 
-def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
+def get_reduced_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-12, **kwargs):
     """Returns the jacobian matrix of the reduced model at the current state
 
         :param apply_initial_values: if set to the the initial values will be applied, otherwise
              the jacobian from the current state will be returned
         :type apply_initial_values: bool
+
+        :param derivation_factor: the factor to use for numerical derivation when calculating the jacobian
+        :type derivation_factor: float
 
         :param kwargs: optional parameters
 
@@ -4919,13 +4913,12 @@ def get_reduced_jacobian_matrix(apply_initial_values=False, **kwargs):
         model.applyInitialValues()
 
     jacobian = COPASI.FloatMatrix()
-    model.getMathContainer().calculateJacobian(jacobian, 1e-12, True, False)
+    model.getMathContainer().calculateJacobian(jacobian, derivation_factor, True, False)
     state_template = model.getStateTemplate()
-    name_vector = []
+    name_vector = [] 
     data = []
 
     i_max = state_template.getNumIndependent()
-
     for i in range(0, i_max):
         name_vector.append(state_template.getIndependent(i).getObjectName())
 
@@ -6523,6 +6516,9 @@ def run_task(task_name, include_plots=True, include_general_plots=False, plots=N
 
     return figures
 
+def num_copasi_messages():
+    """ Returns the number of messages in the copasi message queue """
+    return COPASI.CCopasiMessage.size()
 
 def get_copasi_messages(num_messages_before, filters=None):
     """ Returns error messages that occurred while initializing or running the simulation

@@ -193,14 +193,24 @@ class SENS_ST(EnumHelper):
 
     @classmethod
     def _create_name_map(cls):
-        return {
-            COPASI.CSensProblem.Evaluation: SENS_ST.Evaluation,
-            COPASI.CSensProblem.SteadyState: SENS_ST.SteadyState,
-            COPASI.CSensProblem.TimeSeries: SENS_ST.TimeSeries,
-            COPASI.CSensProblem.ParameterEstimation: SENS_ST.ParameterEstimation,
-            COPASI.CSensProblem.Optimization: SENS_ST.Optimization,
-            COPASI.CSensProblem.CrossSection: SENS_ST.CrossSection,
-        }
+        try:
+            return {
+                COPASI.CSensProblem.SubtaskType_Evaluation: SENS_ST.Evaluation,
+                COPASI.CSensProblem.SubtaskType_SteadyState: SENS_ST.SteadyState,
+                COPASI.CSensProblem.SubtaskType_TimeSeries: SENS_ST.TimeSeries,
+                COPASI.CSensProblem.SubtaskType_ParameterEstimation: SENS_ST.ParameterEstimation,
+                COPASI.CSensProblem.SubtaskType_Optimization: SENS_ST.Optimization,
+                COPASI.CSensProblem.SubtaskType_CrossSection: SENS_ST.CrossSection,
+            }
+        except:
+            return {
+                COPASI.CSensProblem.Evaluation: SENS_ST.Evaluation,
+                COPASI.CSensProblem.SteadyState: SENS_ST.SteadyState,
+                COPASI.CSensProblem.TimeSeries: SENS_ST.TimeSeries,
+                COPASI.CSensProblem.ParameterEstimation: SENS_ST.ParameterEstimation,
+                COPASI.CSensProblem.Optimization: SENS_ST.Optimization,
+                COPASI.CSensProblem.CrossSection: SENS_ST.CrossSection,
+            }
 
     @classmethod
     def _create_value_map(cls):
@@ -208,8 +218,12 @@ class SENS_ST(EnumHelper):
         cls._convert_names_to_values()
 
         # add alternative names used throughout basico elsewhere
-        cls._values[basico.T.STEADY_STATE] = COPASI.CSensProblem.SteadyState
-        cls._values[basico.T.TIME_COURSE] = COPASI.CSensProblem.TimeSeries
+        try:
+            cls._values[basico.T.STEADY_STATE] = COPASI.CSensProblem.SubtaskType_SteadyState
+            cls._values[basico.T.TIME_COURSE] = COPASI.CSensProblem.SubtaskType_TimeSeries
+        except:
+            cls._values[basico.T.STEADY_STATE] = COPASI.CSensProblem.SteadyState
+            cls._values[basico.T.TIME_COURSE] = COPASI.CSensProblem.TimeSeries
 
         return cls._values
 
@@ -240,7 +254,11 @@ def get_sensitivity_settings(basic_only=True, **kwargs):
     problem = task.getProblem()
     assert (isinstance(problem, COPASI.CSensProblem))
 
-    settings['sub_task'] = SENS_ST.from_enum(problem.getSubTaskType())
+    try:
+        subtask = SENS_ST.from_enum(problem.getOldSubTaskType())
+    except:
+        subtask = SENS_ST.from_enum(problem.getSubTaskType())
+    settings['sub_task'] = subtask
 
     item = problem.getTargetFunctions()
     assert (isinstance(item, COPASI.CSensItem))
@@ -287,7 +305,10 @@ def set_sensitivity_settings(settings, **kwargs):
     assert (isinstance(problem, COPASI.CSensProblem))
 
     if 'sub_task' in settings:
-        problem.setSubTaskType(SENS_ST.to_enum(settings['sub_task']))
+        try:
+            problem.setOldSubTaskType(SENS_ST.to_enum(settings['sub_task']))
+        except:
+            problem.setSubTaskType(SENS_ST.to_enum(settings['sub_task']))
 
     if 'effect' in settings:
         problem.setTargetFunctions(_to_sens_item(settings['effect'], model))

@@ -86,10 +86,10 @@ def get_opt_parameters(model=None):
         name = obj.getObjectDisplayName()
         data.append({
             'name': name,
-            'lower': item.getLowerBound(),
-            'upper': item.getUpperBound(),
+            'lower': model_info._get_cn_string(item.getLowerBound()),
+            'upper': model_info._get_cn_string(item.getUpperBound()),
             'start': item.getStartValue(),
-            'cn': item.getObjectCN(),
+            'cn': model_info._get_cn_string(item.getObjectCN()),
         })
 
     if not data:
@@ -180,12 +180,9 @@ def set_opt_parameters(opt_parameters, model=None):
         if 'name' in item:
             name = item['name']
             if not cn:
-                obj = model.findObjectByDisplayName(name)
+                obj = basico.model_info._get_object(name, initial=True, model=model)
                 if obj:
-                    if 'Reference' not in obj.getObjectType():
-                        cn = obj.getInitialValueReference().getCN()
-                    else:
-                        cn = obj.getCN()
+                    cn = obj.getCN()
 
         if not cn:
             logger.warning('object {0} not found'.format(name))
@@ -415,6 +412,7 @@ def get_opt_solution(model=None):
             'lower': item.getLowerBound(),
             'upper': item.getUpperBound(),
             'sol': sol,
+            'start': item.getStartValue(),
         })
 
     if not data:

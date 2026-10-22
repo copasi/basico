@@ -1,6 +1,26 @@
 import unittest
 import basico
 import COPASI
+import os
+
+class TestBrusselatorOptimization(unittest.TestCase):
+    def setUp(self):
+        # load the model from ./test_data/brusselator_opt.cps using full path from tests directory
+        test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+        model_file = os.path.join(test_data_dir, 'brusselator_opt.cps')
+        self.dm = basico.load_model(model_file)
+
+    def tearDown(self):
+        basico.remove_datamodel(self.dm)
+
+    def test_optitems(self):
+        items = basico.as_dict(basico.get_opt_parameters())
+        self.assertIsNotNone(items)
+        self.assertEqual(items[0]['name'], '(R1).k1')
+        basico.set_opt_parameters([])
+        basico.set_opt_parameters(items)
+        items_2 = basico.as_dict(basico.get_opt_parameters())
+        self.assertEqual(items_2[0]['name'], '(R1).k1')
 
 
 class TestOptimization(unittest.TestCase):

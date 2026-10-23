@@ -51,6 +51,7 @@ Should you use basico in your project, please cite:
    notebooks/Working_with_Widgets
    notebooks/AllTaskSettings
    notebooks/LinearNoiseApproximation.ipynb
+   notebooks/ComputingLyapunovExponents
 
 .. toctree::
    :maxdepth: 2

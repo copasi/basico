@@ -50,8 +50,9 @@ Should you use basico in your project, please cite:
    notebooks/MCA
    notebooks/Working_with_Widgets
    notebooks/AllTaskSettings
-   notebooks/LinearNoiseApproximation.ipynb
+   notebooks/LinearNoiseApproximation
    notebooks/ComputingLyapunovExponents
+   notebooks/ComputeElementaryModes
 
 .. toctree::
    :maxdepth: 2

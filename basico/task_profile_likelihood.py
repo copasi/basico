@@ -274,7 +274,7 @@ def _combine_files(report_files):
             df = _get_data_from_file(filename)
         else:
             df = pd.concat([df, _get_data_from_file(filename)])
-    df.sort_index(inplace=True, axis=0)
+    df = df.sort_index(axis=0)
     param_val = df[['TaskList[Parameter Estimation].(Problem)Parameter Estimation.Best Value']].idxmin().values[0]
     obj_val = df[['TaskList[Parameter Estimation].(Problem)Parameter Estimation.Best Value']].min().values[0]
     return df, obj_val, param_val

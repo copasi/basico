@@ -491,8 +491,7 @@ def get_data_from_experiment(experiment, **kwargs):
                              sep=separator,
                              header=None,
                              skiprows=skip_idx)
-        df.rename(columns=original_headers, inplace=True)
-        return df
+        return df.rename(columns=original_headers)
     else:
         df = pandas.read_csv(experiment_file,
                              sep=separator,
@@ -507,11 +506,9 @@ def get_data_from_experiment(experiment, **kwargs):
         drop_cols.append(all_columns[i])
 
     if any(drop_cols):
-        df.drop(drop_cols, axis=1, inplace=True, errors='ignore')
+        df = df.drop(drop_cols, axis=1, errors='ignore')
 
-    df.rename(columns=headers, inplace=True)
-
-    return df
+    return df.rename(columns=headers)
 
 
 def get_experiment_data_from_model(model=None):

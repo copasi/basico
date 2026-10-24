@@ -2484,5 +2484,5 @@ def get_fisher_information_eigenvectors(scaled=True, **kwargs):
     if scaled:
         return basico.model_info._annotated_matrix_to_df(problem.getScaledFisherInformationEigenvectors())
     else:
-        return basico.model_info._annotated_matrix_to_df(problem.getFisherInformationEigenvalues())
+        return basico.model_info._annotated_matrix_to_df(problem.getFisherInformationEigenvectors())
 

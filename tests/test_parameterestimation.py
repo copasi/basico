@@ -50,6 +50,10 @@ class TestFitWithValidationData(unittest.TestCase):
 
         fisher_information_eigenvectors = basico.get_fisher_information_eigenvectors(scaled=False)
         self.assertIsNotNone(fisher_information_eigenvectors)
+        self.assertEqual(fisher_information_eigenvectors.shape, (4, 4))
+        self.assertFalse(
+            fisher_information_eigenvectors.equals(fisher_information_eigenvalues)
+        )
 
 
 class TestBasicoParamterEstimation(unittest.TestCase):

@@ -30,6 +30,7 @@ Should you use basico in your project, please cite:
    notebooks/Editing_Kinetics
    notebooks/Parameter_Estimation_Example
    notebooks/Setting_up_Parameter_Estimation
+   notebooks/EvaluateParameterEstimationResults
    notebooks/ParameterEstimation_Export
    notebooks/Optimization
    notebooks/Simple_simulations_and_plotting_with_basico

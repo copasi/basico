@@ -2426,3 +2426,63 @@ def add_experiment_from_dict(exp_dict, **kwargs):
     #experiment.updateFittedPoints()
 
 
+def get_correlation_matrix(**kwargs):
+    """ Returns the correlation matrix for the parameter estimation task.
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    return basico.model_info._annotated_matrix_to_df(problem.getCorrelations())
+
+def get_fisher_information_matrix(scaled=True, **kwargs):
+    """ Returns the Fisher information matrix for the parameter estimation task.
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    if scaled:
+        return basico.model_info._annotated_matrix_to_df(problem.getScaledFisherInformation())
+    else:
+        return basico.model_info._annotated_matrix_to_df(problem.getFisherInformation())
+
+def get_fisher_information_eigenvalues(scaled=True, **kwargs):
+    """ Returns the eigenvalues of the Fisher information matrix for the parameter estimation task.
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    if scaled:
+        return basico.model_info._annotated_matrix_to_df(problem.getScaledFisherInformationEigenvalues())
+    else:
+        return basico.model_info._annotated_matrix_to_df(problem.getFisherInformationEigenvalues())
+
+def get_fisher_information_eigenvectors(scaled=True, **kwargs):
+    """ Returns the eigenvectors of the Fisher information matrix for the parameter estimation task.
+    """
+    model = model_io.get_model_from_dict_or_default(kwargs)
+    assert (isinstance(model, COPASI.CDataModel))
+
+    task = model.getTask(TASK_PARAMETER_ESTIMATION)
+    assert (isinstance(task, COPASI.CFitTask))
+    problem = task.getProblem()
+    assert (isinstance(problem, COPASI.CFitProblem))
+    if scaled:
+        return basico.model_info._annotated_matrix_to_df(problem.getScaledFisherInformationEigenvectors())
+    else:
+        return basico.model_info._annotated_matrix_to_df(problem.getFisherInformationEigenvalues())
+

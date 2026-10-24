@@ -29,6 +29,28 @@ class TestFitWithValidationData(unittest.TestCase):
         stat = basico.get_fit_statistic(include_validation=True)
         self.assertIn('validation', stat)
 
+        correlation_matrix = basico.get_correlation_matrix()
+        self.assertIsNotNone(correlation_matrix)
+        self.assertEqual(correlation_matrix.shape, (4, 4))
+
+        fisher_information_matrix = basico.get_fisher_information_matrix()
+        self.assertIsNotNone(fisher_information_matrix)
+
+        fisher_information_eigenvalues = basico.get_fisher_information_eigenvalues()
+        self.assertIsNotNone(fisher_information_eigenvalues)
+
+        fisher_information_eigenvectors = basico.get_fisher_information_eigenvectors()
+        self.assertIsNotNone(fisher_information_eigenvectors)
+
+        fisher_information_matrix = basico.get_fisher_information_matrix(scaled=False)
+        self.assertIsNotNone(fisher_information_matrix)
+
+        fisher_information_eigenvalues = basico.get_fisher_information_eigenvalues(scaled=False)
+        self.assertIsNotNone(fisher_information_eigenvalues)
+
+        fisher_information_eigenvectors = basico.get_fisher_information_eigenvectors(scaled=False)
+        self.assertIsNotNone(fisher_information_eigenvectors)
+
 
 class TestBasicoParamterEstimation(unittest.TestCase):
 
@@ -111,8 +133,6 @@ class TestBasicoParamterEstimation(unittest.TestCase):
         for file in files_to_delete:
             os.remove(file)
         os.remove(main_file)
-
-
 
     def test_mapping(self):
         mapping = basico.get_experiment_mapping(0)

@@ -4839,7 +4839,7 @@ def get_reduced_stoichiometry_matrix(**kwargs):
     return _annotated_matrix_to_df(model.getRedStoiAnnotation())
 
 
-def get_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-12, **kwargs):
+def get_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-6, **kwargs):
     """Returns the jacobian matrix of the model at the current state
 
     :param apply_initial_values: if set to the the initial values will be applied, otherwise
@@ -4884,7 +4884,7 @@ def get_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-12, **k
     return pd.DataFrame(data, columns=name_vector, index=name_vector)
 
 
-def get_reduced_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-12, **kwargs):
+def get_reduced_jacobian_matrix(apply_initial_values=False, derivation_factor=1e-6, **kwargs):
     """Returns the jacobian matrix of the reduced model at the current state
 
         :param apply_initial_values: if set to the the initial values will be applied, otherwise

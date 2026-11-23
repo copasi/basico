@@ -34,74 +34,74 @@
         <table cellspacing="0" cellpadding="2" border="0">
           <thead>
             <tr>
-              <th valign="middle" bgcolor="#eeeeee" align="left">Rate constant      </th>
+              <th valign="middle" bgcolor="#eeeeee" align="left">Rate constant</th>
               <th valign="middle" bgcolor="#eeeeee" align="left">Reaction</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>alphaA = 50</td>
-              <td>DA -&gt; DA + MA</td>
+              <td>alphaA = 50</td>
+              <td>DA -&gt; DA + MA</td>
             </tr>
             <tr>
-              <td>alphaAp = 500</td>
-              <td>DAp -&gt; DAp + MA</td>
+              <td>alphaAp = 500</td>
+              <td>DAp -&gt; DAp + MA</td>
             </tr>
             <tr>
-              <td>alphaR = 0.01</td>
-              <td>DR -&gt; DR + MR</td>
+              <td>alphaR = 0.01</td>
+              <td>DR -&gt; DR + MR</td>
             </tr>
             <tr>
-              <td>alphaRp = 50</td>
-              <td>DRp -&gt; DRp + MR</td>
+              <td>alphaRp = 50</td>
+              <td>DRp -&gt; DRp + MR</td>
             </tr>
             <tr>
-              <td>betaA = 50</td>
-              <td>MA -&gt; A + MA</td>
+              <td>betaA = 50</td>
+              <td>MA -&gt; A + MA</td>
             </tr>
             <tr>
-              <td>betaR = 5</td>
-              <td>MR -&gt; MR + R</td>
+              <td>betaR = 5</td>
+              <td>MR -&gt; MR + R</td>
             </tr>
             <tr>
-              <td>gammaA = 1</td>
-              <td>A + DA -&gt; DAp</td>
+              <td>gammaA = 1</td>
+              <td>A + DA -&gt; DAp</td>
             </tr>
             <tr>
-              <td>gammaC = 2</td>
-              <td>A + R -&gt; C</td>
+              <td>gammaC = 2</td>
+              <td>A + R -&gt; C</td>
             </tr>
             <tr>
-              <td>gammaR = 1</td>
-              <td>A + DR -&gt; DRp</td>
+              <td>gammaR = 1</td>
+              <td>A + DR -&gt; DRp</td>
             </tr>
             <tr>
-              <td>deltaA = 1</td>
-              <td>A -&gt; EmptySet</td>
+              <td>deltaA = 1</td>
+              <td>A -&gt; EmptySet</td>
             </tr>
             <tr>
-              <td>deltaA = 1</td>
-              <td>C -&gt; R</td>
+              <td>deltaA = 1</td>
+              <td>C -&gt; R</td>
             </tr>
             <tr>
-              <td>deltaMA = 10</td>
-              <td>MA -&gt; EmptySet</td>
+              <td>deltaMA = 10</td>
+              <td>MA -&gt; EmptySet</td>
             </tr>
             <tr>
-              <td>deltaMR = 0.5</td>
-              <td>MR -&gt; EmptySet</td>
+              <td>deltaMR = 0.5</td>
+              <td>MR -&gt; EmptySet</td>
             </tr>
             <tr>
-              <td>deltaR = 0.2</td>
-              <td>R -&gt; EmptySet</td>
+              <td>deltaR = 0.2</td>
+              <td>R -&gt; EmptySet</td>
             </tr>
             <tr>
-              <td>thetaA = 50</td>
-              <td>DAp -&gt; A + DA</td>
+              <td>thetaA = 50</td>
+              <td>DAp -&gt; A + DA</td>
             </tr>
             <tr>
-              <td>thetaR = 100</td>
-              <td>DRp -&gt; A + DR</td>
+              <td>thetaR = 100</td>
+              <td>DRp -&gt; A + DR</td>
             </tr>
           </tbody>
         </table>
@@ -109,7 +109,7 @@
           <thead>
             <tr>
               <th valign="middle" bgcolor="#eeeeee" align="left">Variable</th>
-              <th valign="middle" bgcolor="#eeeeee" align="left">IC  </th>
+              <th valign="middle" bgcolor="#eeeeee" align="left">IC  </th>
               <th valign="middle" bgcolor="#eeeeee" align="left">ODE</th>
             </tr>
           </thead>
@@ -117,47 +117,47 @@
             <tr>
               <td>A</td>
               <td>0</td>
-              <td>A&apos;[t] == -(deltaA*A[t]) - gammaA*A[t]*DA[t] + thetaA*DAp[							t] - gammaR*A[t]*DR[t] + thetaR*DRp[t] + betaA*MA[t] -							 gammaC*A[t]*R[t]</td>
+              <td>A&apos;[t] == -(deltaA*A[t]) - gammaA*A[t]*DA[t] + thetaA*DAp[							t] - gammaR*A[t]*DR[t] + thetaR*DRp[t] + betaA*MA[t] -							 gammaC*A[t]*R[t]</td>
             </tr>
             <tr>
               <td>C</td>
               <td>0</td>
-              <td>C&apos;[t] == -(deltaA*C[t]) + gammaC*A[t]*R[t]</td>
+              <td>C&apos;[t] == -(deltaA*C[t]) + gammaC*A[t]*R[t]</td>
             </tr>
             <tr>
               <td>DA</td>
               <td>1</td>
-              <td>DA&apos;[t] == -(gammaA*A[t]*DA[t]) + thetaA*DAp[t]</td>
+              <td>DA&apos;[t] == -(gammaA*A[t]*DA[t]) + thetaA*DAp[t]</td>
             </tr>
             <tr>
               <td>DAp</td>
               <td>0</td>
-              <td>DAp&apos;[t] == gammaA*A[t]*DA[t] - thetaA*DAp[t]</td>
+              <td>DAp&apos;[t] == gammaA*A[t]*DA[t] - thetaA*DAp[t]</td>
             </tr>
             <tr>
               <td>DR</td>
               <td>1</td>
-              <td>DR&apos;[t] == -(gammaR*A[t]*DR[t]) + thetaR*DRp[t]</td>
+              <td>DR&apos;[t] == -(gammaR*A[t]*DR[t]) + thetaR*DRp[t]</td>
             </tr>
             <tr>
               <td>DRp</td>
               <td>0</td>
-              <td>DRp&apos;[t] == gammaR*A[t]*DR[t] - thetaR*DRp[t]</td>
+              <td>DRp&apos;[t] == gammaR*A[t]*DR[t] - thetaR*DRp[t]</td>
             </tr>
             <tr>
               <td>MA</td>
               <td>0</td>
-              <td>MA&apos;[t] == alphaA*DA[t] + alphaAp*DAp[t] - deltaMA*MA[t]</td>
+              <td>MA&apos;[t] == alphaA*DA[t] + alphaAp*DAp[t] - deltaMA*MA[t]</td>
             </tr>
             <tr>
               <td>MR</td>
               <td>0</td>
-              <td>MR&apos;[t] == alphaR*DR[t] + alphaRp*DRp[t] - deltaMR*MR[t]</td>
+              <td>MR&apos;[t] == alphaR*DR[t] + alphaRp*DRp[t] - deltaMR*MR[t]</td>
             </tr>
             <tr>
               <td>R</td>
               <td>0</td>
-              <td>R&apos;[t] == deltaA*C[t] + betaR*MR[t] - deltaR*R[t] -							 gammaC*A[t]*R[t]</td>
+              <td>R&apos;[t] == deltaA*C[t] + betaR*MR[t] - deltaR*R[t] -							 gammaC*A[t]*R[t]</td>
             </tr>
           </tbody>
         </table>

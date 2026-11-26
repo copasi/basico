@@ -5,6 +5,23 @@ import os
 THIS_DIR = os.path.dirname(__file__)
 
 
+class TestIssue91(unittest.TestCase):
+    def setUp(self):
+        dm = basico.load_model(os.path.join(THIS_DIR, 'test_data','issue_91.xml'))
+        # since we simulate stochastically, particle numbers will be too high
+        # if quantity_unit is not set to 1
+        basico.set_model_unit(quantity_unit='1')
+        self.dm = dm
+
+    def test_issue_91(self):
+        tc = basico.run_time_course(duration=10, step_number=10, method='directMethod', use_sbml_id=True, use_numbers=True)
+        self.assertIsNotNone(tc)
+        self.assertEqual(tc.shape[0], 11)
+
+        self.assertListEqual(tc.columns.tolist(), ['A', 's1'])
+        self.assertListEqual(tc.reset_index().columns.tolist(), ['Time', 'A', 's1'])
+
+
 class TestTimeCourse(unittest.TestCase):
     def setUp(self):
         basico.load_model(os.path.join(THIS_DIR, 'tellurium_sim.sbml'))
@@ -64,6 +81,7 @@ class TestTimeCourse(unittest.TestCase):
 
     def test_general_run(self):
         dm = basico.load_example('bruss')
+        print(basico.model_info.get_plot_dict(0))
         plots = []
         basico.run_task(basico.T.TIME_COURSE, model=dm, plots=plots)
         self.assertEqual(len(plots), 2)

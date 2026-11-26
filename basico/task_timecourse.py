@@ -44,13 +44,16 @@ def __build_result_from_ts(time_series, use_concentrations=True, use_sbml_id=Fal
     if use_sbml_id and model is None:
         model = model_io.get_current_model()
 
+    factory = COPASI.CRootContainer.getKeyFactory()
     column_names = []
     column_keys = []
     for i in range(col_count):
-        column_keys.append(time_series.getKey(i))
+        key = time_series.getKey(i)
+        obj = factory.get(key)
+        column_keys.append(key)
         name = time_series.getTitle(i)
 
-        if use_sbml_id and name != 'Time':
+        if use_sbml_id and not isinstance(obj, COPASI.CModel):
             sbml_id = time_series.getSBMLId(i, model)
             if sbml_id:
                 name = sbml_id
